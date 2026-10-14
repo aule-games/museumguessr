@@ -1,9 +1,10 @@
 // Built-screen capture matrix. Run after `npm run build`, in an environment
 // where Chromium may launch. Uses only local assets and isolated browser data.
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { chromium, expect } from '@playwright/test';
 import { preview } from 'vite';
-import { placePin, enterYear, confirm, playRound } from '../e2e/fixtures.ts';
+import { placePin, enterYear, confirm } from '../e2e/fixtures.ts';
+import { flowGeometryIssues, measureFlow } from './flow-geometry.mjs';
 import { phoneGeometryIssues } from './phone-geometry.mjs';
 import { creditFixtures } from './map-credit-fixtures.mjs';
 const out = new URL('../../test-results/visual/', import.meta.url);
@@ -11,6 +12,7 @@ mkdirSync(out, { recursive: true });
 const browser = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
 let server;
 const records = [];
+const captions = ['items', 'reserve', 'sample'].flatMap((file) => JSON.parse(readFileSync(new URL(`../../data/${file}.json`, import.meta.url), 'utf8')).items);
 try {
   server = await preview({ preview: { host: '127.0.0.1', port: 4183, strictPort: false } });
   const url = server.resolvedUrls.local[0];
@@ -61,6 +63,7 @@ try {
         return issues;
       });
       issues.push(...await page.evaluate(phoneGeometryIssues, geometryState));
+      issues.push(...flowGeometryIssues(await page.evaluate(measureFlow)));
       const name = `${width}x${height}-${state}.png`;
       await page.screenshot({ path: new URL(name, out).pathname, fullPage: true });
       records.push({ width, height, state, image: name, issues });
@@ -125,6 +128,15 @@ try {
         await capture('made-placed');
         await confirm(page);
         await capture('when-empty');
+        // All 16 text lengths against the smallest photo state. These are layout
+        // fixtures only: the photo stays round 1, not a substitute photo audit.
+        const caption = page.locator('[data-test=photo-caption]');
+        const originalCaption = await caption.textContent();
+        for (const item of captions) {
+          await caption.evaluate((node, text) => { node.textContent = text; }, item.caption);
+          await capture(`when-caption-${item.id}`);
+        }
+        await caption.evaluate((node, text) => { node.textContent = text; }, originalCaption);
         await enterYear(page, 0);
         await capture('when-invalid');
         await expect(page.locator('[data-test=confirm]')).toBeDisabled();
@@ -144,7 +156,18 @@ try {
         await placePin(page, 48.86, 2.35);
         await capture('kept-placed');
         await confirm(page);
-      } else await playRound(page);
+      } else {
+        await capture(`round-${round}-made`);
+        await placePin(page, 41.9, 12.5);
+        await confirm(page);
+        await capture(`round-${round}-when`);
+        await enterYear(page, 1500);
+        await confirm(page);
+        await expect(page.locator('.map')).toHaveAttribute('data-state', /ready|fallback/);
+        await capture(`round-${round}-kept`);
+        await placePin(page, 48.86, 2.35);
+        await confirm(page);
+      }
       if (round === 1 || round === 3) {
         // capture only once the reveal layers (veil, countries, lines) have rendered
         await expect(page.locator('.map')).toHaveAttribute('data-reveal', 'drawn', { timeout: 8000 });

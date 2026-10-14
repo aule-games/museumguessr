@@ -33,10 +33,13 @@ All artwork and recap images there are patterned boxes labelled **photo**.
 
 - **Phone rounds:** one fixed `100dvh` application viewport, no page scroll.
   The study represents it with an exact **390 × 844 px** frame. Rows are a
-  **48 px** top bar, **56 px** prompt, photo/map in a **2:3** flex ratio, and
+  **48 px** top bar, **56 px** prompt, image/map in a **2:3** flex ratio
+  with a separate caption rail, and
   **64 px + bottom safe area** action bar. There is exactly one primary action,
-  **Confirm**. Do not put a competing Next or navigation action beside it.
-- **Prompt:** three state dots identify Kept/Made/When; the active question is
+  **Confirm** on Made/When, **Reveal answers** on Kept. From When onward,
+  secondary **Back** sits to its left with an 8 px gap. Both stay on screen
+  and at least 44 × 44 px; only the forward action is primary. (DS35, DS36)
+- **Prompt:** three state dots identify Made/When/Kept; the active question is
   the heading, the round-one hint is the second line, and `?` occupies a 44 px
   target. On the compact phone composition the dots' names are available to
   assistive technology; desktop shows the names. Done uses a check, active is
@@ -47,7 +50,17 @@ All artwork and recap images there are patterned boxes labelled **photo**.
   gets approximately 30% of the answer-content region; year controls take 70%.
   Short portrait screens keep these shares (2:3 for photo/map, 3:7 for When),
   rather than forcing the photo to a 96 px thumbnail. Year controls may scroll
-  internally; Confirm must stay visible.
+  internally; Back and the forward action must stay visible. Photo share is
+  measured from the image box, not from the caption rail. (DS19)
+- **Round caption:** a plain, neutral subject description (10–70 characters),
+  never a title, artist, culture, place or date. Put the semantic `figcaption`
+  in a content-sized strip **below** the image on every viewport, with 12 px
+  type and no truncation. The View photo affordance sits at its right, also
+  outside the image. One lightbox button covers image and strip, retaining
+  a single keyboard stop. Shared grid rows size the rail before dividing the
+  remaining image/answer space 2:3 (3:7 on When); the strip does not pretend
+  to be photo area. Desktop/landscape retain the same rail in the left pane.
+  Loading/failure hides caption and affordance without collapsing the rail. (DS37)
 - **Desktop:** exact **1280 × 800 px** study. Rounds put the photo in the left
   55%, prompt/answer/Confirm in the right 45%. Reveal replaces that photo with
   the map. Production text is wall-label → scores → journey → facts → credit;
@@ -151,9 +164,14 @@ marker needs an invisible **44 × 44 px minimum** hit area without changing its
 visible glyph. The larger schematic hollow overlay around a correct Kept answer
 is intentional: it lets both states be visible at the same point.
 
-Kept and Made retain different silhouettes in monochrome. On Made, leave the
-confirmed Kept visible but subdued (`color.ink-muted`, not an opacity that drops
-contrast below 3:1). A carry-over specimen appears below round-kept. `combined`
+Kept and Made retain different silhouettes in monochrome. On Kept, leave the
+confirmed **Made guess** visible as a **hollow** diamond, subdued with
+`color.ink-muted`, never a filled answer or reduced opacity. Label it
+**Your Made guess** in both visible and accessible text. The label sits beside
+the glyph so a coincident new Kept pin does not cover it; the earlier pin is
+non-interactive. Answer coordinates and snapping are unchanged. (DS35)
+The old static carry-over specimen is historical, not the current question
+order. `combined`
 does **not** represent coincident guess/answer pins, or near-but-not-identical
 answers. Label any combined answer explicitly “Made + Kept”. The wordmark pairs
 the separate Made and Kept silhouettes; it does not use the combined glyph.
@@ -335,8 +353,9 @@ boundary over the existing scrim. Only its geometry transitions, once per step
 using `motion.fast` (150 ms); the card and progress do not slide or pulse.
 Reduced motion suppresses spotlight transitions through both the existing still
 class and the global media rule. Step count, focus order, dismissal, events and
-completion behaviour stay unchanged. The Confirm copy says the year controls
-appear only on When; it does not claim the current spotlight demonstrates them.
+completion behaviour stay unchanged. The Confirm copy names **Reveal answers**
+as the final action and says the year controls appear only on When; it does
+not claim the current spotlight demonstrates them.
 
 ## Tokens
 

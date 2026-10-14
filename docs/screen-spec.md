@@ -11,8 +11,8 @@ requirement IDs; the sentence before each one is the rule.
 ## Rules for every screen
 
 - **One forward action.** Each screen has one primary button, and it carries
-  the arrow: Start, Confirm, Next round / See results. Nothing competes with it
-  in the action bar. (DS16)
+  the arrow: Start, Confirm / Reveal answers, Next round / See results. Nothing
+  competes with it in the action bar. (DS16)
 - **Tokens only.** No raw colour or size outside the generated tokens; the
   stylesheet lint fails on hex, rgb() and named colours. (DS2)
 - **Targets** are at least 44 × 44 px, including map buttons, era switches,
@@ -31,13 +31,15 @@ requirement IDs; the sentence before each one is the rule.
 
 | Viewport | Round | Reveal | Start and end |
 | --- | --- | --- | --- |
-| Phone portrait (< 900 px wide) | Fixed rows, no page scroll: top bar 48, prompt 56, photo 2fr, answer 3fr (min 220), action bar 64 + safe area | Top bar, scrolling body, sticky action bar | One column, page scrolls |
+| Phone portrait (< 900 px wide) | Fixed rows, no page scroll: top bar 48, prompt 56, image 2fr, content-sized caption rail, answer 3fr (min 220), action bar 64 + safe area | Top bar, scrolling body, sticky action bar | One column, page scrolls |
 | Short phone (portrait, height ≤ 700) | Keep the 2:3 photo/map share; When keeps 3:7, with internally scrolling year controls | Compact wall label, then scores before the map | as phone |
 | Landscape phone (height ≤ 500) | Photo left 55%, prompt/answer/action right 45% | Map left 55%, compact label and scores right; total visually leads the table | as phone |
 | Desktop (≥ 900 px wide) | Photo left 55%, prompt/answer/action right 45% | Map left 55% (sticky), wall label and scores right | Two columns: text 45%, sample or recap 55% |
 
 On the When step the photo gets about 30% of the answer space and the year
-control 70% (phone). The content column is at most 1200 px wide and centred.
+control 70% (phone), after reserving the caption rail. Measure this share
+from the image box, excluding the caption. The content column is at most
+1200 px wide and centred.
 The E2E suite runs every layout check at 390×844, 844×390, 1280×800, 375×667
 and 390×664 (an in-app browser).
 
@@ -72,19 +74,19 @@ States:
 | --- | --- | --- | --- |
 | Top bar | round counter, running total, menu button | `round.counter`, `round.total`, `menu.open` | one line, tabular numbers |
 | Prompt | three step dots (done ✓, active filled, to do outline; names on desktop), the question, the hint, the `?` toggle | `step.*`, `q.*`, `hint.*`, `hint.show` | question one line on phone; hint up to two lines |
-| Photo | the object's photo, whole, on matte; tap opens the lightbox; "View photo ↗" marker; the item's neutral `caption` (DS37) at the bottom left, hidden while the photo loads or fails | `photo.open`, `photo.view`; caption from `data/items.json` | `contain`, never cropped; caption wraps, at most 62% of the width |
-| Answer (Made, Kept) | the map with zoom in/out/World, the drop label top-left | `map.*` | map fills the region |
+| Photo | the object's photo, whole, on matte; below it a separate rail with the neutral `caption` and View photo affordance (DS37); one lightbox button covers image and rail, with a semantic sibling `figcaption`; caption and affordance hide while loading or failed | `photo.open`, `photo.view`; caption from item data | `contain`, never cropped; rail sizes to its text, at least 12 px; neither text nor affordance overlaps the image; no truncation |
+| Answer (Made, Kept) | the map with zoom in/out/World, the drop label top-left; on Kept the earlier Made guess remains hollow, muted and non-interactive, with a visible and accessible player-guess label beside it | `map.*`, including `map.previousGuess` | map fills the region |
 | Answer (When) | year readout, year field + BCE / CE switch, error line, slider with ticks, caption | `year.*` | scrolls inside the region if needed |
-| Action bar | Back (from the second question on), then Confirm | `back`, `confirm` | Confirm full width on the first question; Back + Confirm share the bar afterwards |
+| Action bar | secondary Back (from When on); primary Confirm on Made/When, Reveal answers on Kept | `back`, `confirm`, `confirm.last` | first action full width; thereafter Back left, primary fills remaining width, 8 px gap; both at least 44 × 44 px and fully on screen (DS36) |
 
 Questions come in story order: Made, then When, then Kept (DS35). Nothing is
-revealed until the last Confirm, so Back can reopen any earlier question of the
-round (DS36).
+revealed until Reveal answers on Kept, so Back can reopen any earlier question
+of the round (DS36).
 
 The hint is open on round 1 and closed afterwards; `?` toggles it.
 Short portrait screens retain the photo's share instead of a fixed thumbnail;
-Confirm stays on screen. (DS19) The bundled fallback map admits only rank-zero
-cities at world zoom, adds ranks as zoom increases, and suppresses labels whose
+Back and the forward action stay on screen. (DS19) The bundled fallback map
+admits only rank-zero cities at world zoom, adds ranks as zoom increases, and suppresses labels whose
 measured boxes collide or leave the map. Guess labels and controls also reserve
 space. This changes label visibility only, not pin placement or snapping. (DS4)
 
@@ -104,8 +106,8 @@ States:
 | Map failed | `map.failed` + Reload (`map.reload`) |
 | No pin yet | Confirm disabled |
 | Pin placed | the hollow guess glyph, the drop label (`map.near` / country / `map.openSea`), announced (`map.pinPlaced`); Confirm enabled; the pin can be dragged |
-| Kept step | the confirmed Made answer stays on the map in the muted colour |
-| Back pressed (DS36) | the previous question of the same round opens with its answer in place (pin, or year) as the draft; Confirm is enabled; a changed answer replaces the old one. Back is absent on the first question and gone once the last Confirm opens the reveal |
+| Kept step | the confirmed Made **guess** stays hollow and muted; `map.previousGuess` labels it as the player's guess, never an answer |
+| Back pressed (DS36) | the previous question of the same round opens with its answer in place (pin, or year) as the draft; Confirm is enabled; a changed answer replaces the old one. Back is absent on the first question and gone once Reveal answers opens the reveal |
 | Keyboard on the map | arrows pan, + / − zoom, Enter drops the pin at the centre crosshair, Escape leaves (`map.label`) |
 | Year empty | readout "—", no slider thumb, Confirm disabled (no default year is ever implied) |
 | Year invalid | `year.noZero`, `year.notNumber` or `year.outOfRange` under the field; Confirm disabled |
@@ -134,6 +136,8 @@ the spotlight. Only the spotlight geometry transitions (150 ms); reduced
 motion suppresses it. Focus, step count, events and completion behaviour are
 unchanged. `tour.confirm.body` explicitly says that the year controls appear
 only on When; the Confirm spotlight does not claim to show the year control.
+It names `confirm.last` as the final action, after which Back is no longer
+available. Tour order and targets are unchanged by the photo-wrapper removal.
 
 | Step | Lights up | Copy keys |
 | --- | --- | --- |

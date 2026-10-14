@@ -50,7 +50,7 @@ export class PhotoRegion {
     );
     // A short neutral subject line (DS37): what the object is, never its title, place or date (A1).
     const caption = h('figcaption', { class: 'photo__caption', 'data-test': 'photo-caption' }, item.caption);
-    this.element = h('figure', { class: 'photo', 'data-state': 'loading', 'data-test': 'photo' }, open, caption, this.status);
+    this.element = h('figure', { class: 'photo round__photo', 'data-state': 'loading', 'data-test': 'photo' }, open, caption, this.status);
     this.img.addEventListener('load', () => this.loaded());
     this.img.addEventListener('error', () => this.failed());
     this.img.src = imageUrl(item.id);
@@ -148,7 +148,7 @@ export function roundScreen(p: RoundProps): RoundView {
   };
   const prompt = h('div', { class: 'prompt' }, dots, h('div', { class: 'prompt__text' }, question, hint), hintBtn);
 
-  const confirm = h('button', { type: 'button', class: 'btn btn--primary btn--wide', 'data-test': 'confirm', disabled: true }, t('confirm'));
+  const confirm = h('button', { type: 'button', class: 'btn btn--primary btn--wide', 'data-test': 'confirm', disabled: true }, t(p.step === 'kept' ? 'confirm.last' : 'confirm'));
   let submitted = false;
   confirm.addEventListener('click', () => {
     if (submitted || draft == null || confirm.disabled) return;
@@ -187,7 +187,7 @@ export function roundScreen(p: RoundProps): RoundView {
     { class: `screen round round--${p.step}`, 'data-screen': 'round', 'data-step': p.step, 'data-round': p.round + 1 },
     topBar(p.round, p.total, p.onMenu),
     prompt,
-    h('div', { class: 'round__photo' }, p.photo.element),
+    p.photo.element,
     answer,
     h('div', { class: `actionbar${back ? ' actionbar--back' : ''}` }, back, confirm),
   );

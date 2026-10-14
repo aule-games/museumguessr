@@ -386,7 +386,9 @@ export class GameMap {
     this.element.dataset.mode = 'guess';
     if (opts.dimmed && this.lib && this.map) {
       const { step, at } = opts.dimmed;
-      const el = pinElement(step, t(`step.${step}`), 'pin--dimmed');
+      const label = t('map.previousGuess', { step: t(`step.${step}`) });
+      const el = pinElement(step === 'made' ? 'guess-made' : 'guess-kept', label, 'pin--dimmed');
+      el.append(h('span', { class: 'pin__label' }, label));
       this.markers.push(new this.lib.Marker({ element: el, anchor: 'bottom' }).setLngLat([at.lng, at.lat]).addTo(this.map));
     }
     this.label.textContent = '';
