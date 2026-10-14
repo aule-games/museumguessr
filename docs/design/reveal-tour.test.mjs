@@ -82,3 +82,32 @@ test('[DS31] Hover explanations stay in scroll flow and disclosure is visible wi
   assert.match(rule('.score__row'), /minmax\(0, 1fr\)/);
   assert.match(css, /\.score__row\[aria-expanded='true'\] ~ \.score__tip\s*\{\s*display: none;/);
 });
+
+test('[DS22] The split reveal reserves legend space inside the available body height', () => {
+  assert.match(css, /\.reveal__scroll\s*\{[^}]*container-type: size;/);
+  assert.match(css, /\.reveal__scroll > \.reveal__media\s*\{[^}]*height: 100cqh;[^}]*grid-template-rows: minmax\(0, 1fr\) auto;/);
+});
+
+test('[DS34] The decorative progress rail matches the seven existing tour steps', () => {
+  const steps = [...read('src/ui/tour.ts').matchAll(/key: '(\w+)'/g)].map((m) => m[1]);
+  assert.deepEqual(steps, ['welcome', 'photo', 'questions', 'map', 'confirm', 'score', 'menu']);
+  assert.match(css, /^\.tour__progress::after \{\s*width: calc\(var\(--space-8\) \/ 7\)/m);
+  for (const [index, step] of steps.entries()) {
+    if (index === 0 || index === 6) continue;
+    assert.ok(rule(`.tour[data-step='${step}'] .tour__progress::after`).includes(`* ${index + 1} / 7`));
+  }
+  assert.match(rule('.tour[data-step=\'menu\'] .tour__progress::after'), /width: var\(--space-8\)/);
+  assert.ok(contrast(color('accent'), color('surface')) >= 4.5);
+  assert.ok(contrast(color('accent'), color('surface-raised')) >= 3);
+});
+
+test('[DS34] Tour cards bound their height, allow controls to wrap and retain focus and reduced-motion rules', () => {
+  assert.match(rule('.tour__card'), /max-height: calc\(100dvh - 2 \* var\(--space-3\)\)/);
+  assert.match(rule('.tour__card'), /overflow-y: auto/);
+  assert.match(rule('.tour__actions'), /flex-wrap: wrap/);
+  assert.match(rule('.tour__nav'), /flex-wrap: wrap/);
+  assert.match(rule('.tour__skip'), /min-height: var\(--layout-tap\)/);
+  assert.match(rule(':focus-visible'), /outline: var\(--focus-width\) solid var\(--color-focus\)/);
+  assert.match(rule('.tour--still .tour__spot'), /transition: none/);
+  assert.match(css, /@media \(prefers-reduced-motion: reduce\)/);
+});

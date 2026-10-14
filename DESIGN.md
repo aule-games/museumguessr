@@ -265,6 +265,32 @@ with the reveal, never overlay the sticky forward action. Long wall labels and
 short viewports can require scrolling to the scores; do not shrink their text
 to promise an above-the-fold table for every object.
 
+### First-visit tour
+
+The tour uses the same squared catalogue card as the reveal: white surface,
+1 px rule, 4 px cobalt top edge, condensed title, body-face explanation and
+stepped shadow. Width is at most **384 px** (`space.8 × 6`), leaving at least
+12 px to each viewport edge. Height is bounded by the dynamic viewport with
+the same gutters; long content scrolls inside the card instead of clipping
+its controls. Card position remains determined by the existing placement rule.
+
+The numeric **Step n of 7** label is the accessible progress indicator. A small
+cobalt rail mirrors the seven existing step keys; it is decorative and updates
+immediately. If the step list changes, update the rail selectors and its offline
+contract check together. Do not replace the count with colour-only progress.
+
+A ruled footer groups Skip separately from Back and Next. Forward actions have
+a 96 px minimum width; all targets remain at least 44 px high. Both groups can
+wrap on narrow screens rather than compressing labels or hiding Skip. Preserve
+the normal keyboard focus ring, including during programmatic step focus.
+
+The spotlight has a 2 px cobalt inner boundary and 3 px surface-colour outer
+boundary over the existing scrim. Only its geometry transitions, once per step
+using `motion.fast` (150 ms); the card and progress do not slide or pulse.
+Reduced motion suppresses spotlight transitions through both the existing still
+class and the global media rule. No tour logic, focus order, dismissal, copy or
+completion behaviour changes accompany this treatment.
+
 ## Tokens
 
 **`src/design/tokens.json` is the single source of truth for production.**

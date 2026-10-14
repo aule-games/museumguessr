@@ -1539,14 +1539,15 @@ h2 {
 .tour__spot {
   position: fixed;
   border-radius: var(--radius-sm);
-  outline: 2px solid var(--color-surface);
+  border: var(--pin-stroke) solid var(--color-accent);
+  outline: var(--focus-width) solid var(--color-surface);
   box-shadow: 0 0 0 200vmax var(--color-scrim);
   pointer-events: none;
   transition:
-    left var(--motion-medium) var(--motion-ease-standard),
-    top var(--motion-medium) var(--motion-ease-standard),
-    width var(--motion-medium) var(--motion-ease-standard),
-    height var(--motion-medium) var(--motion-ease-standard);
+    left var(--motion-fast) var(--motion-ease-standard),
+    top var(--motion-fast) var(--motion-ease-standard),
+    width var(--motion-fast) var(--motion-ease-standard),
+    height var(--motion-fast) var(--motion-ease-standard);
 }
 
 .tour--still .tour__spot {
@@ -1555,10 +1556,15 @@ h2 {
 
 .tour__card {
   position: fixed;
-  width: min(360px, calc(100vw - 2 * var(--space-3)));
+  width: min(calc(var(--space-8) * 6), calc(100vw - 2 * var(--space-3)));
+  max-height: calc(100dvh - 2 * var(--space-3));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scroll-padding-block: var(--space-4);
   display: grid;
-  gap: var(--space-2);
+  gap: var(--space-3);
   padding: var(--space-4);
+  border: 1px solid var(--color-line);
   border-top: var(--space-1) solid var(--color-accent);
   border-radius: var(--radius-sm);
   background: var(--color-surface);
@@ -1567,12 +1573,57 @@ h2 {
 }
 
 .tour__progress {
+  position: relative;
   margin: 0;
+  padding-right: calc(var(--space-8) + var(--space-3));
   font-family: var(--font-numeric);
   font-size: var(--text-xs);
-  color: var(--color-ink-muted);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-accent);
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: var(--tracking-caps);
+}
+
+/* The text remains the accessible count; this finite rail mirrors seven steps. */
+.tour__progress::before,
+.tour__progress::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: calc(100% - var(--space-8));
+  width: var(--space-8);
+  height: var(--space-1);
+  transform: translateY(-50%);
+  background: var(--color-surface-raised);
+}
+
+.tour__progress::after {
+  width: calc(var(--space-8) / 7);
+  background: var(--color-accent);
+}
+
+.tour[data-step='photo'] .tour__progress::after {
+  width: calc(var(--space-8) * 2 / 7);
+}
+
+.tour[data-step='questions'] .tour__progress::after {
+  width: calc(var(--space-8) * 3 / 7);
+}
+
+.tour[data-step='map'] .tour__progress::after {
+  width: calc(var(--space-8) * 4 / 7);
+}
+
+.tour[data-step='confirm'] .tour__progress::after {
+  width: calc(var(--space-8) * 5 / 7);
+}
+
+.tour[data-step='score'] .tour__progress::after {
+  width: calc(var(--space-8) * 6 / 7);
+}
+
+.tour[data-step='menu'] .tour__progress::after {
+  width: var(--space-8);
 }
 
 .tour__title {
@@ -1590,18 +1641,33 @@ h2 {
 
 .tour__actions {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-2);
-  margin-top: var(--space-2);
+  gap: var(--space-3);
+  margin-top: var(--space-1);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-line);
 }
 
 .tour__nav {
+  flex: 1;
   display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
   gap: var(--space-2);
 }
 
+.tour__nav .btn {
+  min-width: var(--space-8);
+}
+
+.tour__nav .btn--primary {
+  min-width: calc(var(--space-8) + var(--space-6));
+}
+
 .tour__skip {
+  min-width: var(--layout-tap);
   min-height: var(--layout-tap);
   padding: 0;
   border: 0;
@@ -1610,6 +1676,7 @@ h2 {
   font: inherit;
   font-size: var(--text-sm);
   text-decoration: underline;
+  text-underline-offset: var(--space-1);
   cursor: pointer;
 }
 

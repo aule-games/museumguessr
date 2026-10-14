@@ -106,6 +106,14 @@ flag and no finished game), and from the menu on any round screen
 scrim and inert. The card sits below the lit element, else above, else beside
 it, always fully on screen.
 
+Visual treatment: squared white catalogue card, cobalt top rule, condensed
+title, numeric progress count and decorative seven-step rail. The card is at
+most 384 px wide with 12 px viewport gutters and a bounded, scrollable height.
+Its ruled footer separates Skip from Back/Next; buttons wrap rather than
+shrink below their touch targets. A cobalt/surface double boundary outlines
+the spotlight. Only the spotlight geometry transitions (150 ms); reduced
+motion suppresses it. Card placement and focus behaviour are unchanged.
+
 | Step | Lights up | Copy keys |
 | --- | --- | --- |
 | 1 | nothing (card centred) | `tour.welcome.*` |
