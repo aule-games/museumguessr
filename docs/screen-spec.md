@@ -72,7 +72,7 @@ States:
 | --- | --- | --- | --- |
 | Top bar | round counter, running total, menu button | `round.counter`, `round.total`, `menu.open` | one line, tabular numbers |
 | Prompt | three step dots (done ✓, active filled, to do outline; names on desktop), the question, the hint, the `?` toggle | `step.*`, `q.*`, `hint.*`, `hint.show` | question one line on phone; hint up to two lines |
-| Photo | the object's photo, whole, on matte; tap opens the lightbox; "View photo ↗" marker | `photo.open`, `photo.view` | `contain`, never cropped |
+| Photo | the object's photo, whole, on matte; tap opens the lightbox; "View photo ↗" marker; the item's neutral `caption` (DS37) at the bottom left, hidden while the photo loads or fails | `photo.open`, `photo.view`; caption from `data/items.json` | `contain`, never cropped; caption wraps, at most 62% of the width |
 | Answer (Made, Kept) | the map with zoom in/out/World, the drop label top-left | `map.*` | map fills the region |
 | Answer (When) | year readout, year field + BCE / CE switch, error line, slider with ticks, caption | `year.*` | scrolls inside the region if needed |
 | Action bar | Back (from the second question on), then Confirm | `back`, `confirm` | Confirm full width on the first question; Back + Confirm share the bar afterwards |

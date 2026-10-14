@@ -251,6 +251,7 @@
         "id",
         "title",
         "alt_neutral",
+        "caption",
         "record_url",
         "wikidata_url",
         "kept",
@@ -281,6 +282,12 @@
           "description": "Alt text during the round: material, form, figures, composition; no title, artist, place, culture or date (A1, DS29).",
           "type": "string",
           "minLength": 10
+        },
+        "caption": {
+          "description": "One short subject line shown on the photo during the round: what the object is and shows; the same rules as alt_neutral (DS37, A1).",
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 70
         },
         "record_url": {
           "description": "The holding museum's own object record.",

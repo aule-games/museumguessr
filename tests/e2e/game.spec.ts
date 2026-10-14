@@ -5,6 +5,7 @@ import { confirm, enterYear, expect, placePin, playRound, start, test } from './
 const items = JSON.parse(readFileSync(join(import.meta.dirname, '../../data/items.json'), 'utf8')).items as {
   id: string;
   title: string;
+  caption: string;
   kept: { lat: number; lng: number; city: string };
   made: { lat: number; lng: number; place: string };
   when: { start: number; end: number };
@@ -133,6 +134,18 @@ test.describe('[A1] [DS6] no answer before the reveal', () => {
     for (const w of titleWords) expect(saved.toLowerCase()).not.toContain(w.toLowerCase());
     await playRound(page);
     await expect(page.locator('[data-test=reveal-title]')).toHaveText(item.title);
+  });
+
+  test('[DS37] the photo carries a short caption on every question of the round', async ({ page }) => {
+    await start(page);
+    const caption = page.locator('[data-test=photo-caption]');
+    await expect(caption).toHaveText(items[0]?.caption ?? '');
+    await placePin(page, 41.9, 12.5);
+    await confirm(page);
+    await expect(caption).toHaveText(items[0]?.caption ?? '');
+    await enterYear(page, 1500);
+    await confirm(page);
+    await expect(caption).toHaveText(items[0]?.caption ?? '');
   });
 });
 

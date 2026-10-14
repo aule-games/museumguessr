@@ -40,6 +40,10 @@ export interface Item1 {
    * Alt text during the round: material, form, figures, composition; no title, artist, place, culture or date (A1, DS29).
    */
   alt_neutral: string;
+  /**
+   * One short subject line shown on the photo during the round: what the object is and shows; the same rules as alt_neutral (DS37, A1).
+   */
+  caption: string;
   record_url: HttpsUrl;
   /**
    * The object's own Wikidata item, or null when none exists.

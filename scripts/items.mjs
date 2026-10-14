@@ -143,32 +143,34 @@ function checkRecord(item, index, kind, problems, warnings) {
       ),
     );
   }
-  // DS6 / A1: neutral alt text carries no place, title phrase or date
-  if (typeof item.alt_neutral === 'string') {
-    const altWords = wordsOf(item.alt_neutral);
-    const alt = new Set(altWords);
-    const placeLeaks = [k.city, k.museum, k.country, m.place, m.country].flatMap((t) => wordsOf(t)).filter((t) => alt.has(t));
-    const altText = ` ${altWords.join(' ')} `;
+  // DS6 / A1 / DS37: the round's alt text and photo caption carry no place, title phrase or date
+  for (const [field, id] of [['alt_neutral', 'DS6'], ['caption', 'DS37']]) {
+    const text = item[field];
+    if (typeof text !== 'string') continue;
+    const words = wordsOf(text);
+    const set = new Set(words);
+    const placeLeaks = [k.city, k.museum, k.country, m.place, m.country].flatMap((t) => wordsOf(t)).filter((t) => set.has(t));
+    const joined = ` ${words.join(' ')} `;
     const titleWords = wordsOf(item.title);
-    const titleLeaks = titleWords.slice(0, -1).filter((w, i) => altText.includes(` ${w} ${titleWords[i + 1]} `));
+    const titleLeaks = titleWords.slice(0, -1).filter((w, i) => joined.includes(` ${w} ${titleWords[i + 1]} `));
     if (placeLeaks.length || titleLeaks.length) {
       problems.push(
         problem(
-          where('alt_neutral'),
+          where(field),
           `contains ${placeLeaks.length} place word(s) and ${titleLeaks.length} title phrase(s)`,
           'the round must not reveal the answer before the reveal',
-          'DS6',
+          id,
           'describe material, form and composition only',
           'alt-text',
         ),
       );
     }
-    if (/\b\d{3,4}\b/.test(item.alt_neutral)) {
-      problems.push(problem(where('alt_neutral'), 'contains a number that may be a date', 'the round must not reveal the date', 'A1', 'remove the number', 'alt-text'));
+    if (/\b\d{3,4}\b/.test(text)) {
+      problems.push(problem(where(field), 'contains a number that may be a date', 'the round must not reveal the date', 'A1', 'remove the number', 'alt-text'));
     }
-    const proper = item.alt_neutral.split(/[:;.]\s*/).flatMap((part) => part.split(/\s+/).slice(1)).filter((w) => /^\p{Lu}/u.test(w));
+    const proper = text.split(/[:;.]\s*/).flatMap((part) => part.split(/\s+/).slice(1)).filter((w) => /^\p{Lu}/u.test(w));
     if (proper.length) {
-      warnings.push(problem(where('alt_neutral'), `has ${proper.length} capitalised word(s) mid-sentence`, 'names of people, places or cultures give the answer away', 'DS29', 'check that none is a name', 'alt-text'));
+      warnings.push(problem(where(field), `has ${proper.length} capitalised word(s) mid-sentence`, 'names of people, places or cultures give the answer away', 'DS29', 'check that none is a name', 'alt-text'));
     }
   }
   // moved: warn when it disagrees with the places
@@ -474,6 +476,7 @@ function skeleton(id) {
     id,
     title: 'TODO (<= 70 characters)',
     alt_neutral: 'TODO: material, form, figures, composition; no title, place, culture or date',
+    caption: 'TODO: one short subject line, same rules',
     record_url: 'https://TODO-museum-object-record',
     wikidata_url: 'https://www.wikidata.org/wiki/Q0',
     kept: { museum: 'TODO', city: 'TODO', country: 'TODO', lat: 0, lng: 0, source_url: 'https://TODO' },

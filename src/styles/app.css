@@ -570,6 +570,26 @@ h2 {
   font-weight: var(--font-weight-medium);
 }
 
+/* Neutral subject caption on the photo (DS37); "View photo" keeps the right corner. */
+.photo__caption {
+  position: absolute;
+  left: var(--space-2);
+  bottom: var(--space-2);
+  max-width: 62%;
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  font-size: var(--text-xs);
+  line-height: var(--leading-tight);
+  pointer-events: none;
+}
+
+.photo[data-state='loading'] .photo__caption,
+.photo[data-state='failed'] .photo__caption {
+  visibility: hidden;
+}
+
 .photo[data-state='loading'] .photo__img,
 .photo[data-state='failed'] .photo__img,
 .photo[data-state='loading'] .photo__hint,

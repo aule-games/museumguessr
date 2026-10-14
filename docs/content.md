@@ -81,6 +81,13 @@ artist, place, culture or date. Example: "Carved marble frieze: a winged figure
 grapples with a bearded man; fragments missing at left". The title and full
 credits appear at the reveal.
 
+`caption` is the one short line shown on the photo during the round (10 to 70
+characters, DS37): what the object is and shows, under the same rules as
+`alt_neutral` (no title phrase, artist, place, culture or date). Example:
+"Colour woodblock print: a huge clawed wave curls over three long boats". The
+item check rejects place words, two-word title phrases and possible dates in
+either field.
+
 ## Journey
 
 `moved` is true when the holding city lies outside the made place. Every moved

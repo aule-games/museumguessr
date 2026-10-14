@@ -48,7 +48,9 @@ export class PhotoRegion {
       this.img,
       h('span', { class: 'photo__hint', 'aria-hidden': 'true' }, t('photo.view'), ' ↗'),
     );
-    this.element = h('figure', { class: 'photo', 'data-state': 'loading', 'data-test': 'photo' }, open, this.status);
+    // A short neutral subject line (DS37): what the object is, never its title, place or date (A1).
+    const caption = h('figcaption', { class: 'photo__caption', 'data-test': 'photo-caption' }, item.caption);
+    this.element = h('figure', { class: 'photo', 'data-state': 'loading', 'data-test': 'photo' }, open, caption, this.status);
     this.img.addEventListener('load', () => this.loaded());
     this.img.addEventListener('error', () => this.failed());
     this.img.src = imageUrl(item.id);

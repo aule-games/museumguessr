@@ -5,6 +5,7 @@
       "id": "01",
       "title": "Under the Wave off Kanagawa (The Great Wave)",
       "alt_neutral": "Colour woodblock print: a towering clawed wave curls over three long rowing boats; a small snow-capped peak sits low in the distance; inscribed cartouche at upper left",
+      "caption": "Colour woodblock print: a huge clawed wave curls over three long boats",
       "record_url": "https://www.rijksmuseum.nl/en/collection/object/RP-P-1956-733--8bd0ca806fd677ede90d092ed16e0370",
       "wikidata_url": null,
       "kept": {
@@ -65,6 +66,7 @@
       "id": "02",
       "title": "Las Meninas",
       "alt_neutral": "Large oil painting: a small girl in a wide pale dress is attended by young women in a tall dim room; a painter stands at a huge canvas at left, a dog lies at right, a man pauses in a lit doorway at the back and two faces show in a mirror",
+      "caption": "Large oil painting: a small girl with attendants, a painter and a dog",
       "record_url": "https://www.museodelprado.es/en/the-collection/art-work/las-meninas/9fdc7800-9ade-48b0-ab8b-edee94ea877f",
       "wikidata_url": "https://www.wikidata.org/wiki/Q208758",
       "kept": {
@@ -125,6 +127,7 @@
       "id": "03",
       "title": "Lady with an Ermine",
       "alt_neutral": "Oil painting on panel: a young woman in a red and blue dress, with a fine band across her brow, turns her head to the side while cradling a slender white animal; black background with two lines of painted lettering at upper left",
+      "caption": "Oil painting: a young woman in red and blue holds a slim white animal",
       "record_url": "https://zbiory.mnk.pl/en/catalog/157417",
       "wikidata_url": "https://www.wikidata.org/wiki/Q474338",
       "kept": {
@@ -185,6 +188,7 @@
       "id": "04",
       "title": "The Temple of Dendur",
       "alt_neutral": "Sandstone shrine with a flat roofline: two columns with flower-shaped capitals frame an open porch and a doorway beyond; walls carved with rows of standing and seated figures; winged disk over the entrance",
+      "caption": "Sandstone shrine: two columns frame a doorway; carved walls of figures",
       "record_url": "https://www.metmuseum.org/art/collection/search/547802",
       "wikidata_url": "https://www.wikidata.org/wiki/Q1186970",
       "kept": {
@@ -248,6 +252,7 @@
       "id": "05",
       "title": "A Sunday on La Grande Jatte — 1884",
       "alt_neutral": "Large painting built from tiny dots of colour: people in top hats, bustles and parasols stroll, sit and recline on a sunny riverside lawn; sailboats on the water; a small monkey on a leash at right",
+      "caption": "Painting in tiny dots: people stroll and rest on a sunny river bank",
       "record_url": "https://www.artic.edu/artworks/27992",
       "wikidata_url": "https://www.wikidata.org/wiki/Q1044742",
       "kept": {
@@ -308,6 +313,7 @@
       "id": "06",
       "title": "Mihrab (prayer niche) from the Madrasa Imami",
       "alt_neutral": "Tall tiled wall niche with a pointed arch, built from tiny cut tiles in deep blue, white and turquoise; bands of flowing and angular script frame the arch and a panel at the centre",
+      "caption": "Tiled wall niche with a pointed arch and bands of flowing script",
       "record_url": "https://www.metmuseum.org/art/collection/search/449537",
       "wikidata_url": "https://www.wikidata.org/wiki/Q29385100",
       "kept": {
@@ -368,6 +374,7 @@
       "id": "07",
       "title": "Red-figure chous (wine jug)",
       "alt_neutral": "Rounded black ceramic jug with a three-lobed mouth; a frieze of three crouching nude youths wearing wreaths, painted in reddish-orange, play a game on the ground between egg-pattern borders; a crack crosses the shoulder",
+      "caption": "Black ceramic jug painted with three crouching youths playing a game",
       "record_url": "https://www.getty.edu/art/collection/object/10403M",
       "wikidata_url": null,
       "kept": {
@@ -430,6 +437,7 @@
       "id": "08",
       "title": "Jar with scenes of a scholar-official's life",
       "alt_neutral": "Porcelain jar painted deep blue on white: panels show a pavilion with a seated figure, gnarled pines, attendants and playing children; set on a carved dark-wood stand",
+      "caption": "Blue-and-white porcelain jar: a pavilion, pines, figures and children",
       "record_url": "https://www.clevelandart.org/art/1917.13",
       "wikidata_url": "https://www.wikidata.org/wiki/Q79482131",
       "kept": {
@@ -490,6 +498,7 @@
       "id": "09",
       "title": "Shiva Nataraja, Lord of the Dance",
       "alt_neutral": "Dark bronze statue: a four-armed figure dances on one leg inside a ring of flames, hair fanning out to both sides, one foot on a small crouching figure; stepped pedestal",
+      "caption": "Bronze statue: a four-armed figure dances on one leg in a ring of fire",
       "record_url": "https://www.rijksmuseum.nl/en/collection/object/Shiva-Nataraja--95977e9e42c08b342dd8614230e2c948",
       "wikidata_url": null,
       "kept": {
@@ -550,6 +559,7 @@
       "id": "10",
       "title": "Boulevard Montmartre, morning, cloudy weather",
       "alt_neutral": "Oil painting seen from a high window: a long tree-lined boulevard in grey morning light, crowded with horse-drawn carriages and walkers between rows of tall pale apartment blocks",
+      "caption": "Oil painting from a high window: a busy tree-lined avenue, grey light",
       "record_url": "https://www.ngv.vic.gov.au/explore/collection/work/4259/",
       "wikidata_url": "https://www.wikidata.org/wiki/Q20426003",
       "kept": {
