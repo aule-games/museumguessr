@@ -1,0 +1,153 @@
+// Start screen (DS9, DS24, PH11, ENG1, ENG21). Order: headline, sample photo
+// with its made→kept mini map, Start (or Continue + New game, or the finished
+// visitor's options), the one-line expectation, the privacy line.
+
+import { formatNumber, t } from '../../copy.ts';
+import { imageUrl } from '../../content/items.ts';
+import { pinElement } from '../../map/map.ts';
+import worldSvg from '../../assets/maps/world.svg?raw';
+import type { LatLng } from '../../scoring/geo.ts';
+import type { Item } from '../../types/item.ts';
+import { h, s } from '../dom.ts';
+
+export type StartMode =
+  | { kind: 'new' }
+  | { kind: 'continue'; round: number }
+  | { kind: 'finished'; total: number; canReview: boolean };
+
+export interface StartProps {
+  sample: Item;
+  mode: StartMode;
+  /** Start stays "Loading…" until the round-1 image is ready (max 4 s). */
+  ready: boolean;
+  webgl: boolean;
+  onStart(): void;
+  onContinue(): void;
+  onNew(): void;
+  onReview(): void;
+  onAbout(opener: HTMLElement): void;
+}
+
+const W = 320;
+const H = 160;
+const project = (p: LatLng) => ({ x: ((p.lng + 180) / 360) * W, y: ((90 - p.lat) / 180) * H });
+
+/** Static Natural Earth land, with the short journey centred even across ±180°. */
+export function miniMap(made: LatLng, kept: LatLng, label: string): SVGSVGElement {
+  const a = project(made);
+  const projectedKept = project(kept);
+  // Choose the nearest world copy before centring. No long line across the
+  // opposite hemisphere and no cut-off endpoint at the antimeridian.
+  const dx = ((projectedKept.x - a.x + W * 1.5) % W) - W / 2;
+  const b = { x: a.x + dx, y: projectedKept.y };
+  const offset = W / 2 - (a.x + b.x) / 2;
+  const mx = (a.x + b.x) / 2;
+  const my = Math.max(0, Math.min(a.y, b.y) - Math.abs(dx) * 0.25);
+  const world = new DOMParser().parseFromString(worldSvg, 'image/svg+xml').querySelector('path')!;
+  const glyph = (kind: 'made' | 'kept', point: { x: number; y: number }) => {
+    const shape = pinElement(kind, '').querySelector('svg')!;
+    shape.setAttribute('x', String(point.x + offset - 8));
+    shape.setAttribute('y', String(point.y - 18.5));
+    shape.setAttribute('width', '16');
+    shape.setAttribute('height', '20');
+    shape.setAttribute('class', `minimap__${kind}`);
+    return shape;
+  };
+  return s(
+    'svg',
+    { class: 'minimap', viewBox: `0 -20 ${W} ${H + 24}`, role: 'img', 'aria-label': label },
+    s('rect', { class: 'minimap__sea', x: 0, y: -20, width: W, height: H + 24 }),
+    ...[-60, -30, 0, 30, 60].map((lat) =>
+      s('line', { class: 'minimap__grid', x1: 0, x2: W, y1: ((90 - lat) / 180) * H, y2: ((90 - lat) / 180) * H }),
+    ),
+    ...[-W, 0, W].map((shift) => s('g', { class: 'minimap__land', transform: `translate(${offset + shift} 0)` }, document.importNode(world, true))),
+    s('path', { class: 'minimap__line', d: `M${a.x + offset},${a.y} Q${mx + offset},${my} ${b.x + offset},${b.y}` }),
+    glyph('made', a),
+    glyph('kept', b),
+  );
+}
+
+/** The two distinct silhouettes linked in reading order; the name stays text. */
+export function wordmark(): HTMLElement {
+  const glyph = (kind: 'made' | 'kept') => {
+    const el = pinElement(kind, '');
+    el.removeAttribute('role');
+    el.removeAttribute('aria-label');
+    el.classList.add('wordmark__glyph');
+    return el;
+  };
+  return h('p', { class: 'wordmark' },
+    h('span', { class: 'wordmark__glyphs', 'aria-hidden': 'true' }, glyph('made'), glyph('kept')),
+    h('span', { class: 'wordmark__name' }, t('app.name')),
+  );
+}
+
+export function startScreen(p: StartProps): HTMLElement {
+  const sample = p.sample;
+  const caption = t('start.sampleCaption', { made: sample.made.place, kept: `${sample.kept.museum}, ${sample.kept.city}` });
+
+  const actions = h('div', { class: 'start__actions' });
+  if (!p.webgl) {
+    actions.append(h('p', { class: 'start__nowebgl', role: 'alert' }, t('start.noWebgl')));
+  } else if (p.mode.kind === 'continue') {
+    actions.append(
+      h('button', { type: 'button', class: 'btn btn--primary', 'data-test': 'continue', onclick: p.onContinue }, t('start.continue', { round: p.mode.round })),
+      h('button', { type: 'button', class: 'btn btn--secondary', 'data-test': 'new-game', onclick: p.onNew }, t('start.new')),
+    );
+  } else if (p.mode.kind === 'finished') {
+    actions.append(h('p', { class: 'start__finished' }, t('start.finished', { total: formatNumber(p.mode.total) })));
+    if (p.mode.canReview) {
+      actions.append(h('button', { type: 'button', class: 'btn btn--secondary', 'data-test': 'review', onclick: p.onReview }, t('start.review')));
+    }
+    actions.append(h('button', { type: 'button', class: 'btn btn--primary', 'data-test': 'play-again', onclick: p.onStart }, t('start.again')));
+  } else {
+    const start = h(
+      'button',
+      { type: 'button', class: 'btn btn--primary', 'data-test': 'start', disabled: !p.ready, 'aria-busy': String(!p.ready), onclick: p.onStart },
+      p.ready ? t('start.start') : t('start.loading'),
+    );
+    actions.append(start);
+  }
+
+  const about = h('button', { type: 'button', class: 'link', onclick: (e: MouseEvent) => p.onAbout(e.currentTarget as HTMLElement) }, t('start.privacyLink'));
+  const img = h('img', {
+    class: 'start__photo',
+    src: imageUrl(sample.id),
+    alt: sample.title,
+    decoding: 'async',
+    fetchpriority: 'high',
+  });
+  img.addEventListener('error', () => img.classList.add('is-broken'));
+
+  const lines = t('app.tagline').split(/(?<=\.)\s+/);
+  const headline = h('h1', { class: 'start__headline' });
+  lines.forEach((line, i) => headline.append(i > 0 ? ' ' : '', h('span', { class: 'start__line' }, line)));
+
+  return h(
+    'main',
+    { class: 'screen start', 'data-screen': 'start' },
+    h('header', { class: 'brandbar' }, wordmark()),
+    h('div', { class: 'start__intro' }, h('p', { class: 'eyebrow' }, t('start.eyebrow')), headline),
+    h(
+      'figure',
+      { class: 'start__sample' },
+      h(
+        'div',
+        { class: 'start__card' },
+        h('div', { class: 'start__photo-wrap' }, img, h('span', { class: 'tag' }, t('start.example'))),
+        miniMap(sample.made, sample.kept, caption),
+      ),
+      h(
+        'figcaption',
+        { class: 'start__caption' },
+        h('strong', {}, sample.title),
+        ' ',
+        caption,
+        h('span', { class: 'start__credit' }, t('reveal.credit', { author: sample.photo.author, licence: sample.photo.licence })),
+      ),
+    ),
+    actions,
+    h('p', { class: 'start__meta' }, t('start.meta')),
+    h('footer', { class: 'start__privacy' }, t('start.privacy'), ' ', about),
+  );
+}

@@ -1,0 +1,309 @@
+{
+  "$schema": "./items.schema.json",
+  "items": [
+    {
+      "id": "11",
+      "title": "The Night Watch",
+      "alt_neutral": "Very large oil painting: a crowd of armed men with pikes, muskets, a banner and a drum spill out of a dark archway; a man in black with a red sash and one in pale gold stride forward at centre, a small girl in gold glows at left",
+      "record_url": "https://www.rijksmuseum.nl/en/collection/SK-C-5",
+      "wikidata_url": "https://www.wikidata.org/wiki/Q219831",
+      "kept": {
+        "museum": "Rijksmuseum (on loan from the City of Amsterdam)",
+        "city": "Amsterdam",
+        "country": "Netherlands",
+        "lat": 52.36,
+        "lng": 4.885278,
+        "source_url": "https://www.rijksmuseum.nl/en/collection/SK-C-5"
+      },
+      "made": {
+        "place": "Amsterdam",
+        "country": "Netherlands",
+        "precision": "city",
+        "wikidata_url": "https://www.wikidata.org/wiki/Q727",
+        "lat": 52.366667,
+        "lng": 4.883333,
+        "source_url": "https://www.rijksmuseum.nl/en/collection/SK-C-5",
+        "note": null,
+        "full_marks_km": null
+      },
+      "when": {
+        "start": 1642,
+        "end": 1642,
+        "label": "1642",
+        "source_url": "https://www.rijksmuseum.nl/en/collection/SK-C-5"
+      },
+      "moved": false,
+      "journey_fact": {
+        "text": "Painted for the Kloveniersdoelen guild hall; moved to the Town Hall on Dam square in 1715 and to the Trippenhuis in 1808; on loan to the museum from the City of Amsterdam since 1808.",
+        "source_url": "https://www.rijksmuseum.nl/en/collection/SK-C-5"
+      },
+      "facts": [
+        {
+          "text": "Painted for the great hall of the Kloveniersdoelen, headquarters of Amsterdam's arquebusiers' civic guard.",
+          "source_url": "https://www.rijksmuseum.nl/en/collection/SK-C-5"
+        },
+        {
+          "text": "Its nickname 'The Night Watch' only dates from the end of the 18th century; it shows the company of Captain Frans Banninck Cocq.",
+          "source_url": "https://www.rijksmuseum.nl/en/collection/SK-C-5"
+        }
+      ],
+      "photo": {
+        "source_url": "https://www.rijksmuseum.nl/en/collection/SK-C-5",
+        "file_url": "https://iiif.micr.io/PJEZO/full/max/0/default.jpg",
+        "author": "Rijksmuseum",
+        "licence": "Public domain",
+        "pd_basis": "Artist died 1669; Rijksmuseum record 'Copyright: Public domain', and the linked-art VisualItem carries the Public Domain Mark 1.0",
+        "crop_note": null
+      },
+      "conflicts": [],
+      "contested": false,
+      "claimant_source": null,
+      "heritage_image_law": false,
+      "retrieved": "2026-10-13"
+    },
+    {
+      "id": "12",
+      "title": "Statuette of a Nike",
+      "alt_neutral": "Small painted clay statuette of a young woman in a thin, high-belted dress, striding forward with one arm raised (hand broken off) and the other held out; worn traces of pink and orange paint; set on a small white mount",
+      "record_url": "https://www.getty.edu/art/collection/object/105X9Q",
+      "wikidata_url": null,
+      "kept": {
+        "museum": "J. Paul Getty Museum (Getty Villa)",
+        "city": "Los Angeles",
+        "country": "United States",
+        "lat": 34.045,
+        "lng": -118.565,
+        "source_url": "https://data.getty.edu/museum/collection/object/477f2dbc-7ea4-4e97-84d0-3e9c2e1402d0"
+      },
+      "made": {
+        "place": "Myrina",
+        "country": "Turkey",
+        "precision": "city",
+        "wikidata_url": "https://www.wikidata.org/wiki/Q609532",
+        "lat": 38.84527778,
+        "lng": 26.98444444,
+        "source_url": "https://data.getty.edu/museum/collection/object/477f2dbc-7ea4-4e97-84d0-3e9c2e1402d0",
+        "note": null,
+        "full_marks_km": null
+      },
+      "when": {
+        "start": -250,
+        "end": -201,
+        "label": "second half of 3rd century B.C.",
+        "source_url": "https://data.getty.edu/museum/collection/object/477f2dbc-7ea4-4e97-84d0-3e9c2e1402d0"
+      },
+      "moved": true,
+      "journey_fact": {
+        "text": "Owned by the 6th Earl of Harewood (d. 1947); sold at Christie's, London, 1951, to Spink & Son, who sold it to J. Paul Getty. He gave it to the Getty Museum in 1970. Find spot and how it left Turkey are not documented.",
+        "source_url": "https://data.getty.edu/museum/collection/object/477f2dbc-7ea4-4e97-84d0-3e9c2e1402d0"
+      },
+      "facts": [
+        {
+          "text": "The figure shows Nike, goddess of victory, alighting; the soles of her sandals and traces of painted straps are still visible.",
+          "source_url": "https://data.getty.edu/museum/collection/object/477f2dbc-7ea4-4e97-84d0-3e9c2e1402d0"
+        }
+      ],
+      "photo": {
+        "source_url": "https://media.getty.edu/iiif/manifest/3/92503040-497c-41ed-b5ab-bb84a3d07ec3",
+        "file_url": "https://media.getty.edu/iiif/image/585ed5a6-fea9-4d90-9e70-202e2607c68f/full/max/0/default.jpg",
+        "author": "J. Paul Getty Museum (Open Content Program; photographer not named)",
+        "licence": "CC0 1.0",
+        "pd_basis": "Hellenistic terracotta, 3rd century BCE; no copyright in the object.",
+        "crop_note": null
+      },
+      "conflicts": [
+        "Getty API begin/end = -249/-200, which looks like astronomical year numbering; the label 'second half of 3rd century B.C.' converts to -250..-201 under the content guide's date rule. Used -250..-201.",
+        "Object is in Getty storage per the record (Villa Collection); kept coordinates use the Getty Villa building.",
+        "No Wikidata item found for this object."
+      ],
+      "contested": false,
+      "claimant_source": null,
+      "heritage_image_law": false,
+      "retrieved": "2026-10-13"
+    },
+    {
+      "id": "13",
+      "title": "Royal Carpet with Silk and Metal Thread",
+      "alt_neutral": "Knotted silk carpet hung on a wall: salmon-orange and green borders around a grey-lilac field of mirrored scrolling arabesques and blossoms, with long fringes at top and bottom",
+      "record_url": "https://clevelandart.org/art/1926.533",
+      "wikidata_url": "https://www.wikidata.org/wiki/Q80000690",
+      "kept": {
+        "museum": "Cleveland Museum of Art",
+        "city": "Cleveland",
+        "country": "United States",
+        "lat": 41.50888888888889,
+        "lng": -81.61166666666666,
+        "source_url": "https://clevelandart.org/art/1926.533"
+      },
+      "made": {
+        "place": "Isfahan",
+        "country": "Iran",
+        "precision": "city",
+        "wikidata_url": "https://www.wikidata.org/wiki/Q42053",
+        "lat": 32.6525,
+        "lng": 51.67472222222222,
+        "source_url": "https://clevelandart.org/art/1926.533",
+        "note": null,
+        "full_marks_km": null
+      },
+      "when": {
+        "start": 1600,
+        "end": 1625,
+        "label": "1600–1625",
+        "source_url": "https://clevelandart.org/art/1926.533"
+      },
+      "moved": true,
+      "journey_fact": {
+        "text": "Made in Isfahan; how and when it reached Europe is not documented. CMA lists it as formerly in an Austrian abbey (Chorherrenstift 'Voran'), then with dealer Mario Veneziani, Rome, who sold it to the museum in 1926.",
+        "source_url": "https://clevelandart.org/art/1926.533"
+      },
+      "facts": [
+        {
+          "text": "Persian carpets with silk and metal thread were long miscalled 'Polish' after one appeared in the Polish exhibit at the 1878 Paris World's Fair.",
+          "source_url": "https://clevelandart.org/art/1926.533"
+        },
+        {
+          "text": "Safavid royal workshops wove luxurious silks like this for the court and also for export to European aristocrats.",
+          "source_url": "https://clevelandart.org/art/1926.533"
+        }
+      ],
+      "photo": {
+        "source_url": "https://clevelandart.org/art/1926.533",
+        "file_url": "https://openaccess-cdn.clevelandart.org/1926.533/1926.533_full.tif",
+        "author": "Cleveland Museum of Art",
+        "licence": "CC0 1.0",
+        "pd_basis": "Work of 1600–1625; CMA share_license_status = CC0",
+        "crop_note": null
+      },
+      "conflicts": [
+        "CMA provenance spells 'Chorherrenstift Voran, Austria'; this is presumably Stift Vorau (Augustinian canons, Styria; Wikidata Q770954) - my inference, the CMA record does not say Vorau.",
+        "Wikidata Q80000690: P1071 Isfahan, P195 CMA (agree); no P571."
+      ],
+      "contested": false,
+      "claimant_source": null,
+      "heritage_image_law": false,
+      "retrieved": "2026-10-13"
+    },
+    {
+      "id": "14",
+      "title": "Chocolate jar with iron-locked lid (Talavera poblana)",
+      "alt_neutral": "Tin-glazed earthenware jar painted dark blue on cream: birds and leafy scrolls in panels, swags at the shoulder; a hinged iron lid with a key standing on top",
+      "record_url": "https://www.artic.edu/artworks/10703",
+      "wikidata_url": "https://www.wikidata.org/wiki/Q111723325",
+      "kept": {
+        "museum": "Art Institute of Chicago",
+        "city": "Chicago",
+        "country": "United States",
+        "lat": 41.879444444444445,
+        "lng": -87.62388888888889,
+        "source_url": "https://www.artic.edu/artworks/10703"
+      },
+      "made": {
+        "place": "Puebla",
+        "country": "Mexico",
+        "precision": "city",
+        "wikidata_url": "https://www.wikidata.org/wiki/Q125293",
+        "lat": 19.051388888889,
+        "lng": -98.217777777778,
+        "source_url": "https://api.artic.edu/api/v1/artworks/10703",
+        "note": null,
+        "full_marks_km": null
+      },
+      "when": {
+        "start": 1725,
+        "end": 1775,
+        "label": "1725-75",
+        "source_url": "https://api.artic.edu/api/v1/artworks/10703"
+      },
+      "moved": true,
+      "journey_fact": {
+        "text": "Earlier history not documented. Collected in Mexico City by Herbert Pickering Lewis (d. 1922); his widow Eva Lewis exported it from Mexico in Oct-Nov 1923 and gave it to the Art Institute of Chicago that December.",
+        "source_url": "https://www.artic.edu/artworks/10703"
+      },
+      "facts": [
+        {
+          "text": "Its owners likely added the locking iron lid to protect valuables such as cacao beans, which were expensive at the time.",
+          "source_url": "https://www.artic.edu/artworks/10703"
+        },
+        {
+          "text": "Talavera poblana likely takes its name from Talavera de la Reina in Spain; its blue-and-white designs also show Chinese influence.",
+          "source_url": "https://www.artic.edu/artworks/10703"
+        }
+      ],
+      "photo": {
+        "source_url": "https://www.artic.edu/artworks/10703",
+        "file_url": "https://www.artic.edu/iiif/2/c00d3c91-9130-a1c3-a8af-3a08e4059670/full/3404,/0/default.jpg",
+        "author": "Art Institute of Chicago",
+        "licence": "CC0 1.0",
+        "pd_basis": "Anonymous ceramic made 1725-1775",
+        "crop_note": null
+      },
+      "conflicts": [
+        "Wikidata Q111723325 inception is 1700 at decade precision (1700s); museum says 1725-75",
+        "Wikidata location of creation points to Q1029938 'Puebla, Mexico', a disambiguation page with no coordinates; this record uses the city Q125293 (Heroica Puebla de Zaragoza)"
+      ],
+      "contested": false,
+      "claimant_source": null,
+      "heritage_image_law": false,
+      "retrieved": "2026-10-13"
+    },
+    {
+      "id": "15",
+      "title": "Dish with a scale motif and scrolls",
+      "alt_neutral": "Round glazed ceramic dish seen from above: two curved white-and-red leaf shapes frame a small flower on a ground of blue and green overlapping scales; the rim is filled with blue spiral cloud motifs; small chips along the edge",
+      "record_url": "https://www.rijksmuseum.nl/en/collection/BK-NM-12415",
+      "wikidata_url": null,
+      "kept": {
+        "museum": "Rijksmuseum",
+        "city": "Amsterdam",
+        "country": "Netherlands",
+        "lat": 52.36,
+        "lng": 4.885277777777778,
+        "source_url": "https://www.rijksmuseum.nl/en/collection/BK-NM-12415"
+      },
+      "made": {
+        "place": "Iznik",
+        "country": "Turkey",
+        "precision": "city",
+        "wikidata_url": "https://www.wikidata.org/wiki/Q217125",
+        "lat": 40.428888888889,
+        "lng": 29.719444444444,
+        "source_url": "https://id.rijksmuseum.nl/200381611",
+        "note": null,
+        "full_marks_km": null
+      },
+      "when": {
+        "start": 1565,
+        "end": 1585,
+        "label": "c. 1565 - c. 1585",
+        "source_url": "https://www.rijksmuseum.nl/en/collection/BK-NM-12415"
+      },
+      "moved": true,
+      "journey_fact": {
+        "text": "Documented from 1917, when collector Julius Wilhelm Edwin vom Rath lent it to the Rijksmuseum; he bequeathed it with 305 other objects in 1941. Earlier owners and how it left Turkey are not documented.",
+        "source_url": "https://www.rijksmuseum.nl/en/collection/BK-NM-12415"
+      },
+      "facts": [
+        {
+          "text": "It is made of quartz-frit ware (a quartz-based ceramic body) with glaze, not ordinary clay earthenware.",
+          "source_url": "https://www.rijksmuseum.nl/en/collection/BK-NM-12415"
+        }
+      ],
+      "photo": {
+        "source_url": "https://www.rijksmuseum.nl/en/collection/BK-NM-12415",
+        "file_url": "https://iiif.micr.io/TMRMI/full/max/0/default.jpg",
+        "author": "Rijksmuseum",
+        "licence": "Public domain",
+        "pd_basis": "Anonymous Iznik potter, c. 1565-1585; no copyright in the object.",
+        "crop_note": null
+      },
+      "conflicts": [
+        "No Wikidata item found for this object (searched inventory number BK-NM-12415 and title)."
+      ],
+      "contested": false,
+      "claimant_source": null,
+      "heritage_image_law": false,
+      "retrieved": "2026-10-13"
+    }
+  ]
+}

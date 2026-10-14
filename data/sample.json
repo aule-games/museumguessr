@@ -1,0 +1,65 @@
+{
+  "$schema": "./items.schema.json",
+  "items": [
+    {
+      "id": "00",
+      "title": "Human-headed winged lion (lamassu)",
+      "alt_neutral": "Colossal grey stone gateway figure: a bearded human head in a tall horned cap on a lion's body with wings and five legs; feathered wings fill the slab and lines of incised text run between the legs",
+      "record_url": "https://www.metmuseum.org/art/collection/search/322609",
+      "wikidata_url": "https://www.wikidata.org/wiki/Q29384418",
+      "kept": {
+        "museum": "The Metropolitan Museum of Art",
+        "city": "New York",
+        "country": "United States",
+        "lat": 40.779444444444444,
+        "lng": -73.96333333333334,
+        "source_url": "https://www.metmuseum.org/art/collection/search/322609"
+      },
+      "made": {
+        "place": "Nimrud (ancient Kalhu)",
+        "country": "Iraq",
+        "precision": "city",
+        "wikidata_url": "https://www.wikidata.org/wiki/Q237614",
+        "lat": 36.098055555556,
+        "lng": 43.328888888889,
+        "source_url": "https://www.metmuseum.org/art/collection/search/322609",
+        "note": "Carved for a palace gateway at Nimrud",
+        "full_marks_km": null
+      },
+      "when": {
+        "start": -883,
+        "end": -859,
+        "label": "ca. 883–859 BCE",
+        "source_url": "https://www.metmuseum.org/art/collection/search/322609"
+      },
+      "moved": true,
+      "journey_fact": {
+        "text": "Excavated at Nimrud under A. H. Layard in the 1840s (export not documented); given in 1849 to Lady Charlotte Guest, Canford Manor, England; sold to D. Kelekian 1919, J. D. Rockefeller 1927; given to the Met 1930 (accessioned 1932).",
+        "source_url": "https://www.metmuseum.org/art/collection/search/322609"
+      },
+      "facts": [
+        {
+          "text": "The sculptor gave it five legs, so it looks firmly planted when seen from the front and striding forward when seen from the side.",
+          "source_url": "https://www.metmuseum.org/art/collection/search/322609"
+        },
+        {
+          "text": "Ashurnasirpal II made Nimrud his capital and in 879 BCE feasted 69,574 people for ten days to celebrate it.",
+          "source_url": "https://www.metmuseum.org/art/collection/search/322609"
+        }
+      ],
+      "photo": {
+        "source_url": "https://www.metmuseum.org/art/collection/search/322609",
+        "file_url": "https://images.metmuseum.org/CRDImages/an/original/DT880.jpg",
+        "author": "The Metropolitan Museum of Art",
+        "licence": "CC0 1.0",
+        "pd_basis": "Ancient work (ca. 883–859 BCE); Met API isPublicDomain=true, Met Open Access image (CC0)",
+        "crop_note": null
+      },
+      "conflicts": [],
+      "contested": false,
+      "claimant_source": null,
+      "heritage_image_law": false,
+      "retrieved": "2026-10-14"
+    }
+  ]
+}

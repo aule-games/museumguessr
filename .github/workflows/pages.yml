@@ -1,0 +1,97 @@
+# Verify on every push; deploy only main, only when PAGES_LIVE is set or a
+# dispatch names an approved commit (DX8, DX21, ENG8, ENG23, ENG35).
+name: verify-and-deploy
+
+on:
+  push:
+  workflow_dispatch:
+    inputs:
+      sha:
+        description: Approved commit SHA to verify and deploy
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Pushed commits use the noreply identity and allowlisted paths
+        if: github.event_name == 'push'
+        run: node scripts/ci-commits.mjs "${{ github.event.before }}" "${{ github.sha }}"
+
+      - name: Set up Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Unit tests, type check, item check
+        run: npm test
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        env:
+          VITE_POSTHOG_PROJECT_TOKEN: ${{ vars.VITE_POSTHOG_PROJECT_TOKEN }}
+          VITE_ANALYTICS_HOSTS: ${{ vars.VITE_ANALYTICS_HOSTS }}
+        run: VITE_BUILD_ID="$(git rev-parse --short=7 HEAD)" npm run build
+
+      - name: Keep source maps out of the deployed files
+        run: |
+          mkdir -p sourcemaps
+          find dist -name '*.map' -exec mv {} sourcemaps/ \;
+
+      - name: Build checks
+        run: npm run check:build
+
+      - name: Install the E2E browser
+        run: npx playwright install --with-deps chromium
+
+      - name: E2E on the built artifact
+        run: npx playwright test
+
+      - name: Keep source maps per build
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: sourcemaps
+          path: sourcemaps
+          retention-days: 30
+
+      - name: Upload the site
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: dist
+
+  deploy:
+    needs: verify
+    if: github.ref == 'refs/heads/main' && (vars.PAGES_LIVE == 'true' || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-24.04
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - name: Deploy
+        id: deploy
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1

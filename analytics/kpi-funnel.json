@@ -1,0 +1,37 @@
+{
+  "$comment": "The KPI funnel insight, as created in PostHog project 304461 (see docs/analytics.md#the-kpi). Step 1: a page view. Step 2: the third answered round. Both steps keep only this game's events and drop smoke visits. __LAUNCH_DATE__ is set to the first post's date when the insight is created.",
+  "kind": "InsightVizNode",
+  "source": {
+    "kind": "FunnelsQuery",
+    "series": [
+      {
+        "kind": "EventsNode",
+        "event": "$pageview",
+        "name": "$pageview",
+        "properties": [
+          { "type": "event", "key": "project_id", "operator": "exact", "value": ["museumguessr"] },
+          { "type": "event", "key": "src", "operator": "is_not", "value": ["smoke"] }
+        ]
+      },
+      {
+        "kind": "EventsNode",
+        "event": "round_completed",
+        "name": "round_completed",
+        "properties": [
+          { "type": "event", "key": "project_id", "operator": "exact", "value": ["museumguessr"] },
+          { "type": "event", "key": "src", "operator": "is_not", "value": ["smoke"] },
+          { "type": "event", "key": "answered_count", "operator": "exact", "value": [3] }
+        ]
+      }
+    ],
+    "funnelsFilter": {
+      "funnelOrderType": "ordered",
+      "funnelWindowInterval": 1,
+      "funnelWindowIntervalUnit": "day",
+      "breakdownAttributionType": "first_touch"
+    },
+    "breakdownFilter": { "breakdown_type": "event", "breakdown": "src" },
+    "dateRange": { "date_from": "__LAUNCH_DATE__", "date_to": null },
+    "filterTestAccounts": false
+  }
+}

@@ -1,0 +1,610 @@
+{
+  "$schema": "./items.schema.json",
+  "items": [
+    {
+      "id": "01",
+      "title": "Under the Wave off Kanagawa (The Great Wave)",
+      "alt_neutral": "Colour woodblock print: a towering clawed wave curls over three long rowing boats; a small snow-capped peak sits low in the distance; inscribed cartouche at upper left",
+      "record_url": "https://www.rijksmuseum.nl/en/collection/object/RP-P-1956-733--8bd0ca806fd677ede90d092ed16e0370",
+      "wikidata_url": null,
+      "kept": {
+        "museum": "Rijksmuseum",
+        "city": "Amsterdam",
+        "country": "Netherlands",
+        "lat": 52.36,
+        "lng": 4.885277777777778,
+        "source_url": "https://www.rijksmuseum.nl/en/collection/object/RP-P-1956-733--8bd0ca806fd677ede90d092ed16e0370"
+      },
+      "made": {
+        "place": "Edo (now Tokyo)",
+        "country": "Japan",
+        "precision": "city",
+        "wikidata_url": "https://www.wikidata.org/wiki/Q1490",
+        "lat": 35.68944444444445,
+        "lng": 139.69166666666666,
+        "source_url": "https://id.rijksmuseum.nl/200134564",
+        "note": "Published and printed in Edo, today's Tokyo",
+        "full_marks_km": null
+      },
+      "when": {
+        "start": 1829,
+        "end": 1833,
+        "label": "1829 - 1833",
+        "source_url": "https://id.rijksmuseum.nl/200134564"
+      },
+      "moved": true,
+      "journey_fact": {
+        "text": "Published in Edo c. 1829-33; how this impression left Japan is not documented. The Rijksmuseum bought it in 1956 with support from the Vereniging Rembrandt and the Dutch education ministry; seller not documented.",
+        "source_url": "https://www.rijksmuseum.nl/en/collection/object/RP-P-1956-733--8bd0ca806fd677ede90d092ed16e0370"
+      },
+      "facts": [
+        {
+          "text": "It belongs to Hokusai's series Thirty-Six Views of Mount Fuji; Mount Fuji sits small in the background, dwarfed by the breaking wave.",
+          "source_url": "https://id.rijksmuseum.nl/200134564"
+        },
+        {
+          "text": "It is a colour woodcut: the key block was printed in blue, with separate blocks for the other colours.",
+          "source_url": "https://id.rijksmuseum.nl/200134564"
+        }
+      ],
+      "photo": {
+        "source_url": "https://www.rijksmuseum.nl/en/collection/object/RP-P-1956-733--8bd0ca806fd677ede90d092ed16e0370",
+        "file_url": "https://iiif.micr.io/MFiyA/full/max/0/default.jpg",
+        "author": "Rijksmuseum",
+        "licence": "Public domain",
+        "pd_basis": "Katsushika Hokusai died 1849; print published 1829-1833",
+        "crop_note": null
+      },
+      "conflicts": [],
+      "contested": false,
+      "claimant_source": null,
+      "heritage_image_law": false,
+      "retrieved": "2026-10-14"
+    },
+    {
+      "id": "02",
+      "title": "Las Meninas",
+      "alt_neutral": "Large oil painting: a small girl in a wide pale dress is attended by young women in a tall dim room; a painter stands at a huge canvas at left, a dog lies at right, a man pauses in a lit doorway at the back and two faces show in a mirror",
+      "record_url": "https://www.museodelprado.es/en/the-collection/art-work/las-meninas/9fdc7800-9ade-48b0-ab8b-edee94ea877f",
+      "wikidata_url": "https://www.wikidata.org/wiki/Q208758",
+      "kept": {
+        "museum": "Museo Nacional del Prado",
+        "city": "Madrid",
+        "country": "Spain",
+        "lat": 40.413889,
+        "lng": -3.692222,
+        "source_url": "https://www.museodelprado.es/en/the-collection/art-work/las-meninas/9fdc7800-9ade-48b0-ab8b-edee94ea877f"
+      },
+      "made": {
+        "place": "Madrid",
+        "country": "Spain",
+        "precision": "city",
+        "wikidata_url": "https://www.wikidata.org/wiki/Q2807",
+        "lat": 40.416944,
+        "lng": -3.703333,
+        "source_url": "https://www.museodelprado.es/en/the-collection/art-work/las-meninas/9fdc7800-9ade-48b0-ab8b-edee94ea877f",
+        "note": "Painted in the Alcázar palace in Madrid, the room it shows",
+        "full_marks_km": null
+      },
+      "when": {
+        "start": 1656,
+        "end": 1656,
+        "label": "1656",
+        "source_url": "https://www.museodelprado.es/en/the-collection/art-work/las-meninas/9fdc7800-9ade-48b0-ab8b-edee94ea877f"
+      },
+      "moved": false,
+      "journey_fact": {
+        "text": "Royal Collection throughout: listed in the Alcázar of Madrid in 1700, then in the new Royal Palace, Madrid (1747-1818); entered the Prado in 1819.",
+        "source_url": "https://www.museodelprado.es/en/the-collection/art-work/las-meninas/9fdc7800-9ade-48b0-ab8b-edee94ea877f"
+      },
+      "facts": [
+        {
+          "text": "The king and queen, Philip IV and Mariana of Austria, appear only as reflections in the mirror on the back wall, watching the scene.",
+          "source_url": "https://www.museodelprado.es/en/the-collection/art-work/las-meninas/9fdc7800-9ade-48b0-ab8b-edee94ea877f"
+        },
+        {
+          "text": "In 1724 Antonio Palomino gave it a section of its own in his history of Spanish painters, the only work he treated that way.",
+          "source_url": "https://www.museodelprado.es/en/the-collection/art-work/las-meninas/9fdc7800-9ade-48b0-ab8b-edee94ea877f"
+        }
+      ],
+      "photo": {
+        "source_url": "https://commons.wikimedia.org/wiki/File:Las_Meninas,_by_Diego_Vel%C3%A1zquez,_from_Prado_in_Google_Earth.jpg",
+        "file_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/31/Las_Meninas%2C_by_Diego_Vel%C3%A1zquez%2C_from_Prado_in_Google_Earth.jpg/3840px-Las_Meninas%2C_by_Diego_Vel%C3%A1zquez%2C_from_Prado_in_Google_Earth.jpg",
+        "author": "Museo del Prado (Prado in Google Earth), via Wikimedia Commons",
+        "licence": "PD-Art",
+        "pd_basis": "Artist died 1660; Commons tags PD-Art (PD-old-auto-expired)",
+        "crop_note": null
+      },
+      "conflicts": [],
+      "contested": false,
+      "claimant_source": null,
+      "heritage_image_law": false,
+      "retrieved": "2026-10-13"
+    },
+    {
+      "id": "03",
+      "title": "Lady with an Ermine",
+      "alt_neutral": "Oil painting on panel: a young woman in a red and blue dress, with a fine band across her brow, turns her head to the side while cradling a slender white animal; black background with two lines of painted lettering at upper left",
+      "record_url": "https://zbiory.mnk.pl/en/catalog/157417",
+      "wikidata_url": "https://www.wikidata.org/wiki/Q474338",
+      "kept": {
+        "museum": "Princes Czartoryski Museum, National Museum in Kraków",
+        "city": "Kraków",
+        "country": "Poland",
+        "lat": 50.0646408,
+        "lng": 19.9399667,
+        "source_url": "https://zbiory.mnk.pl/en/catalog/157417"
+      },
+      "made": {
+        "place": "Milan",
+        "country": "Italy",
+        "precision": "city",
+        "wikidata_url": "https://www.wikidata.org/wiki/Q490",
+        "lat": 45.466944,
+        "lng": 9.19,
+        "source_url": "https://zbiory.mnk.pl/en/catalog/157417",
+        "note": "Painted at the court of Ludovico Sforza in Milan",
+        "full_marks_km": null
+      },
+      "when": {
+        "start": 1490,
+        "end": 1490,
+        "label": "około 1490 (c. 1490)",
+        "source_url": "https://zbiory.mnk.pl/en/catalog/157417"
+      },
+      "moved": true,
+      "journey_fact": {
+        "text": "Bought in Italy c. 1800 by Adam Jerzy Czartoryski (where and from whom is not documented); shown at Puławy from 1809; taken to Paris after 1831; in Kraków from 1882. Looted by the Nazis in 1939; back in Kraków 1946.",
+        "source_url": "https://zbiory.mnk.pl/en/catalog/157417"
+      },
+      "facts": [
+        {
+          "text": "The lettering 'LA BELE FERONIERE / LEONARD D'AWINCI' was added at Puławy, when the sitter was mistaken for a mistress of King Francis I of France.",
+          "source_url": "https://zbiory.mnk.pl/en/catalog/157417"
+        },
+        {
+          "text": "The ermine alludes to Duke Ludovico Sforza. He received the Order of the Ermine in 1488 and was nicknamed 'Ermellino'.",
+          "source_url": "https://zbiory.mnk.pl/en/catalog/157417"
+        }
+      ],
+      "photo": {
+        "source_url": "https://zbiory.mnk.pl/en/catalog/157417",
+        "file_url": "https://cdn-zbiory.mnk.pl/upload/multimedia/45/dd/45dda2c7ff6223406de33f557fcd4233.jpg",
+        "author": "National Museum in Kraków",
+        "licence": "CC0 1.0",
+        "pd_basis": "Leonardo da Vinci died 1519; the MNK record's copyright field reads 'CC0 – Public domain'",
+        "crop_note": "Uncropped: the painted lettering at upper left is part of the paint surface."
+      },
+      "conflicts": [],
+      "contested": false,
+      "claimant_source": null,
+      "heritage_image_law": true,
+      "retrieved": "2026-10-13"
+    },
+    {
+      "id": "04",
+      "title": "The Temple of Dendur",
+      "alt_neutral": "Sandstone shrine with a flat roofline: two columns with flower-shaped capitals frame an open porch and a doorway beyond; walls carved with rows of standing and seated figures; winged disk over the entrance",
+      "record_url": "https://www.metmuseum.org/art/collection/search/547802",
+      "wikidata_url": "https://www.wikidata.org/wiki/Q1186970",
+      "kept": {
+        "museum": "The Metropolitan Museum of Art",
+        "city": "New York",
+        "country": "United States",
+        "lat": 40.779444444444444,
+        "lng": -73.96333333333334,
+        "source_url": "https://www.metmuseum.org/art/collection/search/547802"
+      },
+      "made": {
+        "place": "Dendur",
+        "country": "Egypt",
+        "precision": "city",
+        "wikidata_url": "https://www.wikidata.org/wiki/Q22350866",
+        "lat": 23.38305556,
+        "lng": 32.95,
+        "source_url": "https://www.metmuseum.org/art/collection/search/547802",
+        "note": "Built at Dendur in Nubia, a site now under Lake Nasser",
+        "full_marks_km": null
+      },
+      "when": {
+        "start": -15,
+        "end": 10,
+        "label": "built about 15 B.C.; completed by 10 B.C. or 10 CE (the Met gives both)",
+        "note": "The Met's record gives both 10 B.C. and 10 CE for its completion, so any year from 15 BCE to 10 CE scores full marks.",
+        "source_url": "https://www.metmuseum.org/art/collection/search/547802"
+      },
+      "moved": true,
+      "journey_fact": {
+        "text": "Built at Dendur in Lower Nubia. With the Aswan High Dam reservoir set to flood the site in the 1960s, Egypt gave the temple to the United States in 1965; the US government awarded it to the Met in 1967.",
+        "source_url": "https://www.metmuseum.org/art/collection/search/547802"
+      },
+      "facts": [
+        {
+          "text": "The 'pharaoh' carved on its walls is Rome's emperor Augustus, shown in traditional Egyptian regalia making offerings to the gods.",
+          "source_url": "https://www.metmuseum.org/art/collection/search/547802"
+        },
+        {
+          "text": "It honored the goddess Isis and, beside her, Pedesi and Pihor, deified sons of a local Nubian ruler.",
+          "source_url": "https://www.metmuseum.org/art/collection/search/547802"
+        }
+      ],
+      "photo": {
+        "source_url": "https://www.metmuseum.org/art/collection/search/547802",
+        "file_url": "https://images.metmuseum.org/CRDImages/eg/original/DT563.jpg",
+        "author": "The Metropolitan Museum of Art",
+        "licence": "CC0 1.0",
+        "pd_basis": "Ancient temple of the reign of Augustus; Met API isPublicDomain=true, Met Open Access image (CC0)",
+        "crop_note": "Cropped to the temple: potted palms, a display box and the ceiling removed."
+      },
+      "conflicts": [
+        "Date: the Met's date line reads \"completed by 10 CE\", its numeric date fields give 10 BCE, and its description says \"built about 15 B.C.\"; Wikidata gives c. 15 BCE. Scored with full marks for 15 BCE-10 CE, covering every date the Met gives."
+      ],
+      "contested": false,
+      "claimant_source": null,
+      "heritage_image_law": false,
+      "retrieved": "2026-10-14"
+    },
+    {
+      "id": "05",
+      "title": "A Sunday on La Grande Jatte — 1884",
+      "alt_neutral": "Large painting built from tiny dots of colour: people in top hats, bustles and parasols stroll, sit and recline on a sunny riverside lawn; sailboats on the water; a small monkey on a leash at right",
+      "record_url": "https://www.artic.edu/artworks/27992",
+      "wikidata_url": "https://www.wikidata.org/wiki/Q1044742",
+      "kept": {
+        "museum": "Art Institute of Chicago",
+        "city": "Chicago",
+        "country": "United States",
+        "lat": 41.879444444444445,
+        "lng": -87.62388888888889,
+        "source_url": "https://www.artic.edu/artworks/27992"
+      },
+      "made": {
+        "place": "France",
+        "country": "France",
+        "precision": "country",
+        "wikidata_url": "https://www.wikidata.org/wiki/Q142",
+        "lat": 47,
+        "lng": 2,
+        "source_url": "https://api.artic.edu/api/v1/artworks/27992",
+        "note": "The museum names only France; the scene is an island near Paris",
+        "full_marks_km": null
+      },
+      "when": {
+        "start": 1884,
+        "end": 1886,
+        "label": "1884–86, border added 1888–89",
+        "source_url": "https://www.artic.edu/artworks/27992"
+      },
+      "moved": true,
+      "journey_fact": {
+        "text": "Kept by Seurat's family after his death in 1891; sold in 1900 to Casimir Brû; later with Lucie and Edmond Cousturier; sold in 1924 to Frederic Clay and Helen Birch Bartlett of Chicago; entered the Art Institute in 1926 as a memorial gift.",
+        "source_url": "https://www.artic.edu/artworks/27992"
+      },
+      "facts": [
+        {
+          "text": "Seurat laid tiny dabs of contrasting colour side by side (Pointillism), believing viewers' eyes would blend them into brighter hues.",
+          "source_url": "https://www.artic.edu/artworks/27992"
+        },
+        {
+          "text": "Seurat returned to the canvas two years after starting it, adding figures such as the leashed monkey; the painted border came in 1888–89.",
+          "source_url": "https://www.artic.edu/artworks/27992"
+        }
+      ],
+      "photo": {
+        "source_url": "https://www.artic.edu/artworks/27992",
+        "file_url": "https://www.artic.edu/iiif/2/2d484387-2509-5e8e-2c43-22f9981972eb/full/3000,/0/default.jpg",
+        "author": "Art Institute of Chicago",
+        "licence": "CC0 1.0",
+        "pd_basis": "Georges Seurat died 1891 (>70 years); faithful photo of a 2D work (PD-Art); AIC API is_public_domain=true",
+        "crop_note": null
+      },
+      "conflicts": [],
+      "contested": false,
+      "claimant_source": null,
+      "heritage_image_law": false,
+      "retrieved": "2026-10-14"
+    },
+    {
+      "id": "06",
+      "title": "Mihrab (prayer niche) from the Madrasa Imami",
+      "alt_neutral": "Tall tiled wall niche with a pointed arch, built from tiny cut tiles in deep blue, white and turquoise; bands of flowing and angular script frame the arch and a panel at the centre",
+      "record_url": "https://www.metmuseum.org/art/collection/search/449537",
+      "wikidata_url": "https://www.wikidata.org/wiki/Q29385100",
+      "kept": {
+        "museum": "The Metropolitan Museum of Art",
+        "city": "New York",
+        "country": "United States",
+        "lat": 40.779444444444444,
+        "lng": -73.96333333333334,
+        "source_url": "https://www.metmuseum.org/art/collection/search/449537"
+      },
+      "made": {
+        "place": "Isfahan",
+        "country": "Iran",
+        "precision": "city",
+        "wikidata_url": "https://www.wikidata.org/wiki/Q42053",
+        "lat": 32.6525,
+        "lng": 51.67472222222222,
+        "source_url": "https://www.metmuseum.org/art/collection/search/449537",
+        "note": null,
+        "full_marks_km": null
+      },
+      "when": {
+        "start": 1354,
+        "end": 1355,
+        "label": "dated 755 AH/1354–55 CE",
+        "source_url": "https://www.metmuseum.org/art/collection/search/449537"
+      },
+      "moved": true,
+      "journey_fact": {
+        "text": "Removed from the Madrasa Imami, Isfahan, in the late 1920s; by whom and under what permit is not documented. Shipped to Philadelphia, shown in London in 1931, with dealer A. Rabenou by 1931–39; bought for the Met in 1939.",
+        "source_url": "https://www.metmuseum.org/art/collection/search/449537"
+      },
+      "facts": [
+        {
+          "text": "Made of glazed tiles cut to shape and set in mortar, it is, in the Met's words, one of the earliest and finest surviving examples of mosaic tile work.",
+          "source_url": "https://www.metmuseum.org/art/collection/search/449537"
+        },
+        {
+          "text": "Before the Met bought it, it was shown at the 1931 International Exhibition of Persian Art at Burlington House, London.",
+          "source_url": "https://www.metmuseum.org/art/collection/search/449537"
+        }
+      ],
+      "photo": {
+        "source_url": "https://www.metmuseum.org/art/collection/search/449537",
+        "file_url": "https://images.metmuseum.org/CRDImages/is/original/DT473.jpg",
+        "author": "The Metropolitan Museum of Art",
+        "licence": "CC0 1.0",
+        "pd_basis": "Work of 1354–55; Met API isPublicDomain=true, Met Open Access image (CC0)",
+        "crop_note": null
+      },
+      "conflicts": [],
+      "contested": false,
+      "claimant_source": null,
+      "heritage_image_law": false,
+      "retrieved": "2026-10-14"
+    },
+    {
+      "id": "07",
+      "title": "Red-figure chous (wine jug)",
+      "alt_neutral": "Rounded black ceramic jug with a three-lobed mouth; a frieze of three crouching nude youths wearing wreaths, painted in reddish-orange, play a game on the ground between egg-pattern borders; a crack crosses the shoulder",
+      "record_url": "https://www.getty.edu/art/collection/object/10403M",
+      "wikidata_url": null,
+      "kept": {
+        "museum": "J. Paul Getty Museum, Getty Villa",
+        "city": "Los Angeles",
+        "country": "United States",
+        "lat": 34.045,
+        "lng": -118.565,
+        "source_url": "https://data.getty.edu/museum/collection/object/89bff732-0ab8-4ed3-bbe3-e350368ac5b2"
+      },
+      "made": {
+        "place": "Athens",
+        "country": "Greece",
+        "precision": "city",
+        "wikidata_url": "https://www.wikidata.org/wiki/Q1524",
+        "lat": 37.98416666666667,
+        "lng": 23.728055555555557,
+        "source_url": "https://data.getty.edu/museum/collection/object/89bff732-0ab8-4ed3-bbe3-e350368ac5b2",
+        "note": "Made in Athens; found at Vulci, an Etruscan site in Italy",
+        "full_marks_km": null
+      },
+      "when": {
+        "start": -420,
+        "end": -420,
+        "label": "about 420 B.C.",
+        "source_url": "https://data.getty.edu/museum/collection/object/89bff732-0ab8-4ed3-bbe3-e350368ac5b2"
+      },
+      "moved": true,
+      "journey_fact": {
+        "text": "Found at Vulci, Italy (find date not documented); with Bonifacio Falcioni, Viterbo, by 1876. Tyszkiewicz sale, Paris, 1898; Béhague collection and heirs until Sotheby's Monaco 1987; Fleischman collection 1989; sold to the Getty 1996.",
+        "source_url": "https://data.getty.edu/museum/collection/object/89bff732-0ab8-4ed3-bbe3-e350368ac5b2"
+      },
+      "facts": [
+        {
+          "text": "A chous was used at the Anthesteria, a three-day Athenian festival for Dionysos; on its second day a drinking contest used these jugs to hold a standard amount of wine.",
+          "source_url": "https://data.getty.edu/museum/collection/object/89bff732-0ab8-4ed3-bbe3-e350368ac5b2"
+        },
+        {
+          "text": "Its find spot, the Etruscan site of Vulci, suggests the jug was exported from Athens in antiquity.",
+          "source_url": "https://data.getty.edu/museum/collection/object/89bff732-0ab8-4ed3-bbe3-e350368ac5b2"
+        }
+      ],
+      "photo": {
+        "source_url": "https://www.getty.edu/art/collection/object/10403M",
+        "file_url": "https://media.getty.edu/iiif/image/a21cd7a5-767b-4f07-a1e7-f939e83eba46/full/max/0/default.jpg",
+        "author": "J. Paul Getty Museum",
+        "licence": "CC0 1.0",
+        "pd_basis": "Ancient Greek vase, c. 420 BCE; no copyright in the object.",
+        "crop_note": null
+      },
+      "conflicts": [
+        "Date: the current Getty record gives about 420 B.C.; an older Getty catalogue (A Passion for Antiquities, 1994, cat. no. 42) dates it c. 440-430 BCE. The current museum record is used."
+      ],
+      "contested": false,
+      "claimant_source": null,
+      "heritage_image_law": true,
+      "retrieved": "2026-10-14"
+    },
+    {
+      "id": "08",
+      "title": "Jar with scenes of a scholar-official's life",
+      "alt_neutral": "Porcelain jar painted deep blue on white: panels show a pavilion with a seated figure, gnarled pines, attendants and playing children; set on a carved dark-wood stand",
+      "record_url": "https://www.clevelandart.org/art/1917.13",
+      "wikidata_url": "https://www.wikidata.org/wiki/Q79482131",
+      "kept": {
+        "museum": "Cleveland Museum of Art",
+        "city": "Cleveland",
+        "country": "United States",
+        "lat": 41.50888888888889,
+        "lng": -81.61166666666666,
+        "source_url": "https://www.clevelandart.org/art/1917.13"
+      },
+      "made": {
+        "place": "Jingdezhen",
+        "country": "China",
+        "precision": "city",
+        "wikidata_url": "https://www.wikidata.org/wiki/Q34405",
+        "lat": 29.294167,
+        "lng": 117.203611,
+        "source_url": "https://openaccess-api.clevelandart.org/api/artworks/1917.13",
+        "note": null,
+        "full_marks_km": null
+      },
+      "when": {
+        "start": 1522,
+        "end": 1566,
+        "label": "1522-66 (Jiajing mark and reign)",
+        "source_url": "https://openaccess-api.clevelandart.org/api/artworks/1917.13"
+      },
+      "moved": true,
+      "journey_fact": {
+        "text": "Made at the Jingdezhen kilns in 1522-66; how it left China is not documented. It is recorded in the Magrath Collection (date not documented), then with Worcester R. Warner of Cleveland, who gave it to the museum in 1917.",
+        "source_url": "https://www.clevelandart.org/art/1917.13"
+      },
+      "facts": [
+        {
+          "text": "Its painted scenes follow a scholar-official through the four seasons, from leaving home for the civil service exams to writing in old age.",
+          "source_url": "https://www.clevelandart.org/art/1917.13"
+        },
+        {
+          "text": "It bears the reign mark 'Da Ming Jiajing nian zhi': made in the Ming dynasty, Jiajing period.",
+          "source_url": "https://openaccess-api.clevelandart.org/api/artworks/1917.13"
+        }
+      ],
+      "photo": {
+        "source_url": "https://www.clevelandart.org/art/1917.13",
+        "file_url": "https://openaccess-cdn.clevelandart.org/1917.13/1917.13_print.jpg",
+        "author": "Cleveland Museum of Art",
+        "licence": "CC0 1.0",
+        "pd_basis": "Anonymous porcelain made 1522-1566",
+        "crop_note": null
+      },
+      "conflicts": [],
+      "contested": false,
+      "claimant_source": null,
+      "heritage_image_law": false,
+      "retrieved": "2026-10-14"
+    },
+    {
+      "id": "09",
+      "title": "Shiva Nataraja, Lord of the Dance",
+      "alt_neutral": "Dark bronze statue: a four-armed figure dances on one leg inside a ring of flames, hair fanning out to both sides, one foot on a small crouching figure; stepped pedestal",
+      "record_url": "https://www.rijksmuseum.nl/en/collection/object/Shiva-Nataraja--95977e9e42c08b342dd8614230e2c948",
+      "wikidata_url": null,
+      "kept": {
+        "museum": "Rijksmuseum (on loan from the Royal Asian Art Society)",
+        "city": "Amsterdam",
+        "country": "Netherlands",
+        "lat": 52.36,
+        "lng": 4.885277777777778,
+        "source_url": "https://www.rijksmuseum.nl/en/collection/object/Shiva-Nataraja--95977e9e42c08b342dd8614230e2c948"
+      },
+      "made": {
+        "place": "Tamil Nadu",
+        "country": "India",
+        "precision": "region",
+        "wikidata_url": "https://www.wikidata.org/wiki/Q1445",
+        "lat": 11,
+        "lng": 79,
+        "source_url": "https://id.rijksmuseum.nl/200106309",
+        "note": null,
+        "full_marks_km": null
+      },
+      "when": {
+        "start": 1100,
+        "end": 1200,
+        "label": "c. 1100 - c. 1200",
+        "source_url": "https://id.rijksmuseum.nl/200106309"
+      },
+      "moved": true,
+      "journey_fact": {
+        "text": "Made in Tamil Nadu c. 1100-1200; how and when it left India is not documented. Dealer C.T. Loo, Paris, sold it in 1935 to the Royal Asian Art Society, which has lent it to the Rijksmuseum since 1972.",
+        "source_url": "https://www.rijksmuseum.nl/en/collection/object/Shiva-Nataraja--95977e9e42c08b342dd8614230e2c948"
+      },
+      "facts": [
+        {
+          "text": "Museum research suggests it was worshipped only briefly, then buried at an unknown site in India, and reached the art market in the early 20th century without major restoration.",
+          "source_url": "https://bulletin.rijksmuseum.nl/article/view/9714"
+        },
+        {
+          "text": "The bronze stands 153 cm high and weighs 255 kg; its separate pedestal adds another 40 kg.",
+          "source_url": "https://id.rijksmuseum.nl/200106309"
+        }
+      ],
+      "photo": {
+        "source_url": "https://www.rijksmuseum.nl/en/collection/object/Shiva-Nataraja--95977e9e42c08b342dd8614230e2c948",
+        "file_url": "https://iiif.micr.io/LAXcK/full/max/0/default.jpg",
+        "author": "Rijksmuseum",
+        "licence": "Public domain",
+        "pd_basis": "Anonymous bronze of c. 1100-1200",
+        "crop_note": null
+      },
+      "conflicts": [],
+      "contested": false,
+      "claimant_source": null,
+      "heritage_image_law": false,
+      "retrieved": "2026-10-13"
+    },
+    {
+      "id": "10",
+      "title": "Boulevard Montmartre, morning, cloudy weather",
+      "alt_neutral": "Oil painting seen from a high window: a long tree-lined boulevard in grey morning light, crowded with horse-drawn carriages and walkers between rows of tall pale apartment blocks",
+      "record_url": "https://www.ngv.vic.gov.au/explore/collection/work/4259/",
+      "wikidata_url": "https://www.wikidata.org/wiki/Q20426003",
+      "kept": {
+        "museum": "National Gallery of Victoria",
+        "city": "Melbourne",
+        "country": "Australia",
+        "lat": -37.8225,
+        "lng": 144.9688888888889,
+        "source_url": "https://www.ngv.vic.gov.au/explore/collection/work/4259/"
+      },
+      "made": {
+        "place": "Paris",
+        "country": "France",
+        "precision": "city",
+        "wikidata_url": "https://www.wikidata.org/wiki/Q90",
+        "lat": 48.85666666666667,
+        "lng": 2.352222222222222,
+        "source_url": "https://www.ngv.vic.gov.au/explore/collection/work/4259/",
+        "note": null,
+        "full_marks_km": null
+      },
+      "when": {
+        "start": 1897,
+        "end": 1897,
+        "label": "1897",
+        "source_url": "https://www.ngv.vic.gov.au/explore/collection/work/4259/"
+      },
+      "moved": true,
+      "journey_fact": {
+        "text": "Painted in Paris in 1897. Dealer Durand-Ruel bought it at a London Guildhall show in 1898; he lent it to London's Grafton Gallery in 1905, where Bernard Hall bought it for Melbourne's Felton Bequest.",
+        "source_url": "https://www.ngv.vic.gov.au/explore/collection/work/4259/"
+      },
+      "facts": [
+        {
+          "text": "One of 14 views of the Boulevard Montmartre that Pissarro painted from a hotel-room window between 10 February and 17 April 1897.",
+          "source_url": "https://www.ngv.vic.gov.au/explore/collection/work/4259/"
+        },
+        {
+          "text": "Its 1905 purchase made the NGV one of the first public galleries in the world to acquire a French Impressionist painting.",
+          "source_url": "https://ngv.vic.gov.au/timeline/camille-pissarro-boulevard-montmartre"
+        }
+      ],
+      "photo": {
+        "source_url": "https://commons.wikimedia.org/wiki/File:Camille_Pissarro_-_Boulevard_Montmartre,_morning,_cloudy_weather_-_Google_Art_Project.jpg",
+        "file_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/79/Camille_Pissarro_-_Boulevard_Montmartre%2C_morning%2C_cloudy_weather_-_Google_Art_Project.jpg/3840px-Camille_Pissarro_-_Boulevard_Montmartre%2C_morning%2C_cloudy_weather_-_Google_Art_Project.jpg",
+        "author": "National Gallery of Victoria (Google Art Project), via Wikimedia Commons",
+        "licence": "PD-Art",
+        "pd_basis": "Camille Pissarro died 1903; faithful photo of a 2D work",
+        "crop_note": null
+      },
+      "conflicts": [],
+      "contested": false,
+      "claimant_source": null,
+      "heritage_image_law": false,
+      "retrieved": "2026-10-13"
+    }
+  ]
+}
