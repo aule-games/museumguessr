@@ -13,7 +13,7 @@ import guessKeptSvg from '../assets/pins/guess-kept.svg?raw';
 import guessMadeSvg from '../assets/pins/guess-made.svg?raw';
 import keptSvg from '../assets/pins/kept.svg?raw';
 import madeSvg from '../assets/pins/made.svg?raw';
-import { dropLabel, snapTarget, type DropLabel, type Place } from './places.ts';
+import { dropLabel, revealCountries, snapTarget, type DropLabel, type Place } from './places.ts';
 import { fallbackStyle, mainStyle } from './styles.ts';
 
 type MapLibre = typeof ML;
@@ -21,6 +21,28 @@ export type MapState = 'loading' | 'ready' | 'fallback' | 'context-lost' | 'fail
 export type PinKind = 'kept' | 'made' | 'combined' | 'guess-kept' | 'guess-made';
 
 export const FALLBACK_AFTER_MS = 4000;
+/** Reveal styling: the world fades behind a veil; the answer countries take their pin colour. */
+export const VEIL_OPACITY = 0.55;
+export const COUNTRY_OPACITY = 0.42;
+/** Base-map layers hidden on the reveal (labels and road/minor-border detail). */
+const BASE_DETAIL_LAYERS = ['label-country', 'label-city', 'roads-major', 'boundary-minor'];
+const REVEAL_LAYERS = ['reveal-veil', 'reveal-countries-fill', 'reveal-countries-line', 'reveal-area-fill', 'reveal-area-line', 'reveal-guesses', 'reveal-answer'];
+const VEIL: GeoJSON.Feature = {
+  type: 'Feature',
+  properties: {},
+  geometry: {
+    type: 'Polygon',
+    coordinates: [
+      [
+        [-180, -85],
+        [180, -85],
+        [180, 85],
+        [-180, 85],
+        [-180, -85],
+      ],
+    ],
+  },
+};
 export const REVEAL_MAX_ZOOM = 6;
 const WORLD: [[number, number], [number, number]] = [
   [-170, -58],
@@ -148,7 +170,7 @@ export class GameMap {
   private markers: ML.Marker[] = [];
   private pin: ML.Marker | null = null;
   private fallbackLabels: ML.Marker[] = [];
-  private revealData: { answer: GeoJSON.Feature; guesses: GeoJSON.Feature[]; area: GeoJSON.Feature | null } | null = null;
+  private revealData: { answer: GeoJSON.Feature; guesses: GeoJSON.Feature[]; area: GeoJSON.Feature | null; countries: GeoJSON.Feature[] } | null = null;
   private mode: 'idle' | 'guess' | 'reveal' = 'idle';
   /** Re-fits the reveal view while its host settles; dropped once the player moves the map. */
   private revealFit: (() => void) | null = null;
@@ -300,6 +322,8 @@ export class GameMap {
     if (!this.isFallback || !this.map || !this.lib) return;
     for (const m of this.fallbackLabels) m.remove();
     this.fallbackLabels = [];
+    // the reveal shows only its own pins and labels (the rest of the world is faded)
+    if (this.mode === 'reveal') return;
     const zoom = this.map.getZoom();
     const bounds = this.map.getBounds();
     const maxRank = Math.max(1, Math.floor(zoom * 1.5));
@@ -430,6 +454,7 @@ export class GameMap {
       answer: line(animate ? full.slice(0, 1) : full),
       guesses,
       area: o.madeArea ? { type: 'Feature', properties: {}, geometry: { type: 'Polygon', coordinates: [circle(made, o.madeArea.km)] } } : null,
+      countries: this.countries ? revealCountries(o.kept, o.made, this.countries) : [],
     };
     this.redrawLayers();
 
@@ -463,20 +488,32 @@ export class GameMap {
     }
   }
 
-  /** Re-add the reveal layers after any style change. */
+  /** Re-add the reveal layers after any style change; the reveal fades the base map and hides its labels. */
   private redrawLayers() {
     const map = this.map;
     if (!map || !map.isStyleLoaded()) return;
-    for (const id of ['reveal-area-fill', 'reveal-area-line', 'reveal-guesses', 'reveal-answer']) {
+    for (const id of REVEAL_LAYERS) {
       if (map.getLayer(id)) map.removeLayer(id);
     }
-    for (const id of ['reveal-area', 'reveal-guesses', 'reveal-answer']) {
+    for (const id of ['reveal-veil', 'reveal-countries', 'reveal-area', 'reveal-guesses', 'reveal-answer']) {
       if (map.getSource(id)) map.removeSource(id);
     }
     const d = this.revealData;
+    for (const id of BASE_DETAIL_LAYERS) {
+      if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', d ? 'none' : 'visible');
+    }
+    this.updateFallbackLabels();
     if (!d) return;
     const css = getComputedStyle(document.documentElement);
     const color = (name: string, fallback: string) => css.getPropertyValue(name).trim() || fallback;
+    map.addSource('reveal-veil', { type: 'geojson', data: VEIL });
+    map.addLayer({ id: 'reveal-veil', type: 'fill', source: 'reveal-veil', paint: { 'fill-color': color('--color-surface', '#fff'), 'fill-opacity': VEIL_OPACITY } });
+    const byRole = (kept: string, made: string, both: string): ML.ExpressionSpecification => ['match', ['get', 'role'], 'kept', kept, 'made', made, both];
+    const kept = color('--color-kept', '#234fba');
+    const made = color('--color-made', '#8b3653');
+    map.addSource('reveal-countries', { type: 'geojson', data: { type: 'FeatureCollection', features: d.countries } });
+    map.addLayer({ id: 'reveal-countries-fill', type: 'fill', source: 'reveal-countries', paint: { 'fill-color': byRole(kept, made, made), 'fill-opacity': COUNTRY_OPACITY } });
+    map.addLayer({ id: 'reveal-countries-line', type: 'line', source: 'reveal-countries', paint: { 'line-color': byRole(kept, made, made), 'line-width': 1.2, 'line-opacity': 0.7 } });
     if (d.area) {
       map.addSource('reveal-area', { type: 'geojson', data: d.area });
       map.addLayer({ id: 'reveal-area-fill', type: 'fill', source: 'reveal-area', paint: { 'fill-color': color('--color-full-marks-area', 'rgba(0,0,0,0.12)') } });

@@ -74,6 +74,8 @@ export interface MenuActions {
   sample: Item;
   inGame: boolean;
   onNewGame(): void;
+  /** Offered on the round screen: replay the game tour (DS34). */
+  onTour?: () => void;
 }
 
 export function openMenu(opener: HTMLElement, a: MenuActions) {
@@ -87,6 +89,7 @@ export function openMenu(opener: HTMLElement, a: MenuActions) {
         'ul',
         { class: 'menu' },
         item(t('menu.how'), 'menu-how', () => howToPlay(opener)),
+        a.onTour ? item(t('menu.tour'), 'menu-tour', a.onTour) : null,
         a.inGame ? item(t('menu.new'), 'menu-new', () => confirmNewGame(opener, a.onNewGame)) : null,
         item(t('menu.credits'), 'menu-credits', () => credits(a.items, a.sample, opener)),
         item(t('menu.about'), 'menu-about', () => aboutPrivacy(opener)),

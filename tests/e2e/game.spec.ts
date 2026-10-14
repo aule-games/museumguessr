@@ -220,7 +220,7 @@ test.describe('[DS13] [ENG17] [DS27] overlays and history', () => {
       await page.locator(`[data-test=${item}]`).click();
       await expect(page.getByRole('dialog')).toContainText(check);
       if (item === 'menu-credits') await expect(page.locator('[data-test=credits] li')).toHaveCount(11);
-      if (item === 'menu-about') await expect(page.locator('[data-test=events] li')).toHaveCount(9);
+      if (item === 'menu-about') await expect(page.locator('[data-test=events] li')).toHaveCount(10);
       await page.keyboard.press('Escape');
       await expect(page.getByRole('dialog')).toHaveCount(0);
     }

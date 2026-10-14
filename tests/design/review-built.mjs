@@ -56,6 +56,13 @@ try {
     await expect(page.locator('[data-test=start]')).toBeEnabled();
     await capture('start-new');
     await page.locator('[data-test=start]').click();
+    // the first-visit tour opens on round 1: capture every step, then start
+    await expect(page.locator('[data-test=tour]')).toBeVisible();
+    for (let i = 1; i <= 7; i++) {
+      await capture(`tour-${i}`);
+      await page.locator('[data-test=tour-next]').click();
+    }
+    await expect(page.locator('[data-test=tour]')).toHaveCount(0);
     for (let round = 1; round <= 10; round++) {
       if (round === 1) {
         for (const step of ['kept', 'made']) {

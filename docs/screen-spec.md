@@ -96,21 +96,46 @@ States:
 | Year invalid | `year.noZero`, `year.notNumber` or `year.outOfRange` under the field; Confirm disabled |
 | Year set | readout ("1200 BCE"), thumb shown, Confirm enabled |
 | Confirm pressed twice | one answer is recorded |
+| First visit, round 1 Kept | the tour opens over the screen (see Tour) |
+
+## Tour
+
+A modal over round 1's Kept step on a first visit (no `museumguessr:v1:tour`
+flag and no finished game), and from the menu on any round screen
+(`menu.tour`). A spotlight lights one element at a time; the rest is under the
+scrim and inert. The card sits below the lit element, else above, else beside
+it, always fully on screen.
+
+| Step | Lights up | Copy keys |
+| --- | --- | --- |
+| 1 | nothing (card centred) | `tour.welcome.*` |
+| 2 | the photo | `tour.photo.*` |
+| 3 | the prompt row (step dots and question) | `tour.questions.*` |
+| 4 | the map | `tour.map.*` |
+| 5 | Confirm | `tour.confirm.*` |
+| 6 | the running total | `tour.score.*` |
+| 7 | the menu button; Next reads `tour.start` | `tour.menu.*` |
+
+Every card: `tour.progress`, Skip (`tour.skip`), Back (`tour.back`, not on
+step 1), Next (`tour.next`). Skip, Escape and the browser's Back close it as
+skipped; the last button closes it as done; either way the flag is set and
+`tour_ended` is sent.
 
 ## Reveal
 
-Order: wall label → journey fact → map + legend → round score → three score
-rows → contested claim (if any) → facts → credit → sticky action bar.
+Order: wall label → journey fact → map + legend → score table (three rows,
+then the round total) → contested claim (if any) → facts → credit → sticky
+action bar.
 
 | Region | Content | Copy keys | Overflow |
 | --- | --- | --- | --- |
 | Top bar | as in rounds | as in rounds | one line |
 | Wall label | object title; made place and date → now in museum, city | `reveal.madeKept`, or `reveal.sameArea` when made and held in the same area | title wraps |
 | Journey | the sourced journey fact | `reveal.source` | wraps |
-| Map | answer pins (filled), guesses (hollow), one made→kept line, dashed guess links, the full-marks area for a region or country origin | `reveal.madeRegion`, `reveal.lineLabel` | fitted to every pin; zoom buttons hidden on a phone in portrait |
+| Map | answer pins (filled), guesses (hollow), one made→kept line, dashed guess links, the full-marks area for a region or country origin; the base map fades under a veil with its labels hidden, and the country where the object is kept (kept colour) and where it was made (made colour) are tinted | `reveal.madeRegion`, `reveal.lineLabel` | fitted to every pin; zoom buttons hidden on a phone in portrait |
 | Legend | one line under the map | `reveal.legend` | wraps |
-| Round score | label + points out of 3,000 (announced) | `reveal.scoreLabel`, `reveal.score` | one line |
-| Score rows | Kept / Made / When: glyph, points, summary; tap shows the reason (When adds the timeline) | `reveal.row.*`, `reveal.spotOn`, `reveal.kmOff`, `reveal.yearsOff`, `reveal.yearOff`, `reason.*` | each row one line collapsed |
+| Score rows | Kept / Made / When: glyph and name, the result (`result.km` / `result.years`, or `reveal.spotOn`), points in their own right-hand column; hover or keyboard focus shows how the points were computed as a tooltip, a tap opens the same text inline (When adds the timeline, Made the place note) | `reveal.row.*`, `result.*`, `reveal.spotOn`, `reveal.yearCount`, `reveal.yearOne`, `reveal.how`, `scoring.*` | each row one line collapsed |
+| Round total | the last row of the table: label + points out of 3,000 (announced) | `reveal.scoreLabel`, `reveal.score` | one line |
 | Contested | the sourced claim | `reveal.contested` | wraps |
 | Facts | sourced facts | `reveal.source` | list |
 | Credit | photo credit, photo source, museum record | `reveal.credit`, `reveal.creditSource`, `reveal.record` | wraps |
@@ -123,7 +148,7 @@ States:
 | Full marks on a row | row on the full-marks fill, summary `reveal.spotOn` |
 | Made and kept coincide | one combined glyph, labelled; the label line reads `reveal.sameArea` |
 | Region or country origin | the pin, the shaded full-marks area, the place words |
-| Skipped round | every row reads `reveal.skipped`, reason `reason.skipped` |
+| Skipped round | every row reads `reveal.skipped`, explanation `reason.skipped` |
 | Museum gives more than one date | the When row's details show the item's date note (from the item data, not a copy key) above the timeline |
 | Difficulty answered | the chips go, `pulse.thanks` stays; Next never waits for it |
 | Reload on the reveal | the same reveal comes back |

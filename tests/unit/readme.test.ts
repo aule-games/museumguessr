@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { CATALOGUE } from '../../src/analytics/events';
 import { COPY } from '../../src/copy';
+import { halfDistanceKm } from '../../src/game/text';
 import { DISTANCE, TIERS, YEARS } from '../../src/scoring/config';
 import { distancePoints, madeFullMarksKm, scoreYear } from '../../src/scoring/score';
 
@@ -15,6 +16,9 @@ const items = ['data/items.json', 'data/sample.json'].flatMap(
 const fmt = (n: number) => n.toLocaleString('en-US');
 
 describe('[DX15] README scoring matches src/scoring/config.ts', () => {
+  it('states the halving distance the reveal explains', () => {
+    expect(readme).toContain(`halve about every ${halfDistanceKm()} km`);
+  });
   it('states the constants', () => {
     expect(readme).toContain(`\`r\` is ${DISTANCE.keptFullMarksKm} km around the museum's city`);
     const { city, region, country } = DISTANCE.madeFullMarksKm;

@@ -12,6 +12,7 @@ export const EVENTS = {
   clientError: 'client_error',
   feedback: 'feedback',
   resultCopied: 'result_copied',
+  tourEnded: 'tour_ended',
 } as const;
 
 export type EventName = (typeof EVENTS)[keyof typeof EVENTS];
@@ -41,6 +42,7 @@ export interface EventProps {
   client_error: { name: string; message: string; frame: string };
   feedback: { src: string; q: FeedbackQ; a: string };
   result_copied: { src: string; total: number; method: 'clipboard' | 'manual' };
+  tour_ended: { src: string; outcome: 'done' | 'skipped'; step: number; replay: boolean };
 }
 
 export interface CatalogueEntry {
@@ -115,5 +117,12 @@ export const CATALOGUE: CatalogueEntry[] = [
     fires: 'when the player copies the result text',
     dedupe: 'none',
     feeds: 'sharing interest',
+  },
+  {
+    name: EVENTS.tourEnded,
+    props: 'src; outcome: done | skipped; step: the last step shown (1-7); replay: opened from the menu (boolean)',
+    fires: 'when the game tour closes (first visit, or from the menu)',
+    dedupe: 'none',
+    feeds: 'whether the tour is finished or skipped, and its effect on the KPI',
   },
 ];

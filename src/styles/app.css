@@ -1055,6 +1055,20 @@ h2 {
   gap: var(--space-3);
 }
 
+/* the round total closes the score table; its points sit in the points column */
+.scores__total {
+  padding: var(--space-2) var(--space-3);
+  border-top: 2px solid var(--color-ink);
+  margin-top: var(--space-1);
+}
+
+.scores__total-label {
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: var(--text-sm);
+}
+
 .reveal__score {
   /* Give programmatic focus a calm catalogue cell, not a ring tight to digits.
      Keep the specified 3px / 2px focus geometry and contrast unchanged. */
@@ -1087,6 +1101,7 @@ h2 {
 }
 
 .score {
+  position: relative;
   border: 1px solid var(--color-line);
   border-radius: var(--radius-sm);
   background: var(--color-surface);
@@ -1096,25 +1111,15 @@ h2 {
   width: 100%;
   min-height: var(--layout-tap);
   display: grid;
-  grid-template-columns: auto auto 1fr auto;
+  grid-template-columns: 5.5em 1fr auto;
   align-items: center;
-  gap: var(--space-2);
-  padding: 0 var(--space-3);
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
   border: 0;
   background: none;
   font-size: var(--text-sm);
   text-align: left;
   cursor: pointer;
-}
-
-.score__row::after {
-  content: '+' / '';
-  font-size: var(--text-lg);
-  line-height: 1;
-}
-
-.score__row[aria-expanded='true']::after {
-  content: '−' / '';
 }
 
 /* each row starts with its question's glyph */
@@ -1152,13 +1157,50 @@ h2 {
 }
 
 .score__points {
+  min-width: 4ch;
+  padding-left: var(--space-3);
+  border-left: 1px solid var(--color-line);
+  text-align: right;
   font-family: var(--font-numeric);
+  font-size: var(--text-lg);
   font-weight: var(--font-weight-medium);
   font-variant-numeric: tabular-nums;
 }
 
-.score__summary {
+.score__result {
   color: var(--color-ink-muted);
+}
+
+/* how the points were computed: a tooltip where hover exists, inline after a tap */
+.score__tip {
+  display: none;
+  position: absolute;
+  z-index: 2;
+  right: 0;
+  bottom: calc(100% + var(--space-1));
+  max-width: min(100%, 360px);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--color-ink);
+  color: var(--color-ink-inverse);
+  font-size: var(--text-sm);
+  line-height: var(--leading-tight);
+  box-shadow: var(--shadow-2);
+}
+
+@media (hover: hover) {
+  .score:hover .score__tip,
+  .score__row:focus-visible ~ .score__tip {
+    display: block;
+  }
+
+  .score__row[aria-expanded='true'] ~ .score__tip {
+    display: none;
+  }
+}
+
+.score__how {
+  margin: 0;
 }
 
 .score--spot-on {
@@ -1166,7 +1208,7 @@ h2 {
   border-color: var(--color-success);
 }
 
-.score--spot-on .score__summary {
+.score--spot-on .score__result {
   color: var(--color-success);
   font-weight: var(--font-weight-bold);
 }
@@ -1413,6 +1455,103 @@ h2 {
 
 .dialog::backdrop {
   background: var(--color-scrim);
+}
+
+/* first-visit tour (DS34): a spotlight on one element, a card beside it;
+   the round screen behind the modal stays inert */
+.tour {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  overflow: hidden;
+}
+
+.tour::backdrop {
+  background: transparent;
+}
+
+.tour__spot {
+  position: fixed;
+  border-radius: var(--radius-sm);
+  outline: 2px solid var(--color-surface);
+  box-shadow: 0 0 0 200vmax var(--color-scrim);
+  pointer-events: none;
+  transition:
+    left var(--motion-medium) var(--motion-ease-standard),
+    top var(--motion-medium) var(--motion-ease-standard),
+    width var(--motion-medium) var(--motion-ease-standard),
+    height var(--motion-medium) var(--motion-ease-standard);
+}
+
+.tour--still .tour__spot {
+  transition: none;
+}
+
+.tour__card {
+  position: fixed;
+  width: min(360px, calc(100vw - 2 * var(--space-3)));
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  border-top: var(--space-1) solid var(--color-accent);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  box-shadow: var(--shadow-2);
+}
+
+.tour__progress {
+  margin: 0;
+  font-family: var(--font-numeric);
+  font-size: var(--text-xs);
+  color: var(--color-ink-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.tour__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  line-height: var(--leading-tight);
+}
+
+.tour__body {
+  margin: 0;
+  font-size: var(--text-md);
+  line-height: var(--leading-normal);
+}
+
+.tour__actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.tour__nav {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.tour__skip {
+  min-height: var(--layout-tap);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-ink-muted);
+  font: inherit;
+  font-size: var(--text-sm);
+  text-decoration: underline;
+  cursor: pointer;
 }
 
 .dialog__head {

@@ -62,6 +62,7 @@ screen, from the same source in `src/analytics/events.ts`):
 | `client_error` | `name`, `message` (first 80 characters, URLs removed), `frame` (chunk:line:col) | an uncaught error in game code, or the map cannot run | at most 3 per tab session |
 | `feedback` | `src`, `q` (`difficulty`, `most_fun`), `a` | the optional difficulty row (after round 3) or the "most fun" row (end) | game and question |
 | `result_copied` | `src`, `total`, `method` (`clipboard`, `manual`) | the player copies the result | every copy |
+| `tour_ended` | `src`, `outcome` (`done`, `skipped`), `step` (last step shown, 1-7), `replay` (opened from the menu) | the game tour closes | every close |
 
 **`src`** is the channel. Posted links carry `?utm_source=<channel>`; the game
 keeps it only if it is an approved channel (`src/analytics/channels.ts`:

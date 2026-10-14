@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { validateStyleMin } from '@maplibre/maplibre-gl-style-spec';
 import countries from '../../src/map/data/countries.json';
 import placesFile from '../../src/map/data/places.json';
-import { countryAt, dropLabel, nearestPlace, snapTarget, type Place } from '../../src/map/places';
+import { countryAt, dropLabel, nearestPlace, revealCountries, snapTarget, type Place } from '../../src/map/places';
 import { fallbackStyle, mainStyle, TILEJSON_URL } from '../../src/map/styles';
 
 const places = placesFile.places as unknown as Place[];
@@ -18,6 +18,22 @@ describe('[DS4] drop label', () => {
     const far = nearestPlace({ lat: -40, lng: -130 }, places);
     expect(far?.km).toBeGreaterThan(250);
     expect(countryAt({ lat: 46.8, lng: 2.4 }, fc)).toBe('France');
+  });
+});
+
+describe('[DS22] reveal map emphasis', () => {
+  const roles = (f: GeoJSON.Feature[]) => f.map((x) => [x.properties?.name, x.properties?.role]);
+  it('highlights the country where the object is kept today and the one where it was made, each with its role', () => {
+    expect(roles(revealCountries({ lat: 52.37, lng: 4.9 }, { lat: 35.68, lng: 139.69 }, fc))).toEqual([
+      ['Netherlands', 'kept'],
+      ['Japan', 'made'],
+    ]);
+  });
+  it('marks one country as both when the object was made and is kept in the same country', () => {
+    expect(roles(revealCountries({ lat: 40.41, lng: -3.69 }, { lat: 40.42, lng: -3.7 }, fc))).toEqual([['Spain', 'both']]);
+  });
+  it('leaves out a point at sea instead of guessing a country', () => {
+    expect(roles(revealCountries({ lat: -40, lng: -130 }, { lat: 48.86, lng: 2.35 }, fc))).toEqual([['France', 'made']]);
   });
 });
 

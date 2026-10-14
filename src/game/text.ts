@@ -1,53 +1,57 @@
-// Pure text builders for the reveal and end screens: reason lines (DS12),
-// row labels and the share text (DS15). Tested against the scoring config.
+// Pure text builders for the reveal and end screens: result lines and the
+// how-it's-scored explanations (DS12), and the share text (DS15). Tested
+// against the scoring config.
 
 import { SITE_URL } from '../config.ts';
 import { formatNumber, t } from '../copy.ts';
 import { DISTANCE, MAX_POINTS } from '../scoring/config.ts';
-import { hasWideMargin, madeFullMarksKm, yearTolerance } from '../scoring/score.ts';
+import type { Step } from '../analytics/events.ts';
+import { madeFullMarksKm, yearTolerance } from '../scoring/score.ts';
 import { formatRange } from '../scoring/years.ts';
 import type { RoundResult } from '../state/schema.ts';
 import type { Item } from '../types/item.ts';
 
-export function kmText(km: number): string {
-  return t('reveal.kmOff', { km: formatNumber(km) });
+/** Beyond the full-marks radius, the distance over which points halve, rounded for display. */
+export function halfDistanceKm(): number {
+  return Math.round((DISTANCE.decayKm * Math.LN2) / 10) * 10;
 }
 
-export function yearsText(years: number): string {
-  return years === 1 ? t('reveal.yearOff') : t('reveal.yearsOff', { years: formatNumber(years) });
+/** Outside the date range, the number of years over which this object's points halve. */
+export function halfYears(item: Item): number {
+  return Math.max(1, Math.round(yearTolerance(item.when.start, item.when.end) * Math.LN2));
 }
 
-export function rowSummary(step: 'kept' | 'made' | 'when', r: RoundResult): string {
+function yearCount(years: number): string {
+  return years === 1 ? t('reveal.yearOne') : t('reveal.yearCount', { years: formatNumber(years) });
+}
+
+function madeRadius(item: Item): number {
+  return madeFullMarksKm(item.made.precision, item.made.full_marks_km);
+}
+
+/** A score row's visible result: how far off the guess was, in plain words (DS12). */
+export function rowResult(step: Step, item: Item, r: RoundResult): string {
   if (r.skipped) return t('reveal.skipped');
   if (r[step].points === MAX_POINTS) return t('reveal.spotOn');
-  return step === 'when' ? yearsText(r.when.yearsOff) : kmText(step === 'kept' ? r.kept.km : r.made.km);
+  if (step === 'when') return t('result.years', { years: yearCount(r.when.yearsOff), range: formatRange(item.when.start, item.when.end) });
+  const place = step === 'kept' ? item.kept.city : item.made.place;
+  return t('result.km', { km: formatNumber(step === 'kept' ? r.kept.km : r.made.km), place });
 }
 
-export function keptReason(item: Item, r: RoundResult): string {
+/** How a row's points were computed, with this round's numbers (the hover and tap explanation). */
+export function howText(step: Step, item: Item, r: RoundResult): string {
   if (r.skipped) return t('reason.skipped');
-  if (r.kept.points === MAX_POINTS) return t('reason.keptFull', { km: DISTANCE.keptFullMarksKm, city: item.kept.city });
-  return t('reason.distance', { km: formatNumber(r.kept.km), place: item.kept.city });
-}
-
-export function madeReason(item: Item, r: RoundResult): string {
-  if (r.skipped) return t('reason.skipped');
-  if (item.made.note && r.made.points < MAX_POINTS) return item.made.note;
-  const km = madeFullMarksKm(item.made.precision, item.made.full_marks_km);
-  if (r.made.points === MAX_POINTS) {
-    return item.made.precision === 'city'
-      ? t('reason.madeFull', { km, place: item.made.place })
-      : t('reason.madeFullArea', { place: item.made.place });
+  if (step === 'when') {
+    const range = formatRange(item.when.start, item.when.end);
+    if (r.when.points === MAX_POINTS) return t('scoring.whenFull', { range });
+    return t('scoring.when', { range, half: formatNumber(halfYears(item)), years: yearCount(r.when.yearsOff), points: formatNumber(r.when.points) });
   }
-  return t('reason.distance', { km: formatNumber(r.made.km), place: item.made.place });
-}
-
-export function whenReason(item: Item, r: RoundResult): string {
-  if (r.skipped) return t('reason.skipped');
-  const range = formatRange(item.when.start, item.when.end);
-  if (r.when.points === MAX_POINTS) return t('reason.whenFull', { range });
-  const years = yearsText(r.when.yearsOff).replace(/ off$/, '');
-  const wide = hasWideMargin(yearTolerance(item.when.start, item.when.end));
-  return t(wide ? 'reason.whenWide' : 'reason.when', { years, range });
+  const kept = step === 'kept';
+  const radius = kept ? DISTANCE.keptFullMarksKm : madeRadius(item);
+  const place = kept ? item.kept.city : item.made.place;
+  const res = kept ? r.kept : r.made;
+  if (res.points === MAX_POINTS) return t('scoring.distanceFull', { radius: formatNumber(radius), place, km: formatNumber(res.km) });
+  return t('scoring.distance', { radius: formatNumber(radius), place, half: formatNumber(halfDistanceKm()), km: formatNumber(res.km), points: formatNumber(res.points) });
 }
 
 export const SHARE_URL = `${SITE_URL}?utm_source=share&utm_medium=share`;

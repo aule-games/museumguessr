@@ -1,11 +1,12 @@
 // Reveal (DS3, DS12, DS17, DS21, DS22, DS31, PV1, V2). Above the fold on a
-// phone: wall-label header, the journey fact, then the map; then one compact
-// score row per question (tap to expand the reason), the contested note,
-// facts, the credit line and a sticky Next.
+// phone: wall-label header, the journey fact, then the map; then the score
+// table (one row per question: result, then points in their own column; the
+// round total last; hover, focus or tap shows how the points were computed),
+// the contested note, facts, the credit line and a sticky Next.
 
 import { FEEDBACK, type Step } from '../../analytics/events.ts';
 import { formatNumber, t, type CopyKey } from '../../copy.ts';
-import { keptReason, madeReason, rowSummary, whenReason } from '../../game/text.ts';
+import { howText, rowResult } from '../../game/text.ts';
 import type { GameMap } from '../../map/map.ts';
 import { MAX_POINTS } from '../../scoring/config.ts';
 import { madeFullMarksKm } from '../../scoring/score.ts';
@@ -59,22 +60,27 @@ function whenExtra(item: Item, guess: number | null): Node {
   return item.when.note ? h('div', { class: 'score__extra' }, h('p', { class: 'score__note' }, item.when.note), line) : line;
 }
 
-function scoreRow(step: Step, points: number, summary: string, reason: string, extra?: Node): HTMLElement {
+let rowIds = 0;
+
+function scoreRow(step: Step, points: number, result: string, how: string, extra?: Node | null): HTMLElement {
   const full = points === MAX_POINTS;
-  const detail = h('div', { class: 'score__detail', hidden: true }, h('p', {}, reason), extra ?? null);
+  const tipId = `how-${step}-${++rowIds}`;
+  // the explanation: a tooltip on hover or keyboard focus; on tap it opens inline
+  const tip = h('p', { class: 'score__tip', id: tipId, role: 'tooltip' }, h('strong', {}, t('reveal.how')), ' ', how);
+  const detail = h('div', { class: 'score__detail', hidden: true }, h('p', { class: 'score__how' }, h('strong', {}, t('reveal.how')), ' ', how), extra ?? null);
   const btn = h(
     'button',
-    { type: 'button', class: 'score__row', 'aria-expanded': 'false', 'data-test': `row-${step}`, 'data-full': String(full) },
+    { type: 'button', class: 'score__row', 'aria-expanded': 'false', 'aria-describedby': tipId, 'data-test': `row-${step}`, 'data-full': String(full) },
     h('span', { class: 'score__label' }, t(`reveal.row.${step}` as CopyKey)),
-    h('span', { class: 'score__points' }, formatNumber(points)),
-    h('span', { class: 'score__summary' }, summary),
+    h('span', { class: 'score__result' }, result),
+    h('span', { class: 'score__points', 'data-test': `points-${step}` }, formatNumber(points)),
   );
   btn.addEventListener('click', () => {
     const open = btn.getAttribute('aria-expanded') !== 'true';
     btn.setAttribute('aria-expanded', String(open));
     detail.hidden = !open;
   });
-  return h('li', { class: `score score--${step}${full ? ' score--spot-on' : ''}` }, btn, detail);
+  return h('li', { class: `score score--${step}${full ? ' score--spot-on' : ''}` }, btn, tip, detail);
 }
 
 export interface RevealView {
@@ -86,16 +92,16 @@ export interface RevealView {
 export function revealScreen(p: RevealProps): RevealView {
   const { item, result: r } = p;
   const journey = item.journey_fact;
-  const madeReasonText = madeReason(item, r);
-  const madeExtra = item.made.note && madeReasonText !== item.made.note ? h('p', { class: 'score__note' }, item.made.note) : undefined;
+  const madeNote = item.made.note && !r.skipped ? h('p', { class: 'score__note' }, item.made.note) : null;
 
   const score = h('p', { class: 'reveal__score', 'aria-live': 'polite', tabindex: -1, 'data-test': 'round-score' }, ...scoreText(t('reveal.score', { points: formatNumber(r.points) })));
   const rows = h(
     'ul',
-    { class: 'scores' },
-    scoreRow('kept', r.kept.points, rowSummary('kept', r), keptReason(item, r)),
-    scoreRow('made', r.made.points, rowSummary('made', r), madeReasonText, madeExtra),
-    scoreRow('when', r.when.points, rowSummary('when', r), whenReason(item, r), whenExtra(item, p.answers.when)),
+    { class: 'scores', 'data-test': 'scores' },
+    scoreRow('kept', r.kept.points, rowResult('kept', item, r), howText('kept', item, r)),
+    scoreRow('made', r.made.points, rowResult('made', item, r), howText('made', item, r), madeNote),
+    scoreRow('when', r.when.points, rowResult('when', item, r), howText('when', item, r), whenExtra(item, p.answers.when)),
+    h('li', { class: 'scores__total reveal__total' }, h('span', { class: 'scores__total-label' }, t('reveal.scoreLabel')), score),
   );
 
   const mapHost = h('div', { class: 'reveal__map', 'data-test': 'reveal-map' });
@@ -154,7 +160,6 @@ export function revealScreen(p: RevealProps): RevealView {
       ),
       journey && h('p', { class: 'reveal__journey', 'data-test': 'journey' }, journey.text, ' ', ext(journey.source_url, t('reveal.source'))),
       h('div', { class: 'reveal__media' }, mapHost, legend),
-      h('div', { class: 'reveal__total' }, h('p', { class: 'eyebrow' }, t('reveal.scoreLabel')), score),
       rows,
       item.contested && item.claimant_source
         ? h('p', { class: 'reveal__contested' }, t('reveal.contested', { text: item.claimant_source.text }), ' ', ext(item.claimant_source.source_url, t('reveal.source')))

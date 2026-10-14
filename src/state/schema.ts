@@ -17,6 +17,8 @@ export const KEYS = {
   session: 'museumguessr:v1:session',
   bootFailures: 'museumguessr:v1:boot-failures',
   chunkReload: 'museumguessr:v1:chunk-reload',
+  /** The first-visit tour ran (done or skipped); it starts again only from the menu. */
+  tour: 'museumguessr:v1:tour',
 } as const;
 
 export type Phase = 'answering' | 'reveal';

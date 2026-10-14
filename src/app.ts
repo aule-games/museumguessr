@@ -19,6 +19,7 @@ import { errorScreen, frozenScreen, openMenu, aboutPrivacy, testBadge } from './
 import { revealScreen } from './ui/screens/reveal.ts';
 import { PhotoRegion, roundScreen, type RoundView } from './ui/screens/round.ts';
 import { startScreen, type StartMode } from './ui/screens/start.ts';
+import { startTour } from './ui/tour.ts';
 
 export type View = 'start' | 'play' | 'review' | 'error' | 'frozen';
 
@@ -47,6 +48,7 @@ export class App {
   private readonly webgl: boolean;
   private errorReport: ErrorReport | null = null;
   private badge: HTMLElement | null = null;
+  private tourOpen = false;
 
   constructor(private d: AppDeps) {
     this.webgl = hasWebGL2();
@@ -211,6 +213,27 @@ export class App {
     root.append(screen);
     if (this.badge) root.append(this.badge);
     if (focusTarget) focus(focusTarget);
+    if (view === 'play') requestAnimationFrame(() => this.guard(() => this.maybeTour()));
+  }
+
+  /** The first-visit tour (DS34): once per browser, on round 1's first question; not for a player who has finished a game. */
+  private maybeTour() {
+    const s = this.state;
+    if (this.view !== 'play' || this.tourOpen || !s || s.finished || s.phase !== 'answering' || s.round !== 0 || s.step !== 'kept') return;
+    if (this.d.local.get(KEYS.tour) != null || this.snapshot) return;
+    this.openTour(false);
+  }
+
+  openTour(replay: boolean) {
+    if (this.tourOpen) return;
+    this.tourOpen = true;
+    startTour({
+      onEnd: (outcome, step) => {
+        this.tourOpen = false;
+        this.d.local.set(KEYS.tour, outcome);
+        this.d.analytics.track(EVENTS.tourEnded, { src: this.d.tab.src, outcome, step, replay });
+      },
+    });
   }
 
   private renderStart(): HTMLElement {
@@ -283,7 +306,13 @@ export class App {
     if (!s) return { screen: this.renderStart(), focus: null };
     const total = totalPoints(s);
     const onMenu = (opener: HTMLElement) =>
-      openMenu(opener, { items: ITEMS, sample: SAMPLE, inGame: !s.finished, onNewGame: () => this.newGame() });
+      openMenu(opener, {
+        items: ITEMS,
+        sample: SAMPLE,
+        inGame: !s.finished,
+        onNewGame: () => this.newGame(),
+        onTour: !s.finished && s.phase === 'answering' ? () => this.openTour(true) : undefined,
+      });
 
     if (s.finished) {
       const asked = s.sent.includes(ledgerKey(s.game_id, EVENTS.feedback, 'most_fun'));

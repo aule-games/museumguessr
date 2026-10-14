@@ -41,15 +41,32 @@ function inPolygon(lng: number, lat: number, rings: number[][][]): boolean {
   return !rings.slice(1).some((hole) => inRing(lng, lat, hole));
 }
 
-export function countryAt(p: LatLng, countries: GeoJSON.FeatureCollection): string | null {
+/** The country outline that contains a point, if any (bundled Natural Earth data). */
+export function countryFeatureAt(p: LatLng, countries: GeoJSON.FeatureCollection): GeoJSON.Feature | null {
   for (const f of countries.features) {
     const g = f.geometry;
     const polys = g.type === 'Polygon' ? [g.coordinates] : g.type === 'MultiPolygon' ? g.coordinates : [];
-    if (polys.some((rings) => inPolygon(p.lng, p.lat, rings as number[][][]))) {
-      return (f.properties?.name as string | undefined) ?? null;
-    }
+    if (polys.some((rings) => inPolygon(p.lng, p.lat, rings as number[][][]))) return f;
   }
   return null;
+}
+
+export function countryAt(p: LatLng, countries: GeoJSON.FeatureCollection): string | null {
+  return (countryFeatureAt(p, countries)?.properties?.name as string | undefined) ?? null;
+}
+
+export type CountryRole = 'kept' | 'made' | 'both';
+
+/**
+ * The reveal's highlighted countries: where the object is kept today and
+ * where it was made, tagged by role so each gets its pin colour.
+ */
+export function revealCountries(kept: LatLng, made: LatLng, countries: GeoJSON.FeatureCollection): GeoJSON.Feature[] {
+  const k = countryFeatureAt(kept, countries);
+  const m = countryFeatureAt(made, countries);
+  const tag = (f: GeoJSON.Feature, role: CountryRole): GeoJSON.Feature => ({ ...f, properties: { ...f.properties, role } });
+  if (k && k === m) return [tag(k, 'both')];
+  return [...(k ? [tag(k, 'kept')] : []), ...(m ? [tag(m, 'made')] : [])];
 }
 
 export type DropLabel = { kind: 'near'; place: string; country: string } | { kind: 'country'; country: string } | { kind: 'sea' };

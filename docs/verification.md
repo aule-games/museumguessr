@@ -11,17 +11,17 @@ Last run: 2026-10-14.
 | type check | passed (2 s) |
 | generated files are current | passed (0 s) |
 | item check | passed (0 s) |
-| unit tests | passed (11 s) |
+| unit tests | passed (8 s) |
 | design checks | passed (1 s) |
 | lint | passed (2 s) |
 | build | passed (1 s) |
 | build checks | passed (0 s) |
-| browser tests (5 viewports) | passed (78 s) |
+| browser tests (5 viewports) | failed (60 s) |
 | release scan (publish candidate) | passed (4 s) |
 
 ## Automated checks
 
-223 tests, 223 passed, 79 requirement IDs.
+240 tests, 239 passed, 81 requirement IDs.
 
 | ID | Rule | Test file | Result |
 | --- | --- | --- | --- |
@@ -52,9 +52,12 @@ Last run: 2026-10-14.
 | DS11 | image and map readiness › blocked tiles switch to the bundled map and pins still work (phone) | `tests/e2e/game.spec.ts` | passed |
 | DS12 | the reveal states a disputed museum date › shows when.note in the When row details for every item that has one | `tests/unit/reveal.test.ts` | passed |
 | DS12 | the reveal states a disputed museum date › the Temple of Dendur accepts every completion date the Met gives (15 BCE to 10 CE) | `tests/unit/reveal.test.ts` | passed |
+| DS12 | the reveal score table › each row names how far off the guess was, with the points in their own column | `tests/unit/reveal.test.ts` | passed |
+| DS12 | the reveal score table › explains each row with the rule and this round’s numbers | `tests/unit/reveal.test.ts` | passed |
+| DS12 | the reveal score table › closes the table with the round total | `tests/unit/reveal.test.ts` | passed |
 | DS13 | menu → New game with a slow history › opens the confirmation only after the menu has closed, and Start over runs once | `tests/unit/overlay.test.ts` | passed |
 | DS13 | overlays and history › Back closes the photo lightbox and keeps the round (phone) | `tests/e2e/game.spec.ts` | passed |
-| DS13 | overlays and history › the menu opens How to play, Credits (one row per photo) and About & privacy (phone) | `tests/e2e/game.spec.ts` | passed |
+| DS13 | overlays and history › the menu opens How to play, Credits (one row per photo) and About & privacy (phone) | `tests/e2e/game.spec.ts` | failed |
 | DS13 | overlays and history › New game from the menu asks first (phone) | `tests/e2e/game.spec.ts` | passed |
 | DS15 | a full game › ten rounds end on the results screen; Copy result copies the template; replay starts over (phone) | `tests/e2e/game.spec.ts` | passed |
 | DS17 | reveal details › the difficulty row shows after round 3 only; Next works at once and stays visible (phone) | `tests/e2e/game.spec.ts` | passed |
@@ -69,6 +72,9 @@ Last run: 2026-10-14.
 | DS19 | layout › the reveal reads top to bottom: top bar, wall label, map, then Next on screen (phone-small) | `tests/e2e/game.spec.ts` | passed |
 | DS19 | layout › the round screen never scrolls and Confirm stays on screen (phone-inapp) | `tests/e2e/game.spec.ts` | passed |
 | DS19 | layout › the reveal reads top to bottom: top bar, wall label, map, then Next on screen (phone-inapp) | `tests/e2e/game.spec.ts` | passed |
+| DS22 | reveal map emphasis › highlights the country where the object is kept today and the one where it was made, each with its role | `tests/unit/map.test.ts` | passed |
+| DS22 | reveal map emphasis › marks one country as both when the object was made and is kept in the same country | `tests/unit/map.test.ts` | passed |
+| DS22 | reveal map emphasis › leaves out a point at sea instead of guessing a country | `tests/unit/map.test.ts` | passed |
 | DS23 | image and map readiness › a blocked photo: Start waits at most 4 s, Confirm stays disabled, retry, then skip after 3 failures (phone) | `tests/e2e/game.spec.ts` | passed |
 | DS23 | image and map readiness › no WebGL: the start screen says so and one client_error is sent (phone) | `tests/e2e/game.spec.ts` | passed |
 | DS23 | image and map readiness › blocked tiles switch to the bundled map and pins still work (phone) | `tests/e2e/game.spec.ts` | passed |
@@ -76,7 +82,7 @@ Last run: 2026-10-14.
 | DS24 | resume › a later visit sees Continue on the start screen; New game starts over (phone) | `tests/e2e/game.spec.ts` | passed |
 | DS25 | a full game › ten rounds end on the results screen; Copy result copies the template; replay starts over (phone) | `tests/e2e/game.spec.ts` | passed |
 | DS27 | overlays and history › Back closes the photo lightbox and keeps the round (phone) | `tests/e2e/game.spec.ts` | passed |
-| DS27 | overlays and history › the menu opens How to play, Credits (one row per photo) and About & privacy (phone) | `tests/e2e/game.spec.ts` | passed |
+| DS27 | overlays and history › the menu opens How to play, Credits (one row per photo) and About & privacy (phone) | `tests/e2e/game.spec.ts` | failed |
 | DS27 | overlays and history › New game from the menu asks first (phone) | `tests/e2e/game.spec.ts` | passed |
 | DS28 | piecewise slider scale › gives each segment an equal share of the track | `tests/unit/scoring.test.ts` | passed |
 | DS28 | piecewise slider scale › round-trips every year in bounds within one year | `tests/unit/scoring.test.ts` | passed |
@@ -90,6 +96,16 @@ Last run: 2026-10-14.
 | DS31 | reveal details › the reveal shows the journey fact, three score rows and a credit line (phone) | `tests/e2e/game.spec.ts` | passed |
 | DS33 | pin snapping › snaps within 30 px and not beyond | `tests/unit/map.test.ts` | passed |
 | DS33 | pin snapping › never snaps in the open sea | `tests/unit/map.test.ts` | passed |
+| DS34 | tour card placement › centres the card when a step lights up nothing | `tests/unit/tour.test.ts` | passed |
+| DS34 | tour card placement › puts the card below the lit element when it fits | `tests/unit/tour.test.ts` | passed |
+| DS34 | tour card placement › puts the card above the lit element when there is no room below | `tests/unit/tour.test.ts` | passed |
+| DS34 | tour card placement › keeps the card fully on screen even when the lit element fills the screen | `tests/unit/tour.test.ts` | passed |
+| DS34 | tour card placement › has a title and a body for every step | `tests/unit/tour.test.ts` | passed |
+| DS34 | the first-visit tour › opens on round 1, lights up each part of the screen in turn, and Let’s start begins the game (phone) | `tests/e2e/tour.spec.ts` | passed |
+| DS34 | the first-visit tour › Back returns to the previous step (phone) | `tests/e2e/tour.spec.ts` | passed |
+| DS34 | the first-visit tour › Skip closes it as skipped, and it does not come back after a reload (phone) | `tests/e2e/tour.spec.ts` | passed |
+| DS34 | the first-visit tour › Escape and the browser Back button close it without leaving the round (phone) | `tests/e2e/tour.spec.ts` | passed |
+| DS34 | the tour for returning players › stays closed, and the menu offers it on the round screen (phone) | `tests/e2e/tour.spec.ts` | passed |
 | DX3 | off-reasons, one console line each › { testParam: '1' } → analytics: off (test flag) | `tests/unit/analytics.test.ts` | passed |
 | DX3 | off-reasons, one console line each › { webdriver: true } → analytics: off (webdriver) | `tests/unit/analytics.test.ts` | passed |
 | DX3 | off-reasons, one console line each › { token: '' } → analytics: off (no token) | `tests/unit/analytics.test.ts` | passed |
@@ -139,6 +155,7 @@ Last run: 2026-10-14.
 | DX10 | release scan › without exiftool the scan is incomplete: non-zero, and no zero-hit line | `tests/unit/release-scan.test.ts` | passed |
 | DX10 | release scan › without a denylist the scan is incomplete | `tests/unit/release-scan.test.ts` | passed |
 | DX11 | event catalogue › lists every event exactly once | `tests/unit/analytics.test.ts` | passed |
+| DX15 | README scoring matches src/scoring/config.ts › states the halving distance the reveal explains | `tests/unit/readme.test.ts` | passed |
 | DX15 | README scoring matches src/scoring/config.ts › states the constants | `tests/unit/readme.test.ts` | passed |
 | DX15 | README scoring matches src/scoring/config.ts › every worked example is what the game scores | `tests/unit/readme.test.ts` | passed |
 | DX17 | pre-push hook › a force push over a remote commit this clone never fetched scans every new commit and lets a clean one through | `tests/unit/hooks.test.ts` | passed |
@@ -264,7 +281,7 @@ Last run: 2026-10-14.
 | ENG14 | resume › a corrupt save starts a new game and keeps the test flag (phone) | `tests/e2e/game.spec.ts` | passed |
 | ENG17 | menu → New game with a slow history › opens the confirmation only after the menu has closed, and Start over runs once | `tests/unit/overlay.test.ts` | passed |
 | ENG17 | overlays and history › Back closes the photo lightbox and keeps the round (phone) | `tests/e2e/game.spec.ts` | passed |
-| ENG17 | overlays and history › the menu opens How to play, Credits (one row per photo) and About & privacy (phone) | `tests/e2e/game.spec.ts` | passed |
+| ENG17 | overlays and history › the menu opens How to play, Credits (one row per photo) and About & privacy (phone) | `tests/e2e/game.spec.ts` | failed |
 | ENG17 | overlays and history › New game from the menu asks first (phone) | `tests/e2e/game.spec.ts` | passed |
 | ENG19 | README credits and privacy › credits the photo of Under the Wave off Kanagawa (The Great Wave) | `tests/unit/readme.test.ts` | passed |
 | ENG19 | README credits and privacy › credits the photo of Las Meninas | `tests/unit/readme.test.ts` | passed |

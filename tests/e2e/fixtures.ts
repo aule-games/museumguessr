@@ -65,8 +65,17 @@ export function decodeBody(req: Request): Captured[] {
 
 const LOCAL_HOST = 'aule-games.github.io';
 
-export const test = base.extend<{ recorder: Recorder; blockImages: boolean }>({
+export const test = base.extend<{ recorder: Recorder; blockImages: boolean; freshVisitor: boolean; tourFlag: void }>({
   blockImages: [false, { option: true }],
+  /** A first-time visitor sees the game tour; every other test starts as a returning player. */
+  freshVisitor: [false, { option: true }],
+  tourFlag: [
+    async ({ context, freshVisitor }, use) => {
+      if (!freshVisitor) await context.addInitScript(() => localStorage.setItem('museumguessr:v1:tour', 'done'));
+      await use();
+    },
+    { auto: true },
+  ],
   recorder: async ({ context }, use) => {
     const rec = new Recorder();
     // Registered first so it runs last: deny everything that is not the local site.

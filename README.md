@@ -18,8 +18,13 @@ Each round shows a photo of one object. Answer three questions in order:
 3. **When:** type or slide the year it was made (BCE or CE; there is no year 0).
 
 The reveal shows the object's journey from where it was made to where it is
-kept, with a sourced fact about how it got there. Every answer scores up to
-1,000 points, so a round is worth up to 3,000 and a game up to 30,000.
+kept, with a sourced fact about how it got there; the map fades everything but
+the two countries involved. Every answer scores up to 1,000 points, so a round
+is worth up to 3,000 and a game up to 30,000. Hover or tap a score row to see
+how its points were computed.
+
+On a first visit a short tour points out each part of the screen; the menu
+offers it again.
 
 Keyboard: Tab into the map, move with the arrow keys, zoom with + and −,
 press Enter to drop the pin at the centre, Escape to leave the map.
@@ -39,7 +44,7 @@ test recomputes the examples below from them.
 
 **Kept and Made** score by distance `d` (great-circle km) from your pin to the
 answer. Inside the full-marks radius `r` you get 1,000; beyond it points fall
-by a factor of e every 1,200 km:
+by a factor of e every 1,200 km (they halve about every 830 km):
 
 ```text
 points = 1000                              if d <= r
@@ -78,8 +83,8 @@ No cookies. Anonymous play counts via PostHog (EU).
 There is no sign-up and nothing identifies you. To learn whether the game is
 fun, the page sends anonymous play events to PostHog's EU servers in
 cookieless mode: `$pageview`, `game_start`, `round_started`, `step_completed`,
-`round_completed`, `game_completed`, `client_error`, `feedback` and
-`result_copied`. Each carries game facts (round, step, points, the channel tag
+`round_completed`, `game_completed`, `client_error`, `feedback`,
+`result_copied` and `tour_ended`. Each carries game facts (round, step, points, the channel tag
 from the link you followed) and the build id, plus the technical details
 PostHog's library adds to every event: browser and version, operating system,
 device type, screen and window size, language, time zone, the browser's
