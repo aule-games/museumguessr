@@ -14,6 +14,9 @@ Where the game differs from the static studies, on purpose:
 - The reveal keeps the top bar (round, running total, menu) above the wall label.
 - On a phone in portrait, the reveal map hides its zoom buttons: the view is
   already fitted to every pin, and pinch or double-tap still zoom.
+- On desktop and landscape, the reveal map and its legend fill the actual
+  scrolling region's height, not the viewport minus an assumed footer height.
+  The optional feedback row must not hide the legend.
 
 The studies below are static, low-fidelity compositions, not a playable build.
 All artwork and recap images there are patterned boxes labelled **photo**.
@@ -137,6 +140,31 @@ not a fake distance. Filled/hollow and shape form the one-line legend. The SVG
 illustration is schematic: supplied 310 km / 120 years sample scores are not
 calculated from its drawing coordinates.
 
+### Reveal map emphasis
+
+The reveal is a route diagram, not another guessing map. Hide base labels and
+minor detail; fade the remaining map under a **78% surface-colour veil**. Fill
+the answer countries with their Kept/Made ink at **28% opacity**, with an opaque
+**2 px boundary**. The boundary carries small-country recognition; increasing
+fill opacity instead would reduce pin and path contrast. Country outlines are
+context, not the scoring boundary, and the existing full-marks area stays separate.
+
+Journey lines remain solid at 3 px. Guess links remain dashed, now at 2 px.
+Reveal pin glyphs have a surface-colour keyline, using `pin.stroke`, so an
+outline or crossing path cannot merge with a pin. Keep hollow centres hollow.
+Colour is supplementary: cabinet/diamond and filled/hollow shapes remain.
+
+The legend uses the raised surface, a separating rule and normal line height.
+In the split layout, `.reveal__scroll` is a size container; the sticky media
+region is `100cqh`, with an auto-height legend and the map in the remaining
+space. This includes the actual feedback/footer height. The portrait map
+continues to use `layout.reveal-map`; no scoring, bounds or geometry changes.
+
+Contrast is checked on composited colours, including the veil, country tint
+and full-marks area together, not just on the base palette. Run
+`node --test docs/design/reveal-tour.test.mjs`. Raster visibility of small
+countries, line intersections and both map renderers still needs browser review.
+
 ### Year input
 
 Show the large **1450 CE** readout, an initially empty numeric field, and both
@@ -191,7 +219,7 @@ The study stylesheet globally disables animation/transitions in this mode.
   least **3:1**. Do not trade smaller text for a lower contrast requirement.
   Both palettes also keep disabled text above 4.5:1 despite its exemption.
 - **Targets:** at least **44 × 44 px**; the entire score-row summary is a
-  target. Native `<details>` reveals one reason; When adds the timeline. New
+  target. In the game a button expands one reason; When adds the timeline. New
   game, map controls, era choices, and optional-feedback choices have the same
   minimum. No hover-only essential information.
 - **Focus:** `focus.width = 3px`, `focus.offset = 2px`, `color.focus`, visible
@@ -208,6 +236,34 @@ The study stylesheet globally disables animation/transitions in this mode.
   in the end composition is the successful-copy state, not evidence that a
   clipboard write happened. Production displays it only after write success.
   Static study buttons do not pretend to start rounds or send events.
+
+### Reveal score table
+
+Treat the three answers and final total as one squared catalogue table, within
+the normal content gutters. Use a shared **96 px question / flexible result /
+88 px points** grid (`space.8 + space.6`, `1fr`, `space.8 + space.5`). Results may
+wrap; the points column never borrows their width. It accommodates **1,000** in
+20 px bold numeric type with 12 px gutters. Rows are at least 48 px tall.
+
+Keep the question glyph and a persistent disclosure chevron beside its name.
+The chevron reverses when expanded. The whole row is the target on touch and
+keyboard; the tinted, ruled points column is not a separate button. Full marks
+retain the explicit **Spot on** result, success ink and success-tinted points
+cell, rather than relying on the tint alone.
+
+The total is the final row, with a cobalt top rule, raised background, uppercase
+label and a white numeric cell. Its existing 3 px / 2 px focus ring remains
+visible; do not clip the table's overflow to obtain square corners.
+
+On hover-capable devices, show the tooltip as an **attached explanation strip
+below its row**, in normal scroll flow. Inverse ink, 14 px body type and normal
+line height separate it from results; its heading has its own line. This is
+deliberately not an absolutely positioned bubble above the row, which can be
+cut off by the scrolling column. Tap still expands the existing inline reason
+and any timeline/note, replacing the hover strip. Long explanations scroll
+with the reveal, never overlay the sticky forward action. Long wall labels and
+short viewports can require scrolling to the scores; do not shrink their text
+to promise an above-the-fold table for every object.
 
 ## Tokens
 

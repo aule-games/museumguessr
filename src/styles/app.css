@@ -752,6 +752,16 @@ h2 {
   transform: translateY(7.5%);
 }
 
+/* A surface-colour keyline separates reveal glyphs from country outlines and
+   crossing paths without filling the hollow guess silhouette. */
+.map[data-mode='reveal'] .pin svg {
+  filter:
+    drop-shadow(var(--pin-stroke) 0 0 var(--color-surface))
+    drop-shadow(calc(-1 * var(--pin-stroke)) 0 0 var(--color-surface))
+    drop-shadow(0 var(--pin-stroke) 0 var(--color-surface))
+    drop-shadow(0 calc(-1 * var(--pin-stroke)) 0 var(--color-surface));
+}
+
 .pin--kept,
 .pin--combined {
   color: var(--color-kept);
@@ -1043,9 +1053,10 @@ h2 {
 
 .reveal__legend {
   padding: var(--space-2) var(--space-4);
+  border-top: 1px solid var(--color-line);
   background: var(--color-surface-raised);
   font-size: var(--text-xs);
-  line-height: var(--leading-tight);
+  line-height: var(--leading-normal);
 }
 
 .reveal__total {
@@ -1057,24 +1068,24 @@ h2 {
 
 /* the round total closes the score table; its points sit in the points column */
 .scores__total {
-  padding: var(--space-2) var(--space-3);
-  border-top: 2px solid var(--color-ink);
-  margin-top: var(--space-1);
+  padding: var(--space-3);
+  border-top: var(--focus-width) solid var(--color-accent);
+  background: var(--color-surface-raised);
 }
 
 .scores__total-label {
   font-weight: var(--font-weight-bold);
   text-transform: uppercase;
-  letter-spacing: 0.06em;
-  font-size: var(--text-sm);
+  letter-spacing: var(--tracking-caps);
+  font-size: var(--text-xs);
 }
 
 .reveal__score {
   /* Give programmatic focus a calm catalogue cell, not a ring tight to digits.
      Keep the specified 3px / 2px focus geometry and contrast unchanged. */
   padding: var(--space-1) var(--space-2);
-  border-radius: var(--radius-lg);
-  background: var(--color-surface-raised);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
   white-space: nowrap;
   font-family: var(--font-numeric);
   font-size: var(--text-xl);
@@ -1094,27 +1105,30 @@ h2 {
 
 .scores {
   list-style: none;
-  margin: 0;
+  margin-block: 0;
   padding: 0;
   display: grid;
-  gap: var(--space-1);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-sm);
 }
 
 .score {
   position: relative;
-  border: 1px solid var(--color-line);
-  border-radius: var(--radius-sm);
   background: var(--color-surface);
+}
+
+.score + .score {
+  border-top: 1px solid var(--color-line);
 }
 
 .score__row {
   width: 100%;
-  min-height: var(--layout-tap);
+  min-height: var(--space-7);
   display: grid;
-  grid-template-columns: 5.5em 1fr auto;
+  grid-template-columns: calc(var(--space-8) + var(--space-6)) minmax(0, 1fr) calc(var(--space-8) + var(--space-5));
   align-items: center;
-  gap: var(--space-3);
-  padding: var(--space-2) var(--space-3);
+  gap: var(--space-2);
+  padding: 0;
   border: 0;
   background: none;
   font-size: var(--text-sm);
@@ -1122,19 +1136,49 @@ h2 {
   cursor: pointer;
 }
 
+.score__row:hover,
+.score__row[aria-expanded='true'] {
+  background: var(--color-bg);
+}
+
+.score__row:focus-visible {
+  position: relative;
+  z-index: 1;
+}
+
 /* each row starts with its question's glyph */
 .score__label {
   display: flex;
   align-items: center;
   gap: var(--space-2);
+  padding: var(--space-2) 0 var(--space-2) var(--space-3);
+  font-weight: var(--font-weight-medium);
 }
 
 .score__label::before {
   content: '';
+  flex: none;
   width: var(--space-3);
   height: var(--space-4);
   background: currentcolor;
   mask: center / contain no-repeat;
+}
+
+/* The chevron is visible without hover; the entire row is the tap target. */
+.score__label::after {
+  content: '';
+  flex: none;
+  width: var(--space-2);
+  height: var(--space-2);
+  margin-top: calc(-1 * var(--space-1));
+  border-right: var(--pin-stroke) solid currentcolor;
+  border-bottom: var(--pin-stroke) solid currentcolor;
+  transform: rotate(45deg);
+}
+
+.score__row[aria-expanded='true'] .score__label::after {
+  margin-top: var(--space-1);
+  transform: rotate(225deg);
 }
 
 .score--kept .score__label::before {
@@ -1157,35 +1201,43 @@ h2 {
 }
 
 .score__points {
-  min-width: 4ch;
-  padding-left: var(--space-3);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  align-self: stretch;
+  padding: var(--space-2) var(--space-3);
   border-left: 1px solid var(--color-line);
+  background: var(--color-surface-raised);
   text-align: right;
   font-family: var(--font-numeric);
   font-size: var(--text-lg);
-  font-weight: var(--font-weight-medium);
+  font-weight: var(--font-weight-bold);
   font-variant-numeric: tabular-nums;
 }
 
 .score__result {
+  min-width: 0;
+  padding-block: var(--space-2);
   color: var(--color-ink-muted);
+  overflow-wrap: anywhere;
 }
 
-/* how the points were computed: a tooltip where hover exists, inline after a tap */
+/* Keep the hover explanation in the scroll flow: a floating bubble can be
+   cut off when its row reaches the top of the reveal's scrolling column. */
 .score__tip {
   display: none;
-  position: absolute;
-  z-index: 2;
-  right: 0;
-  bottom: calc(100% + var(--space-1));
-  max-width: min(100%, 360px);
-  padding: var(--space-2) var(--space-3);
-  border-radius: var(--radius-sm);
+  padding: var(--space-3);
   background: var(--color-ink);
   color: var(--color-ink-inverse);
   font-size: var(--text-sm);
-  line-height: var(--leading-tight);
-  box-shadow: var(--shadow-2);
+  line-height: var(--leading-normal);
+  overflow-wrap: anywhere;
+}
+
+.score__tip strong,
+.score__how strong {
+  display: block;
+  margin-bottom: var(--space-1);
 }
 
 @media (hover: hover) {
@@ -1205,19 +1257,26 @@ h2 {
 
 .score--spot-on {
   background: var(--color-full-marks-area);
-  border-color: var(--color-success);
 }
 
-.score--spot-on .score__result {
+.score--spot-on .score__result,
+.score--spot-on .score__points {
   color: var(--color-success);
   font-weight: var(--font-weight-bold);
+}
+
+.score--spot-on .score__points {
+  background: var(--color-full-marks-area);
+  border-left-color: var(--color-success);
 }
 
 .score__detail {
   display: grid;
   gap: var(--space-2);
-  padding: 0 var(--space-3) var(--space-3);
+  padding: var(--space-3);
+  border-top: 1px solid var(--color-line);
   font-size: var(--text-sm);
+  overflow-wrap: anywhere;
 }
 
 .score__note {
@@ -1721,7 +1780,8 @@ h2 {
   .reveal__scroll {
     grid-template-columns: 55fr 45fr;
     column-gap: 0;
-    padding-bottom: var(--space-5);
+    padding-bottom: 0;
+    container-type: size;
   }
 
   .reveal__scroll > * {
@@ -1741,10 +1801,14 @@ h2 {
     position: sticky;
     top: 0;
     margin: 0;
+    height: 100cqh;
+    min-height: 0;
+    grid-template-rows: minmax(0, 1fr) auto;
   }
 
   .reveal__map {
-    height: calc(var(--app-height, 100dvh) - var(--layout-topbar) - var(--layout-actionbar) - var(--space-7));
+    height: auto;
+    min-height: 0;
   }
 
   .reveal__legend {

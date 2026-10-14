@@ -22,8 +22,8 @@ export type PinKind = 'kept' | 'made' | 'combined' | 'guess-kept' | 'guess-made'
 
 export const FALLBACK_AFTER_MS = 4000;
 /** Reveal styling: the world fades behind a veil; the answer countries take their pin colour. */
-export const VEIL_OPACITY = 0.55;
-export const COUNTRY_OPACITY = 0.42;
+export const VEIL_OPACITY = 0.78;
+export const COUNTRY_OPACITY = 0.28;
 /** Base-map layers hidden on the reveal (labels and road/minor-border detail). */
 const BASE_DETAIL_LAYERS = ['label-country', 'label-city', 'roads-major', 'boundary-minor'];
 const REVEAL_LAYERS = ['reveal-veil', 'reveal-countries-fill', 'reveal-countries-line', 'reveal-area-fill', 'reveal-area-line', 'reveal-guesses', 'reveal-answer'];
@@ -513,7 +513,7 @@ export class GameMap {
     const made = color('--color-made', '#8b3653');
     map.addSource('reveal-countries', { type: 'geojson', data: { type: 'FeatureCollection', features: d.countries } });
     map.addLayer({ id: 'reveal-countries-fill', type: 'fill', source: 'reveal-countries', paint: { 'fill-color': byRole(kept, made, made), 'fill-opacity': COUNTRY_OPACITY } });
-    map.addLayer({ id: 'reveal-countries-line', type: 'line', source: 'reveal-countries', paint: { 'line-color': byRole(kept, made, made), 'line-width': 1.2, 'line-opacity': 0.7 } });
+    map.addLayer({ id: 'reveal-countries-line', type: 'line', source: 'reveal-countries', paint: { 'line-color': byRole(kept, made, made), 'line-width': 2, 'line-opacity': 1 } });
     if (d.area) {
       map.addSource('reveal-area', { type: 'geojson', data: d.area });
       map.addLayer({ id: 'reveal-area-fill', type: 'fill', source: 'reveal-area', paint: { 'fill-color': color('--color-full-marks-area', 'rgba(0,0,0,0.12)') } });
@@ -529,7 +529,7 @@ export class GameMap {
       id: 'reveal-guesses',
       type: 'line',
       source: 'reveal-guesses',
-      paint: { 'line-color': color('--color-guess-line', '#555'), 'line-width': 1.5, 'line-dasharray': [2, 2] },
+      paint: { 'line-color': color('--color-guess-line', '#555'), 'line-width': 2, 'line-dasharray': [2, 2] },
     });
     map.addSource('reveal-answer', { type: 'geojson', data: d.answer });
     map.addLayer({
