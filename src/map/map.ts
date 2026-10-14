@@ -347,7 +347,7 @@ export class GameMap {
     const bounds = this.map.getBounds();
     const maxRank = fallbackRank(zoom);
     const frame = this.canvasHost.getBoundingClientRect();
-    const occupied: Box[] = [...this.element.querySelectorAll<HTMLElement>('.map__controls, .map__label, .maplibregl-ctrl-attrib')]
+    const occupied: Box[] = [...this.element.querySelectorAll<HTMLElement>('.map__controls, .map__label, .maplibregl-ctrl-attrib, .pin--dimmed .pin__label')]
       .map((el) => el.getBoundingClientRect()).filter((r) => r.width > 0 && r.height > 0);
     const gap = parseFloat(tokens.space['2']);
     for (const p of [...this.places].sort((a, b) => a[4] - b[4])) {
@@ -390,6 +390,7 @@ export class GameMap {
       const el = pinElement(step === 'made' ? 'guess-made' : 'guess-kept', label, 'pin--dimmed');
       el.append(h('span', { class: 'pin__label' }, label));
       this.markers.push(new this.lib.Marker({ element: el, anchor: 'bottom' }).setLngLat([at.lng, at.lat]).addTo(this.map));
+      this.updateFallbackLabels(); // city names give way to the carried label (DS35)
     }
     this.label.textContent = '';
     if (opts.pin) this.placePin(opts.pin, false);

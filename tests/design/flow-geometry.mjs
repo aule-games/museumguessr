@@ -34,8 +34,10 @@ export function measureFlow() {
       hollow: dimmed.classList.contains('pin--guess-made') && !!dimmed.querySelector('path[fill="none"]'),
       label: pinLabel?.textContent, accessible: dimmed.getAttribute('aria-label'),
       inert: getComputedStyle(dimmed).pointerEvents === 'none',
+      labelBox: box(pinLabel),
     } : null,
     mapReady: /^(ready|fallback)$/.test(round.querySelector('.map')?.dataset.state ?? ''),
+    cities: [...round.querySelectorAll('.map__city')].map(box),
     tour: tour ? {
       card: box(tour.querySelector('.tour__card')),
       target: box(document.querySelector(targets[tour.dataset.step] ?? '[data-no-target]')),
@@ -77,6 +79,8 @@ export function flowGeometryIssues(m) {
   if (m.step === 'kept' && m.mapReady) {
     check(m.dimmed?.hollow && m.dimmed.label === 'Your Made guess' && m.dimmed.accessible === m.dimmed.label && m.dimmed.inert,
       '[DS35] The carried Made pin is hollow, labelled Your Made guess, and non-interactive');
+    check(!(m.cities ?? []).some((c) => overlap(c, m.dimmed?.labelBox)),
+      '[DS35] No fallback-map city name overlaps the Your Made guess label');
   }
   if (m.tour) {
     const gutters = { left: 12, top: 12, right: m.viewport.width - 12, bottom: m.viewport.height - 12 };
