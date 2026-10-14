@@ -11,12 +11,12 @@ Last run: 2026-10-14.
 | type check | passed (2 s) |
 | generated files are current | passed (0 s) |
 | item check | passed (0 s) |
-| unit tests | passed (8 s) |
+| unit tests | passed (11 s) |
 | design checks | passed (1 s) |
 | lint | passed (2 s) |
 | build | passed (1 s) |
 | build checks | passed (0 s) |
-| browser tests (5 viewports) | passed (47 s) |
+| browser tests (5 viewports) | passed (78 s) |
 | release scan (publish candidate) | passed (4 s) |
 
 ## Automated checks

@@ -3,7 +3,7 @@
 Look at a real museum object, then guess where it is kept today, where it was
 made, and when. Ten objects, the same for everyone.
 
-**Play:** <https://mert-aktas.github.io/museumguessr/>
+**Play:** <https://aule-games.github.io/museumguessr/>
 
 [Run it](#run-it-locally) · [Change content](docs/content.md) ·
 [Debug](#debugging) · [Release](docs/release.md) ·

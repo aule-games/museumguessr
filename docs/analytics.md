@@ -18,7 +18,7 @@ sign-up, no session recording, no autocapture.
 | Project | PostHog | project id `304461`, shared with other side projects |
 | Tag on every event | `src/analytics/core.ts` | `project_id = 'museumguessr'` and `build_id` (the short commit SHA) |
 | `VITE_POSTHOG_PROJECT_TOKEN` | CI repository variable | the public project token (`phc_…`); a build stops if it is anything else. Empty means analytics off |
-| `VITE_ANALYTICS_HOSTS` | CI repository variable | comma-separated hostnames where analytics may run; default `mert-aktas.github.io` |
+| `VITE_ANALYTICS_HOSTS` | CI repository variable | comma-separated hostnames where analytics may run; default `aule-games.github.io` |
 
 Because the project is shared, **every query and insight filters
 `project_id = 'museumguessr'`**, except the event-cap check, which must count

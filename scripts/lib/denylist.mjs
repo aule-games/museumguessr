@@ -8,8 +8,8 @@ import { join } from 'node:path';
 // Approved exemptions (founder decision): the GitHub username and the Pages
 // URL may appear. They are masked before matching.
 export const EXEMPT = [
-  'https://mert-aktas.github.io/museumguessr/',
-  'mert-aktas.github.io',
+  'https://aule-games.github.io/museumguessr/',
+  'aule-games.github.io',
   'mert-aktas',
 ];
 

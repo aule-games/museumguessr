@@ -16,7 +16,7 @@ const PORT = Number(process.env.E2E_PORT ?? 4443);
 const BASE = '/museumguessr/';
 
 const dir = mkdtempSync(join(tmpdir(), 'mg-tls-'));
-execFileSync('openssl', ['req', '-x509', '-newkey', 'rsa:2048', '-nodes', '-days', '2', '-subj', '/CN=mert-aktas.github.io', '-keyout', join(dir, 'key.pem'), '-out', join(dir, 'cert.pem')], { stdio: 'ignore' });
+execFileSync('openssl', ['req', '-x509', '-newkey', 'rsa:2048', '-nodes', '-days', '2', '-subj', '/CN=aule-games.github.io', '-keyout', join(dir, 'key.pem'), '-out', join(dir, 'cert.pem')], { stdio: 'ignore' });
 
 const TYPES = {
   '.html': 'text/html; charset=utf-8',

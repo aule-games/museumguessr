@@ -63,7 +63,7 @@ export function decodeBody(req: Request): Captured[] {
   }));
 }
 
-const LOCAL_HOST = 'mert-aktas.github.io';
+const LOCAL_HOST = 'aule-games.github.io';
 
 export const test = base.extend<{ recorder: Recorder; blockImages: boolean }>({
   blockImages: [false, { option: true }],

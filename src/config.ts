@@ -7,10 +7,10 @@ export const MAPLIBRE_URL = `${BASE_URL}maplibre/${typeof __MAPLIBRE_VERSION__ =
 export const POSTHOG_TOKEN: string = import.meta.env.VITE_POSTHOG_PROJECT_TOKEN ?? '';
 
 /** Hosts where analytics may run; the custom-domain move is a configuration change (DX12). */
-export const ANALYTICS_HOSTS: readonly string[] = (import.meta.env.VITE_ANALYTICS_HOSTS ?? 'mert-aktas.github.io')
+export const ANALYTICS_HOSTS: readonly string[] = (import.meta.env.VITE_ANALYTICS_HOSTS ?? 'aule-games.github.io')
   .split(',')
   .map((h) => h.trim())
   .filter(Boolean);
 
 /** Canonical public URL used by share text and meta tags. */
-export const SITE_URL = 'https://mert-aktas.github.io/museumguessr/';
+export const SITE_URL = 'https://aule-games.github.io/museumguessr/';

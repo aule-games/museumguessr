@@ -38,11 +38,11 @@ function env(over: Partial<AnalyticsEnv> = {}): AnalyticsEnv & { lines: string[]
   const { provider } = fakeProvider();
   return {
     token: 'phc_test',
-    hosts: ['mert-aktas.github.io'],
+    hosts: ['aule-games.github.io'],
     buildId: 'abc1234',
     dev: false,
-    hostname: 'mert-aktas.github.io',
-    href: 'https://mert-aktas.github.io/museumguessr/?utm_source=webgames&test=1&x=y',
+    hostname: 'aule-games.github.io',
+    href: 'https://aule-games.github.io/museumguessr/?utm_source=webgames&test=1&x=y',
     testParam: null,
     webdriver: false,
     storage: guarded(memoryStore),
@@ -178,7 +178,7 @@ describe('[DX29] test-mode inspector', () => {
     expect(payloads[0]?.props).toMatchObject({
       project_id: 'museumguessr',
       src: 'webgames',
-      $current_url: 'https://mert-aktas.github.io/museumguessr/?utm_source=webgames',
+      $current_url: 'https://aule-games.github.io/museumguessr/?utm_source=webgames',
     });
   });
 });

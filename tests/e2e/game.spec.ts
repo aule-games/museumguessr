@@ -147,7 +147,7 @@ test.describe('[DS15] [V4] [DS7] [DS25] a full game', () => {
     expect(lines[0]).toMatch(/^MuseumGuessr [\d,]+\/30,000$/);
     for (let r = 1; r <= 10; r++) expect(lines[r]).toMatch(new RegExp(`^R${r} [\\d,]+ · kept [\\d,]+ km · made [\\d,]+ km · [\\d,]+ yrs$`));
     expect(lines[11]).toBe('Same 10 objects for everyone');
-    expect(lines[12]).toBe('https://mert-aktas.github.io/museumguessr/?utm_source=share&utm_medium=share');
+    expect(lines[12]).toBe('https://aule-games.github.io/museumguessr/?utm_source=share&utm_medium=share');
     await recorder.idle(page);
     expect(recorder.of('game_completed')).toHaveLength(1);
     expect(recorder.of('result_copied')[0]?.properties.method).toBe('clipboard');

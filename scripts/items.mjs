@@ -25,7 +25,7 @@ import { BASELINE_LIMIT, bestConstantPlace, bestConstantYear } from '../src/scor
 
 const REPO = fileURLToPath(new URL('..', import.meta.url));
 const DOCS = 'docs/content.md';
-const UA = 'MuseumGuessr/0.1 (https://github.com/mert-aktas/museumguessr; content tooling)';
+const UA = 'MuseumGuessr/0.1 (https://github.com/aule-games/museumguessr; content tooling)';
 export const ROUNDS = 10;
 export const MAX_IMAGE_PX = 1600;
 export const MAX_IMAGE_BYTES = 250 * 1024;

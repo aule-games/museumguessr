@@ -63,7 +63,7 @@ insight work end to end:
 
 1. Record the start time (UTC).
 2. **Visit A:** in a normal browser on Wi-Fi, without `?test=1`, open
-   `https://mert-aktas.github.io/museumguessr/?utm_source=smoke` and play
+   `https://aule-games.github.io/museumguessr/?utm_source=smoke` and play
    rounds 1-3.
 3. **Visit B:** the same browser and device on a different network (a phone
    hotspot), open the same URL once.

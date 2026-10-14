@@ -9,7 +9,7 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const OUT = `${ROOT}src/map/data/`;
-const UA = 'MuseumGuessr/0.1 (https://github.com/mert-aktas/museumguessr; content tooling)';
+const UA = 'MuseumGuessr/0.1 (https://github.com/aule-games/museumguessr; content tooling)';
 const SRC = 'https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/';
 
 async function get(name) {

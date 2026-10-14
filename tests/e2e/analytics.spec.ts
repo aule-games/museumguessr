@@ -29,7 +29,7 @@ test.describe('[PH9] [E5] [PH6] events reach PostHog with the right properties',
     expect(pv?.properties.landing).toBe(true);
     expect(pv?.properties.resumed).toBe(false);
     // PH2: only utm_* survive in the URL
-    expect(String(pv?.properties.$current_url)).toBe('https://mert-aktas.github.io/museumguessr/?utm_source=webgames&utm_medium=social');
+    expect(String(pv?.properties.$current_url)).toBe('https://aule-games.github.io/museumguessr/?utm_source=webgames&utm_medium=social');
     expect(names).not.toContain('$autocapture');
     expect(names).not.toContain('$pageleave');
   });
