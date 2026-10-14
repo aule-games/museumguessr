@@ -8,6 +8,7 @@ import { MAPLIBRE_URL } from '../config.ts';
 import { t } from '../copy.ts';
 import { greatCircle, distanceKm, unwrapAround, type LatLng } from '../scoring/geo.ts';
 import { h, reducedMotion } from '../ui/dom.ts';
+import tokens from '../design/tokens.json';
 import combinedSvg from '../assets/pins/combined.svg?raw';
 import guessKeptSvg from '../assets/pins/guess-kept.svg?raw';
 import guessMadeSvg from '../assets/pins/guess-made.svg?raw';
@@ -15,6 +16,7 @@ import keptSvg from '../assets/pins/kept.svg?raw';
 import madeSvg from '../assets/pins/made.svg?raw';
 import { dropLabel, revealCountries, snapTarget, type DropLabel, type Place } from './places.ts';
 import { fallbackStyle, mainStyle } from './styles.ts';
+import { fallbackRank, overlaps, revealPadding, type Box } from './layout.ts';
 
 type MapLibre = typeof ML;
 export type MapState = 'loading' | 'ready' | 'fallback' | 'context-lost' | 'failed';
@@ -287,6 +289,11 @@ export class GameMap {
     map.on('movestart', (e: { originalEvent?: Event }) => {
       if (e.originalEvent) this.revealFit = null;
     });
+    // Collision boxes and fit padding use the real label font, not its fallback.
+    void document.fonts.ready.then(() => {
+      this.updateFallbackLabels();
+      this.revealFit?.();
+    });
 
     const canvas = map.getCanvas();
     canvas.setAttribute('aria-label', t('map.label'));
@@ -326,14 +333,24 @@ export class GameMap {
     if (this.mode === 'reveal') return;
     const zoom = this.map.getZoom();
     const bounds = this.map.getBounds();
-    const maxRank = Math.max(1, Math.floor(zoom * 1.5));
-    let count = 0;
-    for (const p of this.places) {
-      if (p[4] > maxRank || count >= 60) continue;
+    const maxRank = fallbackRank(zoom);
+    const frame = this.canvasHost.getBoundingClientRect();
+    const occupied: Box[] = [...this.element.querySelectorAll<HTMLElement>('.map__controls, .map__label, .maplibregl-ctrl-attrib')]
+      .map((el) => el.getBoundingClientRect()).filter((r) => r.width > 0 && r.height > 0);
+    const gap = parseFloat(tokens.space['2']);
+    for (const p of [...this.places].sort((a, b) => a[4] - b[4])) {
+      if (this.fallbackLabels.length >= 60) break;
+      if (p[4] > maxRank) continue;
       if (!bounds.contains([p[3], p[2]])) continue;
       const el = h('div', { class: 'map__city', 'aria-hidden': 'true' }, p[0]);
-      this.fallbackLabels.push(new this.lib.Marker({ element: el, anchor: 'left' }).setLngLat([p[3], p[2]]).addTo(this.map));
-      count += 1;
+      const marker = new this.lib.Marker({ element: el, anchor: 'left' }).setLngLat([p[3], p[2]]).addTo(this.map);
+      const box = el.getBoundingClientRect();
+      if (box.left < frame.left || box.right > frame.right || box.top < frame.top || box.bottom > frame.bottom || occupied.some((other) => overlaps(box, other, gap))) {
+        marker.remove();
+        continue;
+      }
+      occupied.push(box);
+      this.fallbackLabels.push(marker);
     }
   }
 
@@ -401,6 +418,7 @@ export class GameMap {
     }
     const text = labelText(dropLabel(p, this.places, this.countries));
     this.label.textContent = text;
+    this.updateFallbackLabels();
     if (announce) this.events.onPin(p, text);
   }
 
@@ -462,12 +480,31 @@ export class GameMap {
     const lngs = pts.map((p) => p.lng);
     const lats = pts.map((p) => p.lat);
     const fit = () => {
+      const frame = this.canvasHost.getBoundingClientRect();
+      const box = (selector: string): Box | null => {
+        const r = this.element.querySelector(selector)?.getBoundingClientRect();
+        return r && r.width && r.height ? { left: r.left - frame.left, top: r.top - frame.top, right: r.right - frame.left, bottom: r.bottom - frame.top } : null;
+      };
+      const labels = [...this.element.querySelectorAll<HTMLElement>('.pin__label')];
+      const pinSize = parseFloat(tokens.pin.size);
+      const padding = revealPadding(
+        { w: frame.width, h: frame.height },
+        {
+          height: pinSize * 1.25,
+          labelWidth: Math.max(pinSize, ...labels.map((el) => el.offsetWidth)),
+          labelHeight: Math.max(0, ...labels.map((el) => el.offsetHeight)),
+          gap: parseFloat(tokens.space['2']),
+          labelGap: parseFloat(tokens.space['1']),
+        },
+        box('.map__controls'),
+        box('.maplibregl-ctrl-attrib'),
+      );
       map.fitBounds(
         [
           [Math.min(...lngs), Math.min(...lats)],
           [Math.max(...lngs), Math.max(...lats)],
         ],
-        { padding: { top: 48, bottom: 56, left: 56, right: 56 }, maxZoom: REVEAL_MAX_ZOOM, animate: false },
+        { padding, maxZoom: REVEAL_MAX_ZOOM, animate: false },
       );
     };
     // The reveal host is mounted after this call: fit now, then again on each

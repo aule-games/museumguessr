@@ -14,6 +14,12 @@ Where the game differs from the static studies, on purpose:
 - The reveal keeps the top bar (round, running total, menu) above the wall label.
 - On a phone in portrait, the reveal map hides its zoom buttons: the view is
   already fitted to every pin, and pinch or double-tap still zoom.
+- On short landscape reveals, only World remains, at bottom-left. The fit
+  reserves measured pin/label, control and attribution space; guessing-map
+  controls are unchanged.
+- Production is score-first: a compact wall label is followed immediately by
+  scores, before the map and journey fact. The old static studies below retain
+  their original order and are not the phone acceptance reference.
 - On desktop and landscape, the reveal map and its legend fill the actual
   scrolling region's height, not the viewport minus an assumed footer height.
   The optional feedback row must not hide the legend.
@@ -39,12 +45,20 @@ All artwork and recap images there are patterned boxes labelled **photo**.
   contain` in the eventual game. Never crop to fill. Tapping the photo opens a
   lightbox; the static study shows its explicit affordance only. In When, photo
   gets approximately 30% of the answer-content region; year controls take 70%.
+  Short portrait screens keep these shares (2:3 for photo/map, 3:7 for When),
+  rather than forcing the photo to a 96 px thumbnail. Year controls may scroll
+  internally; Confirm must stay visible.
 - **Desktop:** exact **1280 × 800 px** study. Rounds put the photo in the left
   55%, prompt/answer/Confirm in the right 45%. Reveal replaces that photo with
-  the map. Text stays in wall-label → journey → scores → facts → credit order.
-- **Reveal and end:** reveal starts at the wall label, not another top bar.
-  Its map is about 32% of the phone viewport; the collapsed score rows, credit,
-  and sticky Next are intended to remain above the fold at 390 × 844. Expanding
+  the map. Production text is wall-label → scores → journey → facts → credit;
+  the static study retains wall-label → journey → scores.
+- **Reveal and end:** production retains the round top bar above the wall label.
+  On phones the title uses 26 px, scores come next, then the map (about 32% of
+  the viewport), legend and journey. All three collapsed rows and the total
+  must fit above the action bar at 390 × 844 and 375 × 667 on reveal one;
+  at least 48 px of the map must still show at 390 × 844. Credit is scrollable,
+  not promised above the fold. Short landscape uses a 20 px title and visually
+  leads the table with its total; rows scroll in the right panel. Expanding
   a score reason may scroll the reveal content, never cover Next. The end recap
   may scroll internally to retain all ten rows and the replay link. The outer
   comparison canvas intentionally scrolls horizontally: do not shrink frames
@@ -73,7 +87,7 @@ This is a reusable **information structure**, not an ivory-paper visual style:
 4. Photo credit, preserved even when the label is condensed for recap or share.
 
 On the reveal, the first three fields are the header; the credit is the last
-line before Next, after the journey, map, score rows, and facts. The ten-row
+line before Next, after the scores, map, journey, and facts. The ten-row
 end study deliberately uses the brief's compact title / Made in → Now in /
 points layout; its thumbnail placeholders are not a substitute for production
 credits. The game implementation must retain credits in recap detail and text
@@ -105,6 +119,10 @@ and omit untranslated labels rather than accidentally switching language.
 
 Fallback: **bundled Natural Earth land/country geometry**, with English city
 labels as DOM markers. It must remain usable when vector tiles are unavailable.
+Only rank-zero cities are eligible at world zoom; more ranks enter as zoom
+increases. Rank-prioritized, measured label boxes keep an 8 px collision gutter
+from each other and the controls/drop label/attribution. Labels cut by the map
+edge are omitted. This does not alter snapping, answers or the place dataset.
 Use the same map tokens and pin assets in both renderers. The static compositions
 use intentionally schematic, hand-coded SVG outlines: they are neither real
 tiles nor a bundled production fallback and must not be reused for scoring.
@@ -158,7 +176,11 @@ The legend uses the raised surface, a separating rule and normal line height.
 In the split layout, `.reveal__scroll` is a size container; the sticky media
 region is `100cqh`, with an auto-height legend and the map in the remaining
 space. This includes the actual feedback/footer height. The portrait map
-continues to use `layout.reveal-map`; no scoring, bounds or geometry changes.
+continues to use `layout.reveal-map`. Fitting keeps the same answer/guess
+coordinates and maximum zoom, but measures the pin labels and visible controls
+instead of assuming symmetric 56 px padding. Long pin labels wrap at 192 px.
+The landscape World button sits below the fitted labels, clear of the legend;
+desktop reserves its controls column on the right. No scoring geometry changes.
 
 Contrast is checked on composited colours, including the veil, country tint
 and full-marks area together, not just on the base palette. Run
@@ -232,6 +254,9 @@ The study stylesheet globally disables animation/transitions in this mode.
   specimen shows that variant. “Most fun” is optional at the end. No selection
   blocks progress, and no selection is prefilled. Show the test badge once on
   each direction's phone start frame, not duplicated on desktop.
+  Production uses the shorter `pulse.difficulty` label and 8 px chip gutters
+  so label and three choices share one line at 375 px. Targets stay 44 px high;
+  enlarged text can wrap instead of clipping. End feedback is unchanged.
 - **Honest states:** Confirm is enabled only with an explicit answer. “Copied”
   in the end composition is the successful-copy state, not evidence that a
   clipboard write happened. Production displays it only after write success.
@@ -240,10 +265,12 @@ The study stylesheet globally disables animation/transitions in this mode.
 ### Reveal score table
 
 Treat the three answers and final total as one squared catalogue table, within
-the normal content gutters. Use a shared **96 px question / flexible result /
-88 px points** grid (`space.8 + space.6`, `1fr`, `space.8 + space.5`). Results may
-wrap; the points column never borrows their width. It accommodates **1,000** in
-20 px bold numeric type with 12 px gutters. Rows are at least 48 px tall.
+the normal content gutters. Phones use **question above result / 88 px points**:
+the result gets the whole left column, with no ellipsis. At desktop widths use
+the **96 px question / flexible result / 88 px points** grid (`space.8 + space.6`,
+`1fr`, `space.8 + space.5`). Results may wrap; the points column never borrows
+their width. It accommodates **1,000** in 20 px bold numeric type with 12 px
+gutters. Rows are at least 48 px tall; the phone stack grows for complete text.
 
 Keep the question glyph and a persistent disclosure chevron beside its name.
 The chevron reverses when expanded. The whole row is the target on touch and
@@ -252,8 +279,10 @@ retain the explicit **Spot on** result, success ink and success-tinted points
 cell, rather than relying on the tint alone.
 
 The total is the final row, with a cobalt top rule, raised background, uppercase
-label and a white numeric cell. Its existing 3 px / 2 px focus ring remains
-visible; do not clip the table's overflow to obtain square corners.
+label and a white numeric cell. On short landscape, CSS places that same total
+first with its cobalt rule below; it is not a duplicated live region and stays
+last in DOM reading order. Its existing 3 px / 2 px focus ring remains visible;
+do not clip the table's overflow to obtain square corners.
 
 On hover-capable devices, show the tooltip as an **attached explanation strip
 below its row**, in normal scroll flow. Inverse ink, 14 px body type and normal
@@ -261,9 +290,11 @@ line height separate it from results; its heading has its own line. This is
 deliberately not an absolutely positioned bubble above the row, which can be
 cut off by the scrolling column. Tap still expands the existing inline reason
 and any timeline/note, replacing the hover strip. Long explanations scroll
-with the reveal, never overlay the sticky forward action. Long wall labels and
-short viewports can require scrolling to the scores; do not shrink their text
-to promise an above-the-fold table for every object.
+with the reveal, never overlay the sticky forward action. Round-one portrait
+acceptance requires the complete collapsed table above the action bar. Long
+titles elsewhere and enlarged text may scroll; never truncate the identity or
+result to simulate a fit. Short landscape requires a visible total and
+scroll-reachable score rows, not an unreadably compressed table.
 
 ### First-visit tour
 
@@ -272,7 +303,11 @@ The tour uses the same squared catalogue card as the reveal: white surface,
 stepped shadow. Width is at most **384 px** (`space.8 × 6`), leaving at least
 12 px to each viewport edge. Height is bounded by the dynamic viewport with
 the same gutters; long content scrolls inside the card instead of clipping
-its controls. Card position remains determined by the existing placement rule.
+its controls. Placement first tries below/above/beside the target. If that fails,
+it can narrow to a free side column of at least 280 px, or cap its scrolling
+height to a free vertical region of at least 160 px, before choosing the screen
+edge with least overlap. The small-phone map step and landscape photo step
+must not cover their target. These dimensions derive from the spacing ladder.
 
 The numeric **Step n of 7** label is the accessible progress indicator. A small
 cobalt rail mirrors the seven existing step keys; it is decorative and updates
@@ -288,8 +323,9 @@ The spotlight has a 2 px cobalt inner boundary and 3 px surface-colour outer
 boundary over the existing scrim. Only its geometry transitions, once per step
 using `motion.fast` (150 ms); the card and progress do not slide or pulse.
 Reduced motion suppresses spotlight transitions through both the existing still
-class and the global media rule. No tour logic, focus order, dismissal, copy or
-completion behaviour changes accompany this treatment.
+class and the global media rule. Step count, focus order, dismissal, events and
+completion behaviour stay unchanged. The Confirm copy says the year controls
+appear only on When; it does not claim the current spotlight demonstrates them.
 
 ## Tokens
 

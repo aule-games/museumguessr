@@ -32,8 +32,8 @@ requirement IDs; the sentence before each one is the rule.
 | Viewport | Round | Reveal | Start and end |
 | --- | --- | --- | --- |
 | Phone portrait (< 900 px wide) | Fixed rows, no page scroll: top bar 48, prompt 56, photo 2fr, answer 3fr (min 220), action bar 64 + safe area | Top bar, scrolling body, sticky action bar | One column, page scrolls |
-| Short phone (height ≤ 700) | Photo collapses to a 96 px strip | as phone | as phone |
-| Landscape phone (height ≤ 500) | Photo left 55%, prompt/answer/action right 45% | Map left 55%, label and scores right | as phone |
+| Short phone (portrait, height ≤ 700) | Keep the 2:3 photo/map share; When keeps 3:7, with internally scrolling year controls | Compact wall label, then scores before the map | as phone |
+| Landscape phone (height ≤ 500) | Photo left 55%, prompt/answer/action right 45% | Map left 55%, compact label and scores right; total visually leads the table | as phone |
 | Desktop (≥ 900 px wide) | Photo left 55%, prompt/answer/action right 45% | Map left 55% (sticky), wall label and scores right | Two columns: text 45%, sample or recap 55% |
 
 On the When step the photo gets about 30% of the answer space and the year
@@ -78,6 +78,11 @@ States:
 | Action bar | Confirm | `confirm` | full width |
 
 The hint is open on round 1 and closed afterwards; `?` toggles it.
+Short portrait screens retain the photo's share instead of a fixed thumbnail;
+Confirm stays on screen. (DS19) The bundled fallback map admits only rank-zero
+cities at world zoom, adds ranks as zoom increases, and suppresses labels whose
+measured boxes collide or leave the map. Guess labels and controls also reserve
+space. This changes label visibility only, not pin placement or snapping. (DS4)
 
 States:
 
@@ -104,7 +109,11 @@ A modal over round 1's Kept step on a first visit (no `museumguessr:v1:tour`
 flag and no finished game), and from the menu on any round screen
 (`menu.tour`). A spotlight lights one element at a time; the rest is under the
 scrim and inert. The card sits below the lit element, else above, else beside
-it, always fully on screen.
+it, always fully on screen. Before overlapping a target, it can narrow into a
+side column (at least 280 px) or scroll within the available vertical space
+(at least 160 px). If no such space exists, it chooses the viewport edge with
+the least target overlap. The 375×667 map step and 844×390 photo step must leave
+their whole target uncovered. (DS34)
 
 Visual treatment: squared white catalogue card, cobalt top rule, condensed
 title, numeric progress count and decorative seven-step rail. The card is at
@@ -112,7 +121,9 @@ most 384 px wide with 12 px viewport gutters and a bounded, scrollable height.
 Its ruled footer separates Skip from Back/Next; buttons wrap rather than
 shrink below their touch targets. A cobalt/surface double boundary outlines
 the spotlight. Only the spotlight geometry transitions (150 ms); reduced
-motion suppresses it. Card placement and focus behaviour are unchanged.
+motion suppresses it. Focus, step count, events and completion behaviour are
+unchanged. `tour.confirm.body` explicitly says that the year controls appear
+only on When; the Confirm spotlight does not claim to show the year control.
 
 | Step | Lights up | Copy keys |
 | --- | --- | --- |
@@ -131,23 +142,31 @@ skipped; the last button closes it as done; either way the flag is set and
 
 ## Reveal
 
-Order: wall label → journey fact → map + legend → score table (three rows,
-then the round total) → contested claim (if any) → facts → credit → sticky
-action bar.
+Phone order: compact wall label → score table (three rows, then the round
+total) → map + legend → journey fact → contested claim (if any) → facts →
+credit → sticky action bar. Desktop keeps the map in the left column and
+uses wall label → scores → journey → facts in the right column.
+
+At 390×844 and 375×667, all three collapsed score rows and the round total
+must be above the action bar on round one's reveal; at 390×844 at least 48 px
+of the map must remain visible too. On short landscape screens, the total
+visually leads the table so it is visible before scrolling; the rows remain
+reachable in the right-hand scroll region. DOM order keeps the total last,
+and there is only one score live region. (DS21)
 
 | Region | Content | Copy keys | Overflow |
 | --- | --- | --- | --- |
 | Top bar | as in rounds | as in rounds | one line |
-| Wall label | object title; made place and date → now in museum, city | `reveal.madeKept`, or `reveal.sameArea` when made and held in the same area | title wraps |
+| Wall label | object title; made place and date → now in museum, city; title uses 26 px on phones, 20 px on short landscape, 52 px on desktop | `reveal.madeKept`, or `reveal.sameArea` when made and held in the same area | title and identity remain complete; no truncation |
 | Journey | the sourced journey fact | `reveal.source` | wraps |
-| Map | answer pins (filled), guesses (hollow), one made→kept line, dashed guess links, the full-marks area for a region or country origin; a 78% surface veil fades the base map, with its labels hidden; answer countries have 28% Kept/Made tints and opaque 2 px outlines; pins have a surface keyline | `reveal.madeRegion`, `reveal.lineLabel` | fitted to every pin; zoom buttons hidden on a phone in portrait |
+| Map | answer pins (filled), guesses (hollow), one made→kept line, dashed guess links, the full-marks area for a region or country origin; a 78% surface veil fades the base map, with its labels hidden; answer countries have 28% Kept/Made tints and opaque 2 px outlines; pins have a surface keyline | `reveal.madeRegion`, `reveal.lineLabel` | fitted with measured pin-label/control/attribution clearance; controls hidden in phone portrait, only World at bottom-left in short landscape; pinch, double-tap and keyboard zoom remain; long pin labels wrap at 192 px (DS22) |
 | Legend | raised caption rail under the map, normal line height; in the split layout map and legend fit the actual body height above the action bar, including feedback | `reveal.legend` | wraps; never reserved outside the map's available height |
-| Score rows | Kept / Made / When: glyph, name and disclosure chevron, the result (`result.km` / `result.years`, or `reveal.spotOn`), a shared 88 px tinted right-hand points column; on hover-capable devices hover or keyboard focus shows the tooltip as an attached in-flow strip; tap opens the same text inline (When adds the timeline, Made the place note) | `reveal.row.*`, `result.*`, `reveal.spotOn`, `reveal.yearCount`, `reveal.yearOne`, `reveal.how`, `scoring.*` | results wrap; minimum 48 px rows; explanations scroll with the table, not over the action bar |
+| Score rows | Kept / Made / When: glyph, name and disclosure chevron, the result (`result.km` / `result.years`, or `reveal.spotOn`), a shared 88 px tinted right-hand points column; on phones the result sits below the question, not in a third narrow column; on hover-capable devices hover or keyboard focus shows the tooltip as an attached in-flow strip; tap opens the same text inline (When adds the timeline, Made the place note) | `reveal.row.*`, `result.*`, `reveal.spotOn`, `reveal.yearCount`, `reveal.yearOne`, `reveal.how`, `scoring.*` | results wrap in full without ellipsis; minimum 48 px rows; explanations scroll with the table, not over the action bar (DS31) |
 | Round total | the table's final raised row with cobalt top rule: uppercase label + white numeric cell showing points out of 3,000 (announced) | `reveal.scoreLabel`, `reveal.score` | one line; focus ring remains outside the cell |
 | Contested | the sourced claim | `reveal.contested` | wraps |
 | Facts | sourced facts | `reveal.source` | list |
 | Credit | photo credit, photo source, museum record | `reveal.credit`, `reveal.creditSource`, `reveal.record` | wraps |
-| Action bar | after round 3 only: the difficulty row; then Next round or See results | `pulse.*`, `reveal.next`, `reveal.results` | Next always visible |
+| Action bar | after round 3 only: `pulse.difficulty` uses a shorter question label; all three choices retain their wording and 44 px touch height; then Next round or See results | `pulse.*`, `reveal.next`, `reveal.results` | difficulty fits one line at 375 px at normal text size; enlarged text may wrap rather than clip; Next always visible (DS21) |
 
 States:
 

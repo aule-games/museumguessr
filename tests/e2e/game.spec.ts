@@ -283,7 +283,7 @@ test.describe('[DS19] [DS1] layout @layout', () => {
     }
   });
 
-  test('the reveal reads top to bottom: top bar, wall label, map, then Next on screen', async ({ page }) => {
+  test('[DS21] the reveal puts scores after the wall label and keeps Next on screen', async ({ page }) => {
     await start(page);
     await playRound(page);
     const vw = page.viewportSize()?.width ?? 0;
@@ -300,5 +300,16 @@ test.describe('[DS19] [DS1] layout @layout', () => {
     expect(map.width, 'map uses at least 40% of the width').toBeGreaterThanOrEqual(vw * 0.4);
     expect(next.y, 'Next below the wall label').toBeGreaterThan(title.y + title.height);
     expect(next.y + next.height, 'Next on screen').toBeLessThanOrEqual(vh);
+    const score = await page.locator('[data-test=round-score]').boundingBox();
+    if (!score) throw new Error('round total missing');
+    expect(score.y, 'round total below the top bar').toBeGreaterThanOrEqual(bar.y + bar.height);
+    expect(score.y + score.height, 'round total above Next').toBeLessThanOrEqual(next.y);
+    if (vw < 900 && vh > vw) {
+      const scores = await page.locator('[data-test=scores]').boundingBox();
+      if (!scores) throw new Error('score table missing');
+      expect(scores.y, 'score table immediately follows the wall label').toBeGreaterThan(title.y + title.height);
+      expect(scores.y + scores.height, 'collapsed score table above Next').toBeLessThanOrEqual(next.y);
+      expect(map.y, 'map follows the score table').toBeGreaterThanOrEqual(scores.y + scores.height);
+    }
   });
 });

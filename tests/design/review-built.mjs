@@ -4,6 +4,7 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { chromium, expect } from '@playwright/test';
 import { preview } from 'vite';
 import { placePin, enterYear, confirm, playRound } from '../e2e/fixtures.ts';
+import { phoneGeometryIssues } from './phone-geometry.mjs';
 const out = new URL('../../test-results/visual/', import.meta.url);
 mkdirSync(out, { recursive: true });
 const browser = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
@@ -12,11 +13,16 @@ const records = [];
 try {
   server = await preview({ preview: { host: '127.0.0.1', port: 4183, strictPort: false } });
   const url = server.resolvedUrls.local[0];
-  for (const [width, height] of [[390, 844], [1280, 800], [375, 667], [844, 390]]) {
+  for (const [width, height] of [[390, 844], [1280, 800], [375, 667], [844, 390], [390, 664]]) {
     const context = await browser.newContext({ viewport: { width, height }, reducedMotion: 'reduce' });
     await context.route('**/*', (route) => new URL(route.request().url()).origin === new URL(url).origin ? route.continue() : route.abort());
     let page = await context.newPage();
     const capture = async (state) => {
+      // A leftover pointer must not turn a collapsed score capture into a hover explanation.
+      await page.mouse.move(0, 0);
+      if (/^reveal-(1|3)(-feedback-sent)?$/.test(state)) {
+        await page.locator('.reveal__scroll').evaluate((node) => { node.scrollTop = 0; });
+      }
       await page.evaluate(() => document.fonts.ready);
       // Final state only: every image (lazy ones too) decoded, two settled frames.
       await page.evaluate(async () => {
@@ -26,6 +32,14 @@ try {
         }));
         await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
       });
+      // MapLibre's resize observer is throttled. A smaller feedback footer can
+      // resize the host before the canvas and fitted markers have caught up.
+      await page.waitForFunction(() => {
+        const host = document.querySelector('.map__canvas')?.getBoundingClientRect();
+        const canvas = document.querySelector('.maplibregl-canvas')?.getBoundingClientRect();
+        return !host || !canvas || (Math.abs(host.width - canvas.width) < 1 && Math.abs(host.height - canvas.height) < 1);
+      });
+      await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
       const issues = await page.evaluate(() => {
         const issues = [];
         if (document.documentElement.scrollWidth > innerWidth + 1) issues.push('horizontal page overflow');
@@ -44,6 +58,7 @@ try {
         if (badge && badge.getBoundingClientRect().bottom > screen.getBoundingClientRect().top + 1) issues.push('badge overlaps screen');
         return issues;
       });
+      issues.push(...await page.evaluate(phoneGeometryIssues, state));
       const name = `${width}x${height}-${state}.png`;
       await page.screenshot({ path: new URL(name, out).pathname, fullPage: true });
       records.push({ width, height, state, image: name, issues });
@@ -84,6 +99,8 @@ try {
               await capture(`dialog-${dialog}`);
               await close();
             }
+            await placePin(page, 48.86, 2.35, 2);
+            await capture('kept-zoomed');
           }
           await placePin(page, 48.86, 2.35);
           await capture(`${step}-placed`);
@@ -106,6 +123,12 @@ try {
         await page.locator('[data-test=row-when]').click();
         await capture(`reveal-${round}-expanded`);
         await page.locator('[data-test=row-when]').click();
+      }
+      if (round === 3) {
+        await page.locator('[data-test=pulse-about_right]').click();
+        await expect(page.locator('.pulse .chip')).toHaveCount(0);
+        // Recheck the map fit after the footer shrinks, not only with feedback present.
+        await capture('reveal-3-feedback-sent');
       }
       if (round === 1) {
         await page.close();

@@ -5,6 +5,7 @@
 // overlay), and focus returns to where it was. No third-party code.
 
 import { t, type CopyKey } from '../copy.ts';
+import tokens from '../design/tokens.json';
 import { h, reducedMotion } from './dom.ts';
 import { pushOverlay } from './overlay.ts';
 
@@ -37,9 +38,25 @@ export interface Rect {
 export const GAP = 12;
 export const SPOT_PAD = 6;
 
+/** Use a narrower side column or a shorter scrolling card before covering a target. */
+export function cardLimits(target: Rect | null, card: { w: number; h: number }, view: { w: number; h: number }): { w: number; h: number } {
+  const full = { w: Math.min(card.w, view.w - GAP * 2), h: view.h - GAP * 2 };
+  if (!target) return full;
+  const above = target.y - SPOT_PAD - GAP * 2;
+  const below = view.h - target.y - target.h - SPOT_PAD - GAP * 2;
+  const side = Math.max(target.x, view.w - target.x - target.w) - SPOT_PAD - GAP * 2;
+  if (above >= card.h || below >= card.h || side >= card.w) return full;
+  const minWidth = parseFloat(tokens.space['8']) * 4 + parseFloat(tokens.space['5']);
+  if (side >= minWidth) return { ...full, w: side };
+  const minHeight = parseFloat(tokens.space['8']) * 2 + parseFloat(tokens.space['6']);
+  const vertical = Math.max(above, below);
+  return vertical >= minHeight ? { ...full, h: vertical } : full;
+}
+
 /**
  * Where the card goes: below the lit element if it fits, else above, else
- * beside it, else over it; always fully on screen. No target centres it.
+ * beside it, else at the edge that overlaps it least; always fully on screen.
+ * No target centres it. The caller measures again after applying cardLimits.
  */
 export function placeCard(target: Rect | null, card: { w: number; h: number }, view: { w: number; h: number }): { x: number; y: number } {
   const clampX = (x: number) => Math.min(Math.max(GAP, x), Math.max(GAP, view.w - card.w - GAP));
@@ -55,7 +72,16 @@ export function placeCard(target: Rect | null, card: { w: number; h: number }, v
   if (right + card.w + GAP <= view.w) return { x: right, y: centreY };
   const left = target.x - SPOT_PAD - GAP - card.w;
   if (left >= GAP) return { x: left, y: centreY };
-  return { x: centreX, y: clampY(view.h - card.h - GAP) };
+  const candidates = [
+    { x: centreX, y: GAP },
+    { x: centreX, y: clampY(view.h - card.h - GAP) },
+    { x: GAP, y: centreY },
+    { x: clampX(view.w - card.w - GAP), y: centreY },
+  ];
+  const covered = (p: { x: number; y: number }) =>
+    Math.max(0, Math.min(p.x + card.w, target.x + target.w) - Math.max(p.x, target.x)) *
+    Math.max(0, Math.min(p.y + card.h, target.y + target.h) - Math.max(p.y, target.y));
+  return candidates.sort((a, b) => covered(a) - covered(b))[0] as { x: number; y: number };
 }
 
 export interface TourOptions {
@@ -96,6 +122,11 @@ export function startTour(o: TourOptions): () => void {
     const box = el?.getBoundingClientRect();
     const rect = box && box.width > 0 && box.height > 0 ? { x: box.left, y: box.top, w: box.width, h: box.height } : null;
     const view = { w: window.innerWidth, h: window.innerHeight };
+    card.style.maxWidth = '';
+    card.style.maxHeight = '';
+    const limits = cardLimits(rect, { w: card.offsetWidth, h: card.offsetHeight }, view);
+    card.style.maxWidth = `${limits.w}px`;
+    card.style.maxHeight = `${limits.h}px`;
     if (rect) {
       spot.hidden = false;
       Object.assign(spot.style, {

@@ -673,6 +673,18 @@ h2 {
   }
 }
 
+/* Short reveal maps keep one reset button, not a vertical tower. Pinch,
+   double-tap and keyboard zoom remain available; guessing controls stay put. */
+@media (orientation: landscape) and (height <= 500px) {
+  .map[data-mode='reveal'] .map__controls {
+    inset: auto auto var(--space-2) var(--space-2);
+  }
+
+  .map[data-mode='reveal'] .map__btn:not(.map__btn--world) {
+    display: none;
+  }
+}
+
 .map__label {
   position: absolute;
   z-index: 3;
@@ -791,7 +803,10 @@ h2 {
   left: 50%;
   top: 100%;
   transform: translate(-50%, var(--space-1));
-  white-space: nowrap;
+  width: max-content;
+  max-width: calc(var(--space-8) * 3);
+  text-align: center;
+  overflow-wrap: anywhere;
   font-size: var(--text-xs);
   font-weight: var(--font-weight-medium);
   padding: 0 var(--space-1);
@@ -1028,7 +1043,7 @@ h2 {
 }
 
 .label__title {
-  font-size: var(--text-2xl);
+  font-size: var(--text-xl);
 }
 
 .label__line {
@@ -1125,9 +1140,10 @@ h2 {
   width: 100%;
   min-height: var(--space-7);
   display: grid;
-  grid-template-columns: calc(var(--space-8) + var(--space-6)) minmax(0, 1fr) calc(var(--space-8) + var(--space-5));
+  grid-template-columns: minmax(0, 1fr) calc(var(--space-8) + var(--space-5));
+  grid-template-areas: 'label points' 'result points';
   align-items: center;
-  gap: var(--space-2);
+  gap: 0 var(--space-2);
   padding: 0;
   border: 0;
   background: none;
@@ -1148,10 +1164,11 @@ h2 {
 
 /* each row starts with its question's glyph */
 .score__label {
+  grid-area: label;
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  padding: var(--space-2) 0 var(--space-2) var(--space-3);
+  padding: var(--space-2) 0 0 var(--space-3);
   font-weight: var(--font-weight-medium);
 }
 
@@ -1201,6 +1218,7 @@ h2 {
 }
 
 .score__points {
+  grid-area: points;
   display: flex;
   align-items: center;
   justify-content: flex-end;
@@ -1216,8 +1234,9 @@ h2 {
 }
 
 .score__result {
+  grid-area: result;
   min-width: 0;
-  padding-block: var(--space-2);
+  padding: 0 0 var(--space-2) var(--space-3);
   color: var(--color-ink-muted);
   overflow-wrap: anywhere;
 }
@@ -1346,6 +1365,16 @@ h2 {
 .pulse__thanks:not(:empty) {
   color: var(--color-success);
   font-weight: var(--font-weight-medium);
+}
+
+/* The difficulty question has one compact line at 375px; allow wrapping only
+   when enlarged text really needs it. End-screen feedback is unchanged. */
+.actionbar--reveal .pulse .chip {
+  padding-inline: var(--space-2);
+}
+
+.actionbar--reveal .pulse__thanks:empty {
+  display: none;
 }
 
 /* ---------- end ---------- */
@@ -1952,6 +1981,17 @@ h2 {
   .score__row {
     min-height: var(--space-7);
     font-size: var(--text-md);
+    grid-template-columns: calc(var(--space-8) + var(--space-6)) minmax(0, 1fr) calc(var(--space-8) + var(--space-5));
+    grid-template-areas: 'label result points';
+    gap: var(--space-2);
+  }
+
+  .score__label {
+    padding: var(--space-2) 0 var(--space-2) var(--space-3);
+  }
+
+  .score__result {
+    padding: var(--space-2) 0;
   }
 
   /* start: text left, example right */
@@ -2057,12 +2097,40 @@ h2 {
   }
 }
 
-/* short phones: the photo collapses to a thumbnail (DS19) */
-@media (height <= 700px) and (width <= 899px) and (orientation: portrait) {
-  .round {
-    grid-template-rows: var(--layout-topbar) var(--layout-prompt) var(--layout-thumb) minmax(var(--layout-map-min), 1fr) calc(var(--layout-actionbar) + env(safe-area-inset-bottom));
+/* Short landscape: keep a summary above the fold even when the full score
+   table needs scrolling. The total stays a single live region, not a copy. */
+@media (orientation: landscape) and (height <= 500px) {
+  .reveal__scroll {
+    row-gap: var(--space-2);
   }
 
+  .reveal__scroll > * {
+    margin-inline: var(--space-4);
+  }
+
+  .reveal__scroll > .label {
+    padding: var(--space-2) var(--space-4);
+  }
+
+  .label__title {
+    font-size: var(--text-lg);
+  }
+
+  .scores__total {
+    order: -1;
+    padding: var(--space-2) var(--space-3);
+    border-top: 0;
+    border-bottom: var(--focus-width) solid var(--color-accent);
+  }
+
+  .reveal__score {
+    font-size: var(--text-lg);
+  }
+}
+
+/* Short portrait: retain the 2:3 object/map share instead of a 96px strip.
+   When keeps 3:7; its controls can scroll without hiding Confirm. (DS19) */
+@media (height <= 700px) and (width <= 899px) and (orientation: portrait) {
   .round--when .year__readout {
     font-size: var(--text-2xl);
   }

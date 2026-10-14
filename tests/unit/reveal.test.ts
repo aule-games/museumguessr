@@ -81,4 +81,9 @@ describe('[DS12] the reveal score table', () => {
     const rows = [...el().querySelectorAll('[data-test=scores] > li')];
     expect(rows.at(-1)?.querySelector('[data-test=round-score]')?.textContent).toContain('462');
   });
+
+  it('[DS21] puts the score table directly after the wall label, before the map and journey fact', () => {
+    const children = [...(el().querySelector('.reveal__scroll')?.children ?? [])];
+    expect(children.slice(0, 4).map((node) => node.className)).toEqual(['label', 'scores', 'reveal__media', 'reveal__journey']);
+  });
 });

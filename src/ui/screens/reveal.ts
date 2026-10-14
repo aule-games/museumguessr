@@ -1,6 +1,6 @@
 // Reveal (DS3, DS12, DS17, DS21, DS22, DS31, PV1, V2). Above the fold on a
-// phone: wall-label header, the journey fact, then the map; then the score
-// table (one row per question: result, then points in their own column; the
+// phone: compact wall-label header, then the score table, then the map and
+// journey fact (one row per question: result, then points in their own column; the
 // round total last; hover, focus or tap shows how the points were computed),
 // the contested note, facts, the credit line and a sticky Next.
 
@@ -158,9 +158,9 @@ export function revealScreen(p: RevealProps): RevealView {
         h('h2', { class: 'label__title', 'data-test': 'reveal-title' }, item.title),
         h('p', { class: 'label__line' }, wallLabel(item)),
       ),
-      journey && h('p', { class: 'reveal__journey', 'data-test': 'journey' }, journey.text, ' ', ext(journey.source_url, t('reveal.source'))),
-      h('div', { class: 'reveal__media' }, mapHost, legend),
       rows,
+      h('div', { class: 'reveal__media' }, mapHost, legend),
+      journey && h('p', { class: 'reveal__journey', 'data-test': 'journey' }, journey.text, ' ', ext(journey.source_url, t('reveal.source'))),
       item.contested && item.claimant_source
         ? h('p', { class: 'reveal__contested' }, t('reveal.contested', { text: item.claimant_source.text }), ' ', ext(item.claimant_source.source_url, t('reveal.source')))
         : null,
