@@ -10,6 +10,32 @@ export function phoneGeometryIssues(state) {
   const portrait = innerWidth < 900 && innerHeight > innerWidth;
   const landscape = innerWidth > innerHeight && innerHeight <= 500;
   const collapsed = /^reveal-(1|3)(-feedback-sent)?$/.test(state);
+  // Check both guessing and reveal maps, not only the score screen. Synthetic
+  // production-length credits are installed by review-built before measuring.
+  const mapElement = document.querySelector('.map');
+  if (mapElement && /^(ready|fallback)$/.test(mapElement.dataset.state)) {
+    const map = mapElement.getBoundingClientRect();
+    const attribution = mapElement.querySelector('.maplibregl-ctrl-attrib');
+    const inner = attribution?.querySelector('.maplibregl-ctrl-attrib-inner');
+    const credit = attribution?.getBoundingClientRect();
+    check(visible(credit) && !!inner?.textContent.trim(), '[DS22] Map credits remain expanded in round and reveal modes');
+    if (visible(credit) && inner) {
+      const controls = [...mapElement.querySelectorAll('.map__btn')].map((node) => node.getBoundingClientRect()).filter(visible);
+      check(controls.every((control) => !overlap(control, credit)), '[DS22] No map control overlaps the map credits');
+      const range = document.createRange();
+      range.selectNodeContents(inner);
+      const lines = [...range.getClientRects()].filter(visible);
+      check(within(credit, map) && lines.length > 0 && lines.every((line) => within(line, credit)) &&
+        inner.scrollWidth <= inner.clientWidth + 1 && getComputedStyle(inner).textOverflow !== 'ellipsis',
+      '[DS22] Complete map credits fit inside the map without clipping or collapsing');
+      check([inner, ...inner.querySelectorAll('a')].every((node) => parseFloat(getComputedStyle(node).fontSize) >= 12),
+        '[DS22] Map credits stay at least 12 pixels including provider links');
+      if (mapElement.dataset.mode === 'reveal') {
+        const pins = [...mapElement.querySelectorAll('.pin svg, .pin__label:not(:empty)')].map((node) => node.getBoundingClientRect());
+        check(pins.every((pin) => !overlap(pin, credit)), '[DS22] Fitted reveal pins and labels stay clear of the map credits');
+      }
+    }
+  }
   const scroll = document.querySelector('.reveal__scroll');
   if (scroll) {
     const body = scroll.getBoundingClientRect();

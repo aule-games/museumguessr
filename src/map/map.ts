@@ -245,7 +245,7 @@ export class GameMap {
         style: mainStyle(),
         bounds: WORLD,
         renderWorldCopies: true,
-        attributionControl: { compact: true, customAttribution: 'Fallback map: Natural Earth' },
+        attributionControl: { compact: false, customAttribution: 'Natural Earth' },
         dragRotate: false,
         pitchWithRotate: false,
         touchPitch: false,
@@ -261,6 +261,18 @@ export class GameMap {
     this.map = map;
     map.touchZoomRotate.disableRotation();
     map.keyboard.disableRotation();
+
+    // Tile metadata can lengthen the credit after the first fit. Re-measure
+    // its rail when it wraps, including font loading and viewport changes.
+    const attribution = this.element.querySelector('.maplibregl-ctrl-attrib');
+    if (attribution) {
+      const observer = new ResizeObserver(() => {
+        this.updateFallbackLabels();
+        this.revealFit?.();
+      });
+      observer.observe(attribution);
+      map.once('remove', () => observer.disconnect());
+    }
 
     let idle = false;
     const timer = setTimeout(() => {

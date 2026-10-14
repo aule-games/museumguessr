@@ -636,8 +636,30 @@ h2 {
   height: 100%;
 }
 
-/* Above MapLibre's control corners (z-index 2): on a short map the expanded
-   attribution must never cover the zoom or World buttons. */
+/* Expanded credits stay readable, including after panning. Provider wording
+   and links stay intact; wrapping is preferable to hiding or shrinking them. */
+.map .maplibregl-ctrl-bottom-right {
+  max-width: 100%;
+}
+
+.map .maplibregl-ctrl.maplibregl-ctrl-attrib {
+  max-width: 100%;
+  margin: 0;
+  padding: var(--space-1) var(--space-2);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  line-height: var(--leading-normal);
+  overflow-wrap: anywhere;
+}
+
+.map .maplibregl-ctrl-attrib a {
+  color: inherit;
+  text-decoration: underline;
+}
+
+/* Keep controls in their own corner, never on top of the attribution rail. */
 .map__controls {
   position: absolute;
   z-index: 3;
@@ -673,11 +695,11 @@ h2 {
   }
 }
 
-/* Short reveal maps keep one reset button, not a vertical tower. Pinch,
-   double-tap and keyboard zoom remain available; guessing controls stay put. */
+/* Short reveals keep World at top-left, clear of even wrapped bottom credits.
+   Fitting reserves its left column. Gesture/keyboard zoom remains available. */
 @media (orientation: landscape) and (height <= 500px) {
   .map[data-mode='reveal'] .map__controls {
-    inset: auto auto var(--space-2) var(--space-2);
+    inset: var(--space-2) auto auto var(--space-2);
   }
 
   .map[data-mode='reveal'] .map__btn:not(.map__btn--world) {

@@ -129,8 +129,8 @@ simplified for display.
 
 **Map:** map data © [OpenStreetMap](https://www.openstreetmap.org/copyright)
 contributors, vector tiles by [OpenFreeMap](https://openfreemap.org/) in the
-[OpenMapTiles](https://openmaptiles.org/) schema. The fallback map, the
-start-screen mini map and the place names come from
+[OpenMapTiles](https://openmaptiles.org/) schema. The fallback map, reveal
+country tints, start-screen mini map and place names come from
 [Natural Earth](https://www.naturalearthdata.com/) (public domain).
 
 **Fonts:** Barlow Condensed (© 2017 The Barlow Project Authors), IBM Plex Sans

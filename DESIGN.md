@@ -14,7 +14,7 @@ Where the game differs from the static studies, on purpose:
 - The reveal keeps the top bar (round, running total, menu) above the wall label.
 - On a phone in portrait, the reveal map hides its zoom buttons: the view is
   already fitted to every pin, and pinch or double-tap still zoom.
-- On short landscape reveals, only World remains, at bottom-left. The fit
+- On short landscape reveals, only World remains, at top-left. The fit
   reserves measured pin/label, control and attribution space; guessing-map
   controls are unchanged.
 - Production is score-first: a compact wall label is followed immediately by
@@ -127,6 +127,13 @@ Use the same map tokens and pin assets in both renderers. The static composition
 use intentionally schematic, hand-coded SVG outlines: they are neither real
 tiles nor a bundled production fallback and must not be reused for scoring.
 
+Map credits are always expanded, including after panning, with no default
+information-button collapse. Use 12 px body type, normal line height and ink on
+an opaque surface; preserve all provider text and links. The custom credit is
+**Natural Earth** because its geometry also supplies the reveal country tints
+over vector tiles. Credits may wrap rather than shrink, truncate or overflow.
+No map control may overlap the credit rail in round or reveal mode. (DS22)
+
 | Asset | Geometry / meaning |
 | --- | --- |
 | `kept.svg` | Square cabinet with a short anchored foot; filled answer |
@@ -179,8 +186,12 @@ space. This includes the actual feedback/footer height. The portrait map
 continues to use `layout.reveal-map`. Fitting keeps the same answer/guess
 coordinates and maximum zoom, but measures the pin labels and visible controls
 instead of assuming symmetric 56 px padding. Long pin labels wrap at 192 px.
-The landscape World button sits below the fitted labels, clear of the legend;
-desktop reserves its controls column on the right. No scoring geometry changes.
+The landscape World button sits at top-left, with a reserved left column;
+desktop reserves its controls column on the right. Both reserve the measured
+bottom attribution rail. A credit resize (late tile metadata, wrapping or font
+loading) re-fits the reveal unless the player has already moved it. Built review
+checks production-length and longer legacy credits at every viewport in both
+map modes, including before/after reveal feedback. No scoring geometry changes.
 
 Contrast is checked on composited colours, including the veil, country tint
 and full-marks area together, not just on the base palette. Run

@@ -16,6 +16,24 @@ describe('[DS22] reveal fit clearance', () => {
       { left: 596, top: 12, right: 648, bottom: 152 }, null);
     expect(660 - padding.right + pin.labelWidth / 2).toBeLessThan(596);
   });
+  it('[DS22] keeps landscape pins right of World and above two-line production credits', () => {
+    const controls = { left: 8, top: 8, right: 60, bottom: 52 };
+    const credit = { left: 0, top: 131, right: 464, bottom: 174 };
+    const p = revealPadding({ w: 464, h: 174 }, pin, controls, credit);
+    expect(p.left - pin.labelWidth / 2).toBeGreaterThanOrEqual(controls.right + pin.gap);
+    expect(174 - p.bottom + pin.labelGap + pin.labelHeight).toBeLessThanOrEqual(credit.top - pin.gap);
+    expect(p.top - pin.height).toBeGreaterThanOrEqual(pin.gap);
+    expect(p.top + p.bottom).toBeLessThan(174);
+    expect(p.left + p.right).toBeLessThan(464);
+  });
+  it('[DS22] increases the bottom clearance when late tile credits wrap to another line', () => {
+    const view = { w: 464, h: 174 };
+    const controls = { left: 8, top: 8, right: 60, bottom: 52 };
+    const single = revealPadding(view, pin, controls, { left: 0, top: 148, right: 464, bottom: 174 });
+    const wrapped = revealPadding(view, pin, controls, { left: 0, top: 131, right: 464, bottom: 174 });
+    expect(wrapped.bottom - single.bottom).toBe(17);
+    expect(wrapped.left).toBe(single.left);
+  });
   it('[DS22] accepts hidden phone controls and leaves a positive fit area in tiny hosts', () => {
     for (const [w, h] of [[375, 214], [100, 60], [0, 0]] as const) {
       const p = revealPadding({ w, h }, pin, null, null);

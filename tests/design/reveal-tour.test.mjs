@@ -33,6 +33,11 @@ const rule = (selector) => {
   return css.slice(start, css.indexOf('}', start) + 1);
 };
 
+test('[DS22] Map credit text and provider links retain 4.5:1 at the 12 pixel minimum', () => {
+  assert.ok(parseFloat(tokens.text.xs) >= 12);
+  assert.ok(contrast(color('ink'), color('surface')) >= 4.5);
+});
+
 test('[DS22] Reveal pins and paths retain 3:1 on faded and tinted map surfaces, including the full-marks area', (t) => {
   let minimum = { ratio: Infinity, pair: '' };
   for (const base of ['background', 'water', 'land', 'landcover', 'border', 'border-minor', 'road', 'graticule']) {

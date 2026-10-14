@@ -25,13 +25,15 @@ export function revealPadding(
   const side = pin.labelWidth / 2 + pin.gap;
   let top = pin.height + pin.gap;
   let bottomRail = attribution ? view.h - attribution.top : 0;
+  let leftRail = 0;
   let rightRail = 0;
   if (controls) {
     if (controls.top >= view.h / 2) bottomRail = Math.max(bottomRail, view.h - controls.top);
+    else if ((controls.left + controls.right) / 2 < view.w / 2) leftRail = controls.right;
     else rightRail = view.w - controls.left;
   }
   let bottom = pin.labelHeight + pin.labelGap + pin.gap + bottomRail;
-  let left = side;
+  let left = side + leftRail;
   let right = side + rightRail;
   // A detached or exceptionally small host must still leave a positive fit area.
   const vertical = Math.min(1, Math.max(0, view.h * 0.9) / (top + bottom));

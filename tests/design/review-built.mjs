@@ -5,6 +5,7 @@ import { chromium, expect } from '@playwright/test';
 import { preview } from 'vite';
 import { placePin, enterYear, confirm, playRound } from '../e2e/fixtures.ts';
 import { phoneGeometryIssues } from './phone-geometry.mjs';
+import { creditFixtures } from './map-credit-fixtures.mjs';
 const out = new URL('../../test-results/visual/', import.meta.url);
 mkdirSync(out, { recursive: true });
 const browser = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
@@ -18,9 +19,10 @@ try {
     await context.route('**/*', (route) => new URL(route.request().url()).origin === new URL(url).origin ? route.continue() : route.abort());
     let page = await context.newPage();
     const capture = async (state) => {
+      const geometryState = state.replace(/-credits-(production|long)$/, '');
       // A leftover pointer must not turn a collapsed score capture into a hover explanation.
       await page.mouse.move(0, 0);
-      if (/^reveal-(1|3)(-feedback-sent)?$/.test(state)) {
+      if (/^reveal-(1|3)(-feedback-sent)?$/.test(geometryState)) {
         await page.locator('.reveal__scroll').evaluate((node) => { node.scrollTop = 0; });
       }
       await page.evaluate(() => document.fonts.ready);
@@ -58,10 +60,28 @@ try {
         if (badge && badge.getBoundingClientRect().bottom > screen.getBoundingClientRect().top + 1) issues.push('badge overlaps screen');
         return issues;
       });
-      issues.push(...await page.evaluate(phoneGeometryIssues, state));
+      issues.push(...await page.evaluate(phoneGeometryIssues, geometryState));
       const name = `${width}x${height}-${state}.png`;
       await page.screenshot({ path: new URL(name, out).pathname, fullPage: true });
       records.push({ width, height, state, image: name, issues });
+    };
+    const captureCredits = async (state) => {
+      const inner = page.locator('.maplibregl-ctrl-attrib-inner');
+      await expect(inner).toBeVisible();
+      // Keep real nodes (including links) so the original credit is restored.
+      // Only the text changes: production's ResizeObserver must handle re-fit.
+      const original = await inner.evaluateHandle((node) => [...node.childNodes]);
+      try {
+        for (const [name, text] of Object.entries(creditFixtures)) {
+          await inner.evaluate((node, text) => { node.textContent = text; }, text);
+          await capture(`${state}-credits-${name}`);
+          await expect(inner).toHaveText(text);
+        }
+      } finally {
+        await inner.evaluate((node, children) => node.replaceChildren(...children), original);
+        await original.dispose();
+        await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+      }
     };
     const close = async () => {
       await page.getByRole('button', { name: 'Close', exact: true }).click();
@@ -83,6 +103,7 @@ try {
         for (const step of ['kept', 'made']) {
           await expect(page.locator('.map')).toHaveAttribute('data-state', /ready|fallback/);
           await capture(`${step}-empty`);
+          await captureCredits(`${step}-empty`);
           if (step === 'kept') {
             await page.locator('.photo__open').click();
             await expect(page.locator('.pswp')).toBeVisible();
@@ -120,6 +141,7 @@ try {
         // capture only once the reveal layers (veil, countries, lines) have rendered
         await expect(page.locator('.map')).toHaveAttribute('data-reveal', 'drawn', { timeout: 8000 });
         await capture(`reveal-${round}`);
+        await captureCredits(`reveal-${round}`);
         await page.locator('[data-test=row-when]').click();
         await capture(`reveal-${round}-expanded`);
         await page.locator('[data-test=row-when]').click();
@@ -129,6 +151,7 @@ try {
         await expect(page.locator('.pulse .chip')).toHaveCount(0);
         // Recheck the map fit after the footer shrinks, not only with feedback present.
         await capture('reveal-3-feedback-sent');
+        await captureCredits('reveal-3-feedback-sent');
       }
       if (round === 1) {
         await page.close();

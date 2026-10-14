@@ -84,6 +84,11 @@ cities at world zoom, adds ranks as zoom increases, and suppresses labels whose
 measured boxes collide or leave the map. Guess labels and controls also reserve
 space. This changes label visibility only, not pin placement or snapping. (DS4)
 
+Map credits stay expanded even after panning, in 12 px body type on an opaque
+surface. Preserve provider text and links, allow wrapping and never cover them
+with zoom or World. The custom Natural Earth credit also covers reveal country
+tints when vector tiles are active. This applies to both map modes. (DS22)
+
 States:
 
 | State | What shows |
@@ -159,7 +164,7 @@ and there is only one score live region. (DS21)
 | Top bar | as in rounds | as in rounds | one line |
 | Wall label | object title; made place and date → now in museum, city; title uses 26 px on phones, 20 px on short landscape, 52 px on desktop | `reveal.madeKept`, or `reveal.sameArea` when made and held in the same area | title and identity remain complete; no truncation |
 | Journey | the sourced journey fact | `reveal.source` | wraps |
-| Map | answer pins (filled), guesses (hollow), one made→kept line, dashed guess links, the full-marks area for a region or country origin; a 78% surface veil fades the base map, with its labels hidden; answer countries have 28% Kept/Made tints and opaque 2 px outlines; pins have a surface keyline | `reveal.madeRegion`, `reveal.lineLabel` | fitted with measured pin-label/control/attribution clearance; controls hidden in phone portrait, only World at bottom-left in short landscape; pinch, double-tap and keyboard zoom remain; long pin labels wrap at 192 px (DS22) |
+| Map | answer pins (filled), guesses (hollow), one made→kept line, dashed guess links, the full-marks area for a region or country origin; a 78% surface veil fades the base map, with its labels hidden; answer countries have 28% Kept/Made tints and opaque 2 px outlines; pins have a surface keyline | `reveal.madeRegion`, `reveal.lineLabel` | fitted with measured pin-label/control/attribution clearance; controls hidden in phone portrait, only World at top-left in short landscape, with a reserved left column; credit resizing re-fits until the player moves the map; pinch, double-tap and keyboard zoom remain; long pin labels wrap at 192 px (DS22) |
 | Legend | raised caption rail under the map, normal line height; in the split layout map and legend fit the actual body height above the action bar, including feedback | `reveal.legend` | wraps; never reserved outside the map's available height |
 | Score rows | Kept / Made / When: glyph, name and disclosure chevron, the result (`result.km` / `result.years`, or `reveal.spotOn`), a shared 88 px tinted right-hand points column; on phones the result sits below the question, not in a third narrow column; on hover-capable devices hover or keyboard focus shows the tooltip as an attached in-flow strip; tap opens the same text inline (When adds the timeline, Made the place note) | `reveal.row.*`, `result.*`, `reveal.spotOn`, `reveal.yearCount`, `reveal.yearOne`, `reveal.how`, `scoring.*` | results wrap in full without ellipsis; minimum 48 px rows; explanations scroll with the table, not over the action bar (DS31) |
 | Round total | the table's final raised row with cobalt top rule: uppercase label + white numeric cell showing points out of 3,000 (announced) | `reveal.scoreLabel`, `reveal.score` | one line; focus ring remains outside the cell |
