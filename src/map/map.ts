@@ -119,8 +119,8 @@ export function prefetchMap(): void {
 export interface GuessOptions {
   step: 'kept' | 'made';
   pin: LatLng | null;
-  /** The confirmed Kept pin, shown dimmed during the Made step. */
-  dimmed: LatLng | null;
+  /** The other map question's confirmed pin, shown dimmed (the Made pin during Kept, DS35). */
+  dimmed: { step: 'kept' | 'made'; at: LatLng } | null;
 }
 
 export interface RevealOptions {
@@ -385,8 +385,9 @@ export class GameMap {
     this.redrawLayers();
     this.element.dataset.mode = 'guess';
     if (opts.dimmed && this.lib && this.map) {
-      const el = pinElement('kept', t('step.kept'), 'pin--dimmed');
-      this.markers.push(new this.lib.Marker({ element: el, anchor: 'bottom' }).setLngLat([opts.dimmed.lng, opts.dimmed.lat]).addTo(this.map));
+      const { step, at } = opts.dimmed;
+      const el = pinElement(step, t(`step.${step}`), 'pin--dimmed');
+      this.markers.push(new this.lib.Marker({ element: el, anchor: 'bottom' }).setLngLat([at.lng, at.lat]).addTo(this.map));
     }
     this.label.textContent = '';
     if (opts.pin) this.placePin(opts.pin, false);

@@ -56,7 +56,8 @@ screen, from the same source in `src/analytics/events.ts`):
 | `$pageview` | `src`, `landing` (first load in this tab session), `resumed` (a saved game was restored) | each page load, after the first screen renders | every load counts |
 | `game_start` | `src` | a new game starts (Start, New game, Replay) | game |
 | `round_started` | `src`, `round` (1-10) | a round is shown the first time | game and round |
-| `step_completed` | `src`, `round`, `step` (`kept`, `made`, `when`) | an answer is confirmed | game, round and step |
+| `step_completed` | `src`, `round`, `step` (`made`, `when`, `kept`) | an answer is confirmed (a changed answer after Back is not sent again) | game, round and step |
+| `step_back` | `src`, `round`, `from` (the step left: `when`, `kept`) | the player taps Back to change an earlier answer | every Back |
 | `round_completed` | `src`, `round`, `skipped`, `answered_count` (answered rounds so far), `points` (0-3000) | the reveal is shown, or a round is skipped after its photo failed | game and round |
 | `game_completed` | `src`, `total` (0-30000), `answered_count` | the end screen opens after round 10 | game |
 | `client_error` | `name`, `message` (first 80 characters, URLs removed), `frame` (chunk:line:col) | an uncaught error in game code, or the map cannot run | at most 3 per tab session |

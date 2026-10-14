@@ -28,6 +28,7 @@ export interface AnswerKey {
 export type Action =
   | { type: 'start'; gameId: string; src: Src; itemsVersion: string }
   | { type: 'confirm'; round: number; step: Step; value: LatLng | number }
+  | { type: 'back'; round: number; step: Step }
   | { type: 'skip'; round: number }
   | { type: 'next'; round: number }
   | { type: 'pulse'; q: FeedbackQ; a: string }
@@ -106,7 +107,7 @@ export function reduce(state: GameState | null, action: Action, keys: readonly A
       src: action.src,
       item_ids: keys.map((k) => k.id),
       round: 0,
-      step: 'kept',
+      step: STEPS[0],
       phase: 'answering',
       answers: Array.from({ length: n }, emptyAnswers),
       results: Array.from({ length: n }, () => null),
@@ -174,6 +175,18 @@ export function reduce(state: GameState | null, action: Action, keys: readonly A
       return { state: next, effects: [{ type: 'save' }, ...effects] };
     }
 
+    case 'back': {
+      // Back reopens the previous step of the current round; its answer stays as the draft (DS36).
+      // Nothing is revealed before the last Confirm, so revising is fair.
+      const stepIndex = STEPS.indexOf(action.step);
+      if (action.round !== state.round || action.step !== state.step || state.phase !== 'answering' || stepIndex < 1) {
+        return { state, effects };
+      }
+      effects.push({ type: 'track', name: EVENTS.stepBack, props: { src: state.src, round: state.round + 1, from: action.step } });
+      const next: GameState = { ...state, rev: state.rev + 1, step: STEPS[stepIndex - 1] as Step };
+      return { state: next, effects: [{ type: 'save' }, ...effects] };
+    }
+
     case 'skip': {
       if (action.round !== state.round || state.phase !== 'answering') return { state, effects };
       const skipped: RoundResult = {
@@ -201,7 +214,7 @@ export function reduce(state: GameState | null, action: Action, keys: readonly A
           ...state,
           rev: state.rev + 1,
           round: state.round + 1,
-          step: 'kept',
+          step: STEPS[0],
           phase: 'answering',
         };
         next = once(next, effects, ledgerKey(next.game_id, EVENTS.roundStarted, next.round + 1), EVENTS.roundStarted, {

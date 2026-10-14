@@ -623,6 +623,11 @@ h2 {
   align-content: center;
 }
 
+/* Back sits beside Confirm on one row from the second question on (DS36). */
+.actionbar--back {
+  grid-template-columns: auto 1fr;
+}
+
 /* ---------- map ---------- */
 
 .map {

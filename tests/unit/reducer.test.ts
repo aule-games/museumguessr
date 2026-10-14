@@ -30,9 +30,9 @@ function run(actions: Action[], start: GameState | null = null) {
 
 const start: Action = { type: 'start', gameId: 'g1', src: 'webgames', itemsVersion: V };
 const answerRound = (round: number): Action[] => [
-  { type: 'confirm', round, step: 'kept', value: { lat: 40.7, lng: -74 } },
   { type: 'confirm', round, step: 'made', value: { lat: 36, lng: 43 } },
   { type: 'confirm', round, step: 'when', value: -870 },
+  { type: 'confirm', round, step: 'kept', value: { lat: 40.7, lng: -74 } },
 ];
 
 describe('[E5] full event sequence for one round', () => {
@@ -53,20 +53,20 @@ describe('[E5] full event sequence for one round', () => {
 
 describe('[R2] answer submits are idempotent', () => {
   it('a double tap records one answer and one event', () => {
-    const tap: Action = { type: 'confirm', round: 0, step: 'kept', value: { lat: 1, lng: 1 } };
+    const tap: Action = { type: 'confirm', round: 0, step: 'made', value: { lat: 1, lng: 1 } };
     const { tracked, state } = run([start, tap, tap]);
     expect(tracked.filter((t) => t.name === EVENTS.stepCompleted)).toHaveLength(1);
-    expect(state.step).toBe('made');
-    expect(state.answers[0]?.kept).toEqual({ lat: 1, lng: 1 });
+    expect(state.step).toBe('when');
+    expect(state.answers[0]?.made).toEqual({ lat: 1, lng: 1 });
   });
   it('ignores a stale submit for another round', () => {
-    const { state } = run([start, { type: 'confirm', round: 3, step: 'kept', value: { lat: 1, lng: 1 } }]);
-    expect(state.answers[0]?.kept).toBeNull();
+    const { state } = run([start, { type: 'confirm', round: 3, step: 'made', value: { lat: 1, lng: 1 } }]);
+    expect(state.answers[0]?.made).toBeNull();
   });
   it('rejects year 0 and non-numbers', () => {
     const { state } = run([
       start,
-      ...answerRound(0).slice(0, 2),
+      ...answerRound(0).slice(0, 1),
       { type: 'confirm', round: 0, step: 'when', value: 0 },
       { type: 'confirm', round: 0, step: 'when', value: 1.5 },
     ]);
@@ -104,7 +104,7 @@ describe('[E6] [ENG14] resume and the event ledger', () => {
     const restored = parseSave(serialize(first.state), V, IDS);
     expect(restored).not.toBeNull();
     expect(restored?.round).toBe(1);
-    expect(restored?.step).toBe('made');
+    expect(restored?.step).toBe('when');
     expect(restored?.results[0]?.points).toBe(first.state.results[0]?.points);
     // replaying the same confirm after reload is a no-op
     const again = run([answerRound(1)[0] as Action], restored);
@@ -149,5 +149,61 @@ describe('[V2] feedback once per game and question', () => {
     const fb: Action = { type: 'pulse', q: 'difficulty', a: 'about_right' };
     const { tracked } = run([start, fb, fb, { type: 'pulse', q: 'most_fun', a: 'made' }]);
     expect(tracked.filter((t) => t.name === EVENTS.feedback)).toHaveLength(2);
+  });
+});
+
+describe('[DS35] every round asks Made, then When, then Kept', () => {
+  it('starts on Made and moves to When, then Kept, then the reveal', () => {
+    const steps: string[] = [];
+    let { state } = run([start]);
+    steps.push(state.step);
+    for (const a of answerRound(0)) {
+      state = run([a], state).state;
+      steps.push(state.phase === 'reveal' ? 'reveal' : state.step);
+    }
+    expect(steps).toEqual(['made', 'when', 'kept', 'reveal']);
+  });
+  it('the next round starts on Made again', () => {
+    const { state } = run([start, ...answerRound(0), { type: 'next', round: 0 }]);
+    expect(state.round).toBe(1);
+    expect(state.step).toBe('made');
+  });
+  it('a save from the Kept-first version is not resumed', () => {
+    const { state } = run([start]);
+    expect(parseSave(serialize({ ...state, state_version: 1 }), V, IDS)).toBeNull();
+  });
+});
+
+describe('[DS36] Back reopens an earlier answer of the same round', () => {
+  const made: Action = { type: 'confirm', round: 0, step: 'made', value: { lat: 36, lng: 43 } };
+  it('goes back one step and keeps the answer given there', () => {
+    const { state } = run([start, made, { type: 'back', round: 0, step: 'when' }]);
+    expect(state.phase).toBe('answering');
+    expect(state.step).toBe('made');
+    expect(state.answers[0]?.made).toEqual({ lat: 36, lng: 43 });
+  });
+  it('a changed answer replaces the old one and step_completed is not sent twice', () => {
+    const { state, tracked } = run([
+      start,
+      made,
+      { type: 'back', round: 0, step: 'when' },
+      { type: 'confirm', round: 0, step: 'made', value: { lat: 10, lng: 20 } },
+    ]);
+    expect(state.step).toBe('when');
+    expect(state.answers[0]?.made).toEqual({ lat: 10, lng: 20 });
+    expect(tracked.filter((t) => t.name === EVENTS.stepCompleted)).toHaveLength(1);
+  });
+  it('sends step_back with the round and the step left', () => {
+    const { tracked } = run([start, made, { type: 'back', round: 0, step: 'when' }]);
+    expect(tracked.at(-1)).toEqual({ name: EVENTS.stepBack, props: { src: 'webgames', round: 1, from: 'when' } });
+  });
+  it('does nothing on the first question, during the reveal, or for a stale round or step', () => {
+    const first = run([start, { type: 'back', round: 0, step: 'made' }]);
+    expect(first.state.step).toBe('made');
+    expect(first.tracked.some((t) => t.name === EVENTS.stepBack)).toBe(false);
+    const revealed = run([start, ...answerRound(0), { type: 'back', round: 0, step: 'kept' }]);
+    expect(revealed.state.phase).toBe('reveal');
+    const stale = run([start, made, { type: 'back', round: 3, step: 'when' }, { type: 'back', round: 0, step: 'kept' }]);
+    expect(stale.state.step).toBe('when');
   });
 });

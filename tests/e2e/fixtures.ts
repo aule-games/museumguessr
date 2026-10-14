@@ -174,16 +174,16 @@ export async function confirm(page: Page) {
   await btn.click();
 }
 
-/** Answer one round with rough guesses. */
+/** Answer one round with rough guesses, in question order: Made, When, Kept (DS35). */
 export async function playRound(page: Page, guess = { kept: [48.86, 2.35], made: [41.9, 12.5], year: 1500 }) {
-  await expect(page.locator('[data-screen=round][data-step=kept]')).toBeVisible();
-  await placePin(page, guess.kept[0] as number, guess.kept[1] as number);
-  await confirm(page);
   await expect(page.locator('[data-screen=round][data-step=made]')).toBeVisible();
   await placePin(page, guess.made[0] as number, guess.made[1] as number);
   await confirm(page);
   await expect(page.locator('[data-screen=round][data-step=when]')).toBeVisible();
   await enterYear(page, guess.year);
+  await confirm(page);
+  await expect(page.locator('[data-screen=round][data-step=kept]')).toBeVisible();
+  await placePin(page, guess.kept[0] as number, guess.kept[1] as number);
   await confirm(page);
   await expect(page.locator('[data-screen=reveal]')).toBeVisible();
 }

@@ -13,9 +13,12 @@ made, and when. Ten objects, the same for everyone.
 
 Each round shows a photo of one object. Answer three questions in order:
 
-1. **Kept:** pin the city of the museum that holds it today.
-2. **Made:** pin where it was made, not what it shows or where it was dug up.
-3. **When:** type or slide the year it was made (BCE or CE; there is no year 0).
+1. **Made:** pin where it was made, not what it shows or where it was dug up.
+2. **When:** type or slide the year it was made (BCE or CE; there is no year 0).
+3. **Kept:** pin the city of the museum that holds it today.
+
+Back reopens an earlier answer of the same round; nothing is revealed until you
+confirm the last one.
 
 The reveal shows the object's journey from where it was made to where it is
 kept, with a sourced fact about how it got there; the map fades everything but
@@ -83,7 +86,7 @@ No cookies. Anonymous play counts via PostHog (EU).
 There is no sign-up and nothing identifies you. To learn whether the game is
 fun, the page sends anonymous play events to PostHog's EU servers in
 cookieless mode: `$pageview`, `game_start`, `round_started`, `step_completed`,
-`round_completed`, `game_completed`, `client_error`, `feedback`,
+`step_back`, `round_completed`, `game_completed`, `client_error`, `feedback`,
 `result_copied` and `tour_ended`. Each carries game facts (round, step, points, the channel tag
 from the link you followed) and the build id, plus the technical details
 PostHog's library adds to every event: browser and version, operating system,

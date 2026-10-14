@@ -7,6 +7,7 @@ export const EVENTS = {
   gameStart: 'game_start',
   roundStarted: 'round_started',
   stepCompleted: 'step_completed',
+  stepBack: 'step_back',
   roundCompleted: 'round_completed',
   gameCompleted: 'game_completed',
   clientError: 'client_error',
@@ -17,12 +18,13 @@ export const EVENTS = {
 
 export type EventName = (typeof EVENTS)[keyof typeof EVENTS];
 
-export const STEPS = ['kept', 'made', 'when'] as const;
+/** Question order inside a round (DS35): made → when → kept, a story from making to today. */
+export const STEPS = ['made', 'when', 'kept'] as const;
 export type Step = (typeof STEPS)[number];
 
 export const FEEDBACK = {
   difficulty: ['too_hard', 'about_right', 'too_easy'],
-  most_fun: ['kept', 'made', 'when'],
+  most_fun: ['made', 'when', 'kept'],
 } as const;
 export type FeedbackQ = keyof typeof FEEDBACK;
 
@@ -37,6 +39,7 @@ export interface EventProps {
   game_start: { src: string };
   round_started: { src: string; round: number };
   step_completed: { src: string; round: number; step: Step };
+  step_back: { src: string; round: number; from: Step };
   round_completed: { src: string; round: number; skipped: boolean; answered_count: number; points: number };
   game_completed: { src: string; total: number; answered_count: number };
   client_error: { name: string; message: string; frame: string };
@@ -78,10 +81,17 @@ export const CATALOGUE: CatalogueEntry[] = [
   },
   {
     name: EVENTS.stepCompleted,
-    props: 'src; round: 1-10; step: kept | made | when',
+    props: 'src; round: 1-10; step: made | when | kept',
     fires: 'when an answer is confirmed',
-    dedupe: 'once per game, round and step',
+    dedupe: 'once per game, round and step (a changed answer after Back is not sent again)',
     feeds: 'drop-off inside a round',
+  },
+  {
+    name: EVENTS.stepBack,
+    props: 'src; round: 1-10; from: the step the player left (when | kept)',
+    fires: 'when the player taps Back to change an earlier answer of the same round',
+    dedupe: 'none (every Back counts)',
+    feeds: 'how often players revise an answer',
   },
   {
     name: EVENTS.roundCompleted,
@@ -106,7 +116,7 @@ export const CATALOGUE: CatalogueEntry[] = [
   },
   {
     name: EVENTS.feedback,
-    props: 'src; q: difficulty | most_fun; a: too_hard | about_right | too_easy, or kept | made | when',
+    props: 'src; q: difficulty | most_fun; a: too_hard | about_right | too_easy, or made | when | kept',
     fires: 'when the player answers the optional difficulty row (after round 3) or the "most fun" row (end screen)',
     dedupe: 'once per game and question',
     feeds: 'difficulty pulse',

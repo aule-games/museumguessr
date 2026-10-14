@@ -18,12 +18,12 @@ test.describe('[E6] [DS8] [ENG14] resume', () => {
     await page.locator('[data-test=next]').click();
     await placePin(page, 40.7, -74);
     await confirm(page);
-    await expect(page.locator('[data-screen=round][data-step=made][data-round="2"]')).toBeVisible();
+    await expect(page.locator('[data-screen=round][data-step=when][data-round="2"]')).toBeVisible();
     await recorder.idle(page);
     const before = recorder.events.filter((e) => e.event !== '$pageview' && e.event !== 'client_error').length;
 
     await page.reload();
-    await expect(page.locator('[data-screen=round][data-step=made][data-round="2"]')).toBeVisible();
+    await expect(page.locator('[data-screen=round][data-step=when][data-round="2"]')).toBeVisible();
     await expect(page.locator('[data-test=total]')).toHaveText(scoreAfter1 ?? '');
     await recorder.idle(page);
     const after = recorder.events.filter((e) => e.event !== '$pageview' && e.event !== 'client_error').length;
@@ -228,7 +228,7 @@ test.describe('[DS13] [ENG17] [DS27] overlays and history', () => {
       await page.locator(`[data-test=${item}]`).click();
       await expect(page.getByRole('dialog')).toContainText(check);
       if (item === 'menu-credits') await expect(page.locator('[data-test=credits] li')).toHaveCount(11);
-      if (item === 'menu-about') await expect(page.locator('[data-test=events] li')).toHaveCount(10);
+      if (item === 'menu-about') await expect(page.locator('[data-test=events] li')).toHaveCount(11);
       await page.keyboard.press('Escape');
       await expect(page.getByRole('dialog')).toHaveCount(0);
     }
@@ -248,8 +248,6 @@ test.describe('[DS13] [ENG17] [DS27] overlays and history', () => {
 test.describe('[DS5] [DS28] year control', () => {
   test('enters a BCE year and rejects year 0', async ({ page }) => {
     await start(page);
-    await placePin(page, 48.86, 2.35);
-    await confirm(page);
     await placePin(page, 41.9, 12.5);
     await confirm(page);
     await page.getByLabel('Year', { exact: true }).fill('0');
@@ -264,6 +262,8 @@ test.describe('[DS5] [DS28] year control', () => {
     await page.keyboard.press('PageUp');
     await expect(page.locator('.year__readout')).toHaveText('319 BCE');
     await confirm(page);
+    await placePin(page, 48.86, 2.35);
+    await confirm(page);
     await expect(page.locator('[data-screen=reveal]')).toBeVisible();
   });
 });
@@ -272,13 +272,17 @@ test.describe('[DS19] [DS1] layout @layout', () => {
   test('the round screen never scrolls and Confirm stays on screen', async ({ page }) => {
     await start(page);
     await expect(page.locator('[data-screen=round]')).toBeVisible();
-    for (const step of ['kept', 'made', 'when']) {
+    for (const step of ['made', 'when', 'kept']) {
+      await expect(page.locator(`[data-screen=round][data-step=${step}]`)).toBeVisible();
       const fits = await page.evaluate(() => document.documentElement.scrollHeight <= window.innerHeight + 1);
       expect(fits, `page scrolls on ${step}`).toBe(true);
-      const box = await page.locator('[data-test=confirm]').boundingBox();
-      expect((box?.y ?? 0) + (box?.height ?? 0)).toBeLessThanOrEqual(page.viewportSize()?.height ?? 0);
-      if (step === 'when') break;
-      await placePin(page, 48.86, 2.35);
+      for (const control of ['confirm', ...(step === 'made' ? [] : ['back'])]) {
+        const box = await page.locator(`[data-test=${control}]`).boundingBox();
+        expect((box?.y ?? 0) + (box?.height ?? 0), `${control} on screen on ${step}`).toBeLessThanOrEqual(page.viewportSize()?.height ?? 0);
+      }
+      if (step === 'kept') break;
+      if (step === 'when') await enterYear(page, 1500);
+      else await placePin(page, 48.86, 2.35);
       await confirm(page);
     }
   });
@@ -311,5 +315,38 @@ test.describe('[DS19] [DS1] layout @layout', () => {
       expect(scores.y + scores.height, 'collapsed score table above Next').toBeLessThanOrEqual(next.y);
       expect(map.y, 'map follows the score table').toBeGreaterThanOrEqual(scores.y + scores.height);
     }
+  });
+});
+
+test.describe('[DS36] Back inside a round', () => {
+  test('Back reopens the previous question with its answer, and a changed answer is the one scored', async ({ page, recorder }) => {
+    await start(page);
+    await expect(page.locator('[data-screen=round][data-step=made]')).toBeVisible();
+    await expect(page.locator('[data-test=back]')).toHaveCount(0);
+    await placePin(page, 41.9, 12.5);
+    await confirm(page);
+    await enterYear(page, 1500);
+    await confirm(page);
+    await expect(page.locator('[data-screen=round][data-step=kept]')).toBeVisible();
+
+    await page.locator('[data-test=back]').click();
+    await expect(page.locator('[data-screen=round][data-step=when]')).toBeVisible();
+    await expect(page.getByLabel('Year', { exact: true })).toHaveValue('1500');
+    await expect(page.locator('[data-test=confirm]')).toBeEnabled();
+    await page.locator('[data-test=back]').click();
+    await expect(page.locator('[data-screen=round][data-step=made]')).toBeVisible();
+    await expect(page.locator('.map__label')).not.toBeEmpty();
+    await expect(page.locator('[data-test=confirm]')).toBeEnabled();
+
+    await confirm(page);
+    await enterYear(page, items[0]?.when.start ?? 1830);
+    await confirm(page);
+    await placePin(page, 48.86, 2.35);
+    await confirm(page);
+    await expect(page.locator('[data-screen=reveal]')).toBeVisible();
+    await expect(page.locator('[data-test=row-when]')).toContainText('1,000');
+    await recorder.idle(page);
+    expect(recorder.of('step_completed')).toHaveLength(3);
+    expect(recorder.of('step_back').map((e) => e.properties.from)).toEqual(['kept', 'when']);
   });
 });

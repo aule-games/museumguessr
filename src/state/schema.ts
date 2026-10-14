@@ -6,8 +6,8 @@ import type { Step } from '../analytics/events.ts';
 import { SCORING_VERSION } from '../scoring/config.ts';
 import type { LatLng } from '../scoring/geo.ts';
 
-/** Bump when the shape of saved state changes. */
-export const STATE_VERSION = 1;
+/** Bump when the shape or meaning of saved state changes (2: question order made → when → kept, DS35). */
+export const STATE_VERSION = 2;
 
 export const KEYS = {
   save: 'museumguessr:v1:save',

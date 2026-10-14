@@ -66,16 +66,20 @@ States:
 | No WebGL | `start.noWebgl` in place of Start (an alert) |
 | Sample photo fails | the card keeps its matte placeholder; nothing else changes |
 
-## Round (Kept, Made, When)
+## Round (Made, When, Kept)
 
 | Region | Content | Copy keys | Overflow |
 | --- | --- | --- | --- |
 | Top bar | round counter, running total, menu button | `round.counter`, `round.total`, `menu.open` | one line, tabular numbers |
 | Prompt | three step dots (done ✓, active filled, to do outline; names on desktop), the question, the hint, the `?` toggle | `step.*`, `q.*`, `hint.*`, `hint.show` | question one line on phone; hint up to two lines |
 | Photo | the object's photo, whole, on matte; tap opens the lightbox; "View photo ↗" marker | `photo.open`, `photo.view` | `contain`, never cropped |
-| Answer (Kept, Made) | the map with zoom in/out/World, the drop label top-left | `map.*` | map fills the region |
+| Answer (Made, Kept) | the map with zoom in/out/World, the drop label top-left | `map.*` | map fills the region |
 | Answer (When) | year readout, year field + BCE / CE switch, error line, slider with ticks, caption | `year.*` | scrolls inside the region if needed |
-| Action bar | Confirm | `confirm` | full width |
+| Action bar | Back (from the second question on), then Confirm | `back`, `confirm` | Confirm full width on the first question; Back + Confirm share the bar afterwards |
+
+Questions come in story order: Made, then When, then Kept (DS35). Nothing is
+revealed until the last Confirm, so Back can reopen any earlier question of the
+round (DS36).
 
 The hint is open on round 1 and closed afterwards; `?` toggles it.
 Short portrait screens retain the photo's share instead of a fixed thumbnail;
@@ -100,17 +104,18 @@ States:
 | Map failed | `map.failed` + Reload (`map.reload`) |
 | No pin yet | Confirm disabled |
 | Pin placed | the hollow guess glyph, the drop label (`map.near` / country / `map.openSea`), announced (`map.pinPlaced`); Confirm enabled; the pin can be dragged |
-| Made step | the confirmed Kept answer stays on the map in the muted colour |
+| Kept step | the confirmed Made answer stays on the map in the muted colour |
+| Back pressed (DS36) | the previous question of the same round opens with its answer in place (pin, or year) as the draft; Confirm is enabled; a changed answer replaces the old one. Back is absent on the first question and gone once the last Confirm opens the reveal |
 | Keyboard on the map | arrows pan, + / − zoom, Enter drops the pin at the centre crosshair, Escape leaves (`map.label`) |
 | Year empty | readout "—", no slider thumb, Confirm disabled (no default year is ever implied) |
 | Year invalid | `year.noZero`, `year.notNumber` or `year.outOfRange` under the field; Confirm disabled |
 | Year set | readout ("1200 BCE"), thumb shown, Confirm enabled |
 | Confirm pressed twice | one answer is recorded |
-| First visit, round 1 Kept | the tour opens over the screen (see Tour) |
+| First visit, round 1 Made | the tour opens over the screen (see Tour) |
 
 ## Tour
 
-A modal over round 1's Kept step on a first visit (no `museumguessr:v1:tour`
+A modal over round 1's first question (Made) on a first visit (no `museumguessr:v1:tour`
 flag and no finished game), and from the menu on any round screen
 (`menu.tour`). A spotlight lights one element at a time; the rest is under the
 scrim and inert. The card sits below the lit element, else above, else beside
@@ -166,7 +171,7 @@ and there is only one score live region. (DS21)
 | Journey | the sourced journey fact | `reveal.source` | wraps |
 | Map | answer pins (filled), guesses (hollow), one made→kept line, dashed guess links, the full-marks area for a region or country origin; a 78% surface veil fades the base map, with its labels hidden; answer countries have 28% Kept/Made tints and opaque 2 px outlines; pins have a surface keyline | `reveal.madeRegion`, `reveal.lineLabel` | fitted with measured pin-label/control/attribution clearance; controls hidden in phone portrait, only World at top-left in short landscape, with a reserved left column; credit resizing re-fits until the player moves the map; pinch, double-tap and keyboard zoom remain; long pin labels wrap at 192 px (DS22) |
 | Legend | raised caption rail under the map, normal line height; in the split layout map and legend fit the actual body height above the action bar, including feedback | `reveal.legend` | wraps; never reserved outside the map's available height |
-| Score rows | Kept / Made / When: glyph, name and disclosure chevron, the result (`result.km` / `result.years`, or `reveal.spotOn`), a shared 88 px tinted right-hand points column; on phones the result sits below the question, not in a third narrow column; on hover-capable devices hover or keyboard focus shows the tooltip as an attached in-flow strip; tap opens the same text inline (When adds the timeline, Made the place note) | `reveal.row.*`, `result.*`, `reveal.spotOn`, `reveal.yearCount`, `reveal.yearOne`, `reveal.how`, `scoring.*` | results wrap in full without ellipsis; minimum 48 px rows; explanations scroll with the table, not over the action bar (DS31) |
+| Score rows | Made / When / Kept (question order, DS35): glyph, name and disclosure chevron, the result (`result.km` / `result.years`, or `reveal.spotOn`), a shared 88 px tinted right-hand points column; on phones the result sits below the question, not in a third narrow column; on hover-capable devices hover or keyboard focus shows the tooltip as an attached in-flow strip; tap opens the same text inline (When adds the timeline, Made the place note) | `reveal.row.*`, `result.*`, `reveal.spotOn`, `reveal.yearCount`, `reveal.yearOne`, `reveal.how`, `scoring.*` | results wrap in full without ellipsis; minimum 48 px rows; explanations scroll with the table, not over the action bar (DS31) |
 | Round total | the table's final raised row with cobalt top rule: uppercase label + white numeric cell showing points out of 3,000 (announced) | `reveal.scoreLabel`, `reveal.score` | one line; focus ring remains outside the cell |
 | Contested | the sourced claim | `reveal.contested` | wraps |
 | Facts | sourced facts | `reveal.source` | list |
@@ -197,7 +202,7 @@ recap right. Copy result is above the fold at 390×844.
 | Copy result | copies the share text | `end.copy`, `share.*` | — |
 | Copied | shown only after the clipboard write succeeds (announced) | `end.copied` | — |
 | Manual copy | if the clipboard fails: selectable text, focused and selected | `end.copyManual` | textarea |
-| Most fun | optional chips Kept / Made / When | `pulse.mostFun`, `step.*`, `pulse.thanks` | wraps |
+| Most fun | optional chips Made / When / Kept | `pulse.mostFun`, `step.*`, `pulse.thanks` | wraps |
 | Recap | thumbnail, title, made → now in, points (or Skipped) per round | `end.recapRow`, `end.points`, `reveal.skipped` | title wraps |
 | Collection line | the whole collection for now | `end.collection` | wraps |
 | Replay | text link | `end.replay` | — |

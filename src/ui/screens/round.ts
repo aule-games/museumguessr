@@ -1,5 +1,5 @@
-// Round screen (DS1, DS16, DS19, DS20, DS23, E1, A1). Fixed rows: top bar,
-// prompt row, photo, map or year control, one Confirm in the action bar.
+// Round screen (DS1, DS16, DS19, DS20, DS23, DS35, DS36, E1, A1). Fixed rows: top bar,
+// prompt row, photo, map or year control, Back (after the first question) and Confirm.
 
 import { STEPS, type Step } from '../../analytics/events.ts';
 import { HINT, QUESTION, formatNumber, t } from '../../copy.ts';
@@ -96,13 +96,17 @@ export interface RoundProps {
   round: number;
   step: Step;
   total: number;
-  /** The confirmed Kept pin, shown dimmed on the Made step. */
-  keptPin: LatLng | null;
+  /** This step's earlier answer when the player came back to it (DS36); it starts as the draft. */
+  answer: LatLng | number | null;
+  /** The confirmed Made pin, shown dimmed on the Kept step. */
+  madePin: LatLng | null;
   showHint: boolean;
   photo: PhotoRegion;
   map: GameMap | null;
   webgl: boolean;
   onConfirm(value: LatLng | number): void;
+  /** Reopen the previous question of this round; absent on the first question. */
+  onBack?(): void;
   onMenu(opener: HTMLElement): void;
 }
 
@@ -115,12 +119,12 @@ export interface RoundView {
 }
 
 export function roundScreen(p: RoundProps): RoundView {
-  let draft: LatLng | number | null = null;
+  let draft: LatLng | number | null = p.answer;
   let hintOpen = p.showHint;
 
   const dots = h(
     'ol',
-    { class: 'steps', 'aria-label': `${t('step.kept')}, ${t('step.made')}, ${t('step.when')}` },
+    { class: 'steps', 'aria-label': STEPS.map((s) => t(`step.${s}`)).join(', ') },
     ...STEPS.map((s) => {
       const i = STEPS.indexOf(s);
       const cur = STEPS.indexOf(p.step);
@@ -150,6 +154,14 @@ export function roundScreen(p: RoundProps): RoundView {
     p.onConfirm(draft);
   });
 
+  const back = p.onBack
+    ? h('button', { type: 'button', class: 'btn btn--secondary', 'data-test': 'back', onclick: () => {
+        if (submitted) return;
+        submitted = true;
+        p.onBack?.();
+      } }, t('back'))
+    : null;
+
   const refresh = () => {
     const mapOk = p.step === 'when' || (p.map != null && (p.map.state === 'ready' || p.map.state === 'fallback'));
     confirm.disabled = submitted || draft == null || !p.photo.ready || !mapOk;
@@ -158,7 +170,7 @@ export function roundScreen(p: RoundProps): RoundView {
 
   let answer: HTMLElement;
   if (p.step === 'when') {
-    const year = yearControl(null, (y) => {
+    const year = yearControl(typeof p.answer === 'number' ? p.answer : null, (y) => {
       draft = y;
       refresh();
     });
@@ -175,13 +187,16 @@ export function roundScreen(p: RoundProps): RoundView {
     prompt,
     h('div', { class: 'round__photo' }, p.photo.element),
     answer,
-    h('div', { class: 'actionbar' }, confirm),
+    h('div', { class: `actionbar${back ? ' actionbar--back' : ''}` }, back, confirm),
   );
 
   if (p.map && p.step !== 'when') {
     p.map.attach(answer);
-    p.map.guess({ step: p.step, pin: null, dimmed: p.step === 'made' ? p.keptPin : null });
+    const pin = p.answer != null && typeof p.answer === 'object' ? p.answer : null;
+    p.map.guess({ step: p.step, pin, dimmed: p.step === 'kept' && p.madePin ? { step: 'made', at: p.madePin } : null });
   }
+
+  refresh(); // an answer reopened with Back is already a valid draft (DS36)
 
   return {
     element,

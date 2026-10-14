@@ -100,33 +100,30 @@ try {
     await expect(page.locator('[data-test=tour]')).toHaveCount(0);
     for (let round = 1; round <= 10; round++) {
       if (round === 1) {
-        for (const step of ['kept', 'made']) {
-          await expect(page.locator('.map')).toHaveAttribute('data-state', /ready|fallback/);
-          await capture(`${step}-empty`);
-          await captureCredits(`${step}-empty`);
-          if (step === 'kept') {
-            await page.locator('.photo__open').click();
-            await expect(page.locator('.pswp')).toBeVisible();
-            await capture('photo-lightbox');
-            await page.keyboard.press('Escape');
-            await expect(page.locator('.pswp')).toHaveCount(0);
-            await page.locator('[data-test=menu]').click();
-            await capture('menu');
-            await close();
-            for (const dialog of ['how', 'credits', 'about', 'new']) {
-              await page.locator('[data-test=menu]').click();
-              await page.locator(`[data-test=menu-${dialog}]`).click();
-              await expect(page.locator('dialog:not(.dialog--menu)')).toBeVisible();
-              await capture(`dialog-${dialog}`);
-              await close();
-            }
-            await placePin(page, 48.86, 2.35, 2);
-            await capture('kept-zoomed');
-          }
-          await placePin(page, 48.86, 2.35);
-          await capture(`${step}-placed`);
-          await confirm(page);
+        // Made first (DS35): empty, the photo lightbox, menu and dialogs, zoomed, placed
+        await expect(page.locator('.map')).toHaveAttribute('data-state', /ready|fallback/);
+        await capture('made-empty');
+        await captureCredits('made-empty');
+        await page.locator('.photo__open').click();
+        await expect(page.locator('.pswp')).toBeVisible();
+        await capture('photo-lightbox');
+        await page.keyboard.press('Escape');
+        await expect(page.locator('.pswp')).toHaveCount(0);
+        await page.locator('[data-test=menu]').click();
+        await capture('menu');
+        await close();
+        for (const dialog of ['how', 'credits', 'about', 'new']) {
+          await page.locator('[data-test=menu]').click();
+          await page.locator(`[data-test=menu-${dialog}]`).click();
+          await expect(page.locator('dialog:not(.dialog--menu)')).toBeVisible();
+          await capture(`dialog-${dialog}`);
+          await close();
         }
+        await placePin(page, 41.9, 12.5, 2);
+        await capture('made-zoomed');
+        await placePin(page, 41.9, 12.5);
+        await capture('made-placed');
+        await confirm(page);
         await capture('when-empty');
         await enterYear(page, 0);
         await capture('when-invalid');
@@ -135,6 +132,17 @@ try {
         await expect(page.locator('[data-test=confirm]')).toBeEnabled();
         await expect(page.locator('.year__thumb')).toHaveCSS('opacity', '1');
         await capture('when-set');
+        await confirm(page);
+        await expect(page.locator('.map')).toHaveAttribute('data-state', /ready|fallback/);
+        await capture('kept-empty');
+        await captureCredits('kept-empty');
+        // Back reopens When with its year in place (DS36), then returns to Kept
+        await page.locator('[data-test=back]').click();
+        await expect(page.locator('[data-screen=round][data-step=when]')).toBeVisible();
+        await capture('when-back');
+        await confirm(page);
+        await placePin(page, 48.86, 2.35);
+        await capture('kept-placed');
         await confirm(page);
       } else await playRound(page);
       if (round === 1 || round === 3) {
@@ -170,7 +178,8 @@ try {
     await expect(page.locator('[data-test=play-again]')).toBeVisible();
     await capture('start-finished-test-badge');
     await page.locator('[data-test=play-again]').click();
-    for (let i = 0; i < 2; i++) { await placePin(page, 48.86, 2.35); await confirm(page); }
+    await placePin(page, 41.9, 12.5);
+    await confirm(page);
     await capture('when-test-badge');
     await page.locator('[data-test=test-badge]').click();
     await capture('test-inspector-open');

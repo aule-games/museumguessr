@@ -3,7 +3,7 @@
 // a bug shows the recovery screen instead of a blank page (E8, ENG11).
 
 import type { Analytics } from './analytics/core.ts';
-import { EVENTS, type FeedbackQ } from './analytics/events.ts';
+import { EVENTS, STEPS, type FeedbackQ } from './analytics/events.ts';
 import { ANSWER_KEYS, ITEMS, ITEMS_VERSION, ITEM_IDS, SAMPLE, imageUrl } from './content/items.ts';
 import { stripMessage, takeErrorBudget, toReport, type ErrorReport } from './errors/boundary.ts';
 import type { WriterLock } from './game/lock.ts';
@@ -149,6 +149,7 @@ export class App {
         this.show('play');
         break;
       case 'confirm':
+      case 'back':
       case 'skip':
       case 'next':
         if (!prev || prev.round !== s.round || prev.step !== s.step || prev.phase !== s.phase || prev.finished !== s.finished) {
@@ -219,7 +220,7 @@ export class App {
   /** The first-visit tour (DS34): once per browser, on round 1's first question; not for a player who has finished a game. */
   private maybeTour() {
     const s = this.state;
-    if (this.view !== 'play' || this.tourOpen || !s || s.finished || s.phase !== 'answering' || s.round !== 0 || s.step !== 'kept') return;
+    if (this.view !== 'play' || this.tourOpen || !s || s.finished || s.phase !== 'answering' || s.round !== 0 || s.step !== STEPS[0]) return;
     if (this.d.local.get(KEYS.tour) != null || this.snapshot) return;
     this.openTour(false);
   }
@@ -369,12 +370,14 @@ export class App {
       round: s.round,
       step: s.step,
       total,
-      keptPin: s.answers[s.round]?.kept ?? null,
+      answer: s.answers[s.round]?.[s.step] ?? null,
+      madePin: s.answers[s.round]?.made ?? null,
       showHint: s.round === 0,
       photo: this.photo,
       map: s.step === 'when' ? this.map : this.ensureMap(),
       webgl: this.webgl,
       onConfirm: (value) => this.dispatch({ type: 'confirm', round: s.round, step: s.step, value }),
+      onBack: STEPS.indexOf(s.step) > 0 ? () => this.dispatch({ type: 'back', round: s.round, step: s.step }) : undefined,
       onMenu,
     });
     this.roundView = view;

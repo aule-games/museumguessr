@@ -36,7 +36,7 @@ test.describe('[DS34] the first-visit tour', () => {
     await expect(page.locator('[data-test=tour-next]')).toHaveText('Let’s start');
     await page.locator('[data-test=tour-next]').click();
     await expect(tour).toHaveCount(0);
-    await expect(page.locator('[data-screen=round][data-step=kept]')).toBeVisible();
+    await expect(page.locator('[data-screen=round][data-step=made]')).toBeVisible();
     await recorder.idle(page);
     expect(recorder.of('tour_ended').map((e) => [e.properties.outcome, e.properties.step, e.properties.replay])).toEqual([['done', 7, false]]);
   });
@@ -56,7 +56,7 @@ test.describe('[DS34] the first-visit tour', () => {
     await page.locator('[data-test=tour-skip]').click();
     await expect(page.locator('[data-test=tour]')).toHaveCount(0);
     await page.reload();
-    await expect(page.locator('[data-screen=round][data-step=kept]')).toBeVisible();
+    await expect(page.locator('[data-screen=round][data-step=made]')).toBeVisible();
     await page.waitForTimeout(300);
     await expect(page.locator('[data-test=tour]')).toHaveCount(0);
     await recorder.idle(page);
@@ -73,7 +73,7 @@ test.describe('[DS34] the first-visit tour', () => {
     await expect(page.locator('[data-test=tour]')).toBeVisible();
     await page.goBack();
     await expect(page.locator('[data-test=tour]')).toHaveCount(0);
-    await expect(page.locator('[data-screen=round][data-step=kept]')).toBeVisible();
+    await expect(page.locator('[data-screen=round][data-step=made]')).toBeVisible();
   });
 });
 

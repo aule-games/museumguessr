@@ -98,9 +98,10 @@ export function revealScreen(p: RevealProps): RevealView {
   const rows = h(
     'ul',
     { class: 'scores', 'data-test': 'scores' },
-    scoreRow('kept', r.kept.points, rowResult('kept', item, r), howText('kept', item, r)),
+    // rows follow the question order (DS35)
     scoreRow('made', r.made.points, rowResult('made', item, r), howText('made', item, r), madeNote),
     scoreRow('when', r.when.points, rowResult('when', item, r), howText('when', item, r), whenExtra(item, p.answers.when)),
+    scoreRow('kept', r.kept.points, rowResult('kept', item, r), howText('kept', item, r)),
     h('li', { class: 'scores__total reveal__total' }, h('span', { class: 'scores__total-label' }, t('reveal.scoreLabel')), score),
   );
 
