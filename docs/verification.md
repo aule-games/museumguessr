@@ -8,24 +8,25 @@ Last run: 2026-10-14.
 
 | Step | Result |
 | --- | --- |
-| type check | passed (3 s) |
+| type check | passed (2 s) |
 | generated files are current | passed (0 s) |
 | item check | passed (0 s) |
-| unit tests | passed (10 s) |
-| design checks | passed (2 s) |
+| unit tests | passed (9 s) |
+| design checks | passed (1 s) |
 | lint | passed (2 s) |
 | build | passed (1 s) |
 | build checks | passed (0 s) |
-| browser tests (5 viewports) | passed (77 s) |
+| browser tests (5 viewports) | passed (69 s) |
 | release scan (publish candidate) | passed (4 s) |
 
 ## Automated checks
 
-253 tests, 253 passed, 82 requirement IDs.
+267 tests, 267 passed, 85 requirement IDs.
 
 | ID | Rule | Test file | Result |
 | --- | --- | --- | --- |
 | A1 | no answer before the reveal › round text and alt attributes carry no title; the reveal does (phone) | `tests/e2e/game.spec.ts` | passed |
+| A1 | no answer before the reveal › the photo carries a short caption on every question of the round (phone) | `tests/e2e/game.spec.ts` | passed |
 | DS1 | layout › the round screen never scrolls and Confirm stays on screen (phone) | `tests/e2e/game.spec.ts` | passed |
 | DS1 | layout › the reveal puts scores after the wall label and keeps Next on screen (phone) | `tests/e2e/game.spec.ts` | passed |
 | DS1 | layout › the round screen never scrolls and Confirm stays on screen (phone-landscape) | `tests/e2e/game.spec.ts` | passed |
@@ -47,6 +48,7 @@ Last run: 2026-10-14.
 | DS5 | year display never shows negative numbers › knows the slider bounds | `tests/unit/scoring.test.ts` | passed |
 | DS5 | year control › enters a BCE year and rejects year 0 (phone) | `tests/e2e/game.spec.ts` | passed |
 | DS6 | no answer before the reveal › round text and alt attributes carry no title; the reveal does (phone) | `tests/e2e/game.spec.ts` | passed |
+| DS6 | no answer before the reveal › the photo carries a short caption on every question of the round (phone) | `tests/e2e/game.spec.ts` | passed |
 | DS7 | tiers › maps totals to tier names | `tests/unit/scoring.test.ts` | passed |
 | DS7 | tiers › each tier starts exactly at its lower bound (inclusive) | `tests/unit/scoring.test.ts` | passed |
 | DS7 | a full game › ten rounds end on the results screen; Copy result copies the template; replay starts over (phone) | `tests/e2e/game.spec.ts` | passed |
@@ -137,6 +139,20 @@ Last run: 2026-10-14.
 | DS34 | the first-visit tour › Skip closes it as skipped, and it does not come back after a reload (phone) | `tests/e2e/tour.spec.ts` | passed |
 | DS34 | the first-visit tour › Escape and the browser Back button close it without leaving the round (phone) | `tests/e2e/tour.spec.ts` | passed |
 | DS34 | the tour for returning players › stays closed, and the menu offers it on the round screen (phone) | `tests/e2e/tour.spec.ts` | passed |
+| DS35 | every round asks Made, then When, then Kept › starts on Made and moves to When, then Kept, then the reveal | `tests/unit/reducer.test.ts` | passed |
+| DS35 | every round asks Made, then When, then Kept › the next round starts on Made again | `tests/unit/reducer.test.ts` | passed |
+| DS35 | every round asks Made, then When, then Kept › a save from the Kept-first version is not resumed | `tests/unit/reducer.test.ts` | passed |
+| DS36 | Back reopens an earlier answer of the same round › goes back one step and keeps the answer given there | `tests/unit/reducer.test.ts` | passed |
+| DS36 | Back reopens an earlier answer of the same round › a changed answer replaces the old one and step_completed is not sent twice | `tests/unit/reducer.test.ts` | passed |
+| DS36 | Back reopens an earlier answer of the same round › sends step_back with the round and the step left | `tests/unit/reducer.test.ts` | passed |
+| DS36 | Back reopens an earlier answer of the same round › does nothing on the first question, during the reveal, or for a stale round or step | `tests/unit/reducer.test.ts` | passed |
+| DS36 | Back inside a round › Back reopens the previous question with its answer, and a changed answer is the one scored (phone) | `tests/e2e/game.spec.ts` | passed |
+| DS37 | items:check › rejects answer word in the caption | `tests/unit/items-cli.test.ts` | passed |
+| DS37 | items:check › rejects title phrase in the caption | `tests/unit/items-cli.test.ts` | passed |
+| DS37 | items:check › rejects date in the caption | `tests/unit/items-cli.test.ts` | passed |
+| DS37 | items:check › rejects caption over 70 | `tests/unit/items-cli.test.ts` | passed |
+| DS37 | items:check › rejects missing caption | `tests/unit/items-cli.test.ts` | passed |
+| DS37 | no answer before the reveal › the photo carries a short caption on every question of the round (phone) | `tests/e2e/game.spec.ts` | passed |
 | DX3 | off-reasons, one console line each › { testParam: '1' } → analytics: off (test flag) | `tests/unit/analytics.test.ts` | passed |
 | DX3 | off-reasons, one console line each › { webdriver: true } → analytics: off (webdriver) | `tests/unit/analytics.test.ts` | passed |
 | DX3 | off-reasons, one console line each › { token: '' } → analytics: off (no token) | `tests/unit/analytics.test.ts` | passed |
@@ -166,6 +182,11 @@ Last run: 2026-10-14.
 | DX5 | items:check › rejects answer word in alt text | `tests/unit/items-cli.test.ts` | passed |
 | DX5 | items:check › rejects title phrase in alt text | `tests/unit/items-cli.test.ts` | passed |
 | DX5 | items:check › rejects date in alt text | `tests/unit/items-cli.test.ts` | passed |
+| DX5 | items:check › rejects answer word in the caption | `tests/unit/items-cli.test.ts` | passed |
+| DX5 | items:check › rejects title phrase in the caption | `tests/unit/items-cli.test.ts` | passed |
+| DX5 | items:check › rejects date in the caption | `tests/unit/items-cli.test.ts` | passed |
+| DX5 | items:check › rejects caption over 70 | `tests/unit/items-cli.test.ts` | passed |
+| DX5 | items:check › rejects missing caption | `tests/unit/items-cli.test.ts` | passed |
 | DX5 | items:check › rejects heritage flag missing | `tests/unit/items-cli.test.ts` | passed |
 | DX5 | items:check › rejects region-level round 2 | `tests/unit/items-cli.test.ts` | passed |
 | DX5 | items:check › rejects conflict in round 3 | `tests/unit/items-cli.test.ts` | passed |
@@ -245,6 +266,11 @@ Last run: 2026-10-14.
 | E7 | items:check › rejects answer word in alt text | `tests/unit/items-cli.test.ts` | passed |
 | E7 | items:check › rejects title phrase in alt text | `tests/unit/items-cli.test.ts` | passed |
 | E7 | items:check › rejects date in alt text | `tests/unit/items-cli.test.ts` | passed |
+| E7 | items:check › rejects answer word in the caption | `tests/unit/items-cli.test.ts` | passed |
+| E7 | items:check › rejects title phrase in the caption | `tests/unit/items-cli.test.ts` | passed |
+| E7 | items:check › rejects date in the caption | `tests/unit/items-cli.test.ts` | passed |
+| E7 | items:check › rejects caption over 70 | `tests/unit/items-cli.test.ts` | passed |
+| E7 | items:check › rejects missing caption | `tests/unit/items-cli.test.ts` | passed |
 | E7 | items:check › rejects heritage flag missing | `tests/unit/items-cli.test.ts` | passed |
 | E7 | items:check › rejects region-level round 2 | `tests/unit/items-cli.test.ts` | passed |
 | E7 | items:check › rejects conflict in round 3 | `tests/unit/items-cli.test.ts` | passed |
