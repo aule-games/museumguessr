@@ -8,35 +8,39 @@ Last run: 2026-10-14.
 
 | Step | Result |
 | --- | --- |
-| type check | passed (2 s) |
+| type check | passed (3 s) |
 | generated files are current | passed (0 s) |
 | item check | passed (0 s) |
-| unit tests | passed (9 s) |
-| design checks | passed (1 s) |
+| unit tests | passed (10 s) |
+| design checks | passed (2 s) |
 | lint | passed (2 s) |
 | build | passed (1 s) |
 | build checks | passed (0 s) |
-| browser tests (5 viewports) | passed (66 s) |
+| browser tests (5 viewports) | passed (77 s) |
 | release scan (publish candidate) | passed (4 s) |
 
 ## Automated checks
 
-241 tests, 241 passed, 81 requirement IDs.
+253 tests, 253 passed, 82 requirement IDs.
 
 | ID | Rule | Test file | Result |
 | --- | --- | --- | --- |
 | A1 | no answer before the reveal › round text and alt attributes carry no title; the reveal does (phone) | `tests/e2e/game.spec.ts` | passed |
 | DS1 | layout › the round screen never scrolls and Confirm stays on screen (phone) | `tests/e2e/game.spec.ts` | passed |
-| DS1 | layout › the reveal reads top to bottom: top bar, wall label, map, then Next on screen (phone) | `tests/e2e/game.spec.ts` | passed |
+| DS1 | layout › the reveal puts scores after the wall label and keeps Next on screen (phone) | `tests/e2e/game.spec.ts` | passed |
 | DS1 | layout › the round screen never scrolls and Confirm stays on screen (phone-landscape) | `tests/e2e/game.spec.ts` | passed |
-| DS1 | layout › the reveal reads top to bottom: top bar, wall label, map, then Next on screen (phone-landscape) | `tests/e2e/game.spec.ts` | passed |
+| DS1 | layout › the reveal puts scores after the wall label and keeps Next on screen (phone-landscape) | `tests/e2e/game.spec.ts` | passed |
 | DS1 | layout › the round screen never scrolls and Confirm stays on screen (desktop) | `tests/e2e/game.spec.ts` | passed |
-| DS1 | layout › the reveal reads top to bottom: top bar, wall label, map, then Next on screen (desktop) | `tests/e2e/game.spec.ts` | passed |
+| DS1 | layout › the reveal puts scores after the wall label and keeps Next on screen (desktop) | `tests/e2e/game.spec.ts` | passed |
 | DS1 | layout › the round screen never scrolls and Confirm stays on screen (phone-small) | `tests/e2e/game.spec.ts` | passed |
-| DS1 | layout › the reveal reads top to bottom: top bar, wall label, map, then Next on screen (phone-small) | `tests/e2e/game.spec.ts` | passed |
+| DS1 | layout › the reveal puts scores after the wall label and keeps Next on screen (phone-small) | `tests/e2e/game.spec.ts` | passed |
 | DS1 | layout › the round screen never scrolls and Confirm stays on screen (phone-inapp) | `tests/e2e/game.spec.ts` | passed |
-| DS1 | layout › the reveal reads top to bottom: top bar, wall label, map, then Next on screen (phone-inapp) | `tests/e2e/game.spec.ts` | passed |
+| DS1 | layout › the reveal puts scores after the wall label and keeps Next on screen (phone-inapp) | `tests/e2e/game.spec.ts` | passed |
 | DS2 | the screen spec names real copy keys › every `key` in docs/screen-spec.md exists in src/copy.ts (a trailing .* matches a prefix) | `tests/unit/docs.test.ts` | passed |
+| DS4 | fallback label density › admits only rank-zero cities at world zoom and adds ranks as the map zooms in | `tests/unit/map-layout.test.ts` | passed |
+| DS4 | fallback label density › admits only rank-zero cities at world zoom and adds ranks as the map zooms in | `tests/unit/map-layout.test.ts` | passed |
+| DS4 | fallback label density › rejects overlapping label boxes and preserves a screen-space gutter | `tests/unit/map-layout.test.ts` | passed |
+| DS4 | fallback label density › rejects overlapping label boxes and preserves a screen-space gutter | `tests/unit/map-layout.test.ts` | passed |
 | DS4 | drop label › names the nearest bundled city | `tests/unit/map.test.ts` | passed |
 | DS4 | drop label › says the country or open sea beyond 250 km of any place | `tests/unit/map.test.ts` | passed |
 | DS5 | year display never shows negative numbers › formats years and ranges | `tests/unit/scoring.test.ts` | passed |
@@ -55,6 +59,7 @@ Last run: 2026-10-14.
 | DS12 | the reveal score table › each row names how far off the guess was, with the points in their own column | `tests/unit/reveal.test.ts` | passed |
 | DS12 | the reveal score table › explains each row with the rule and this round’s numbers | `tests/unit/reveal.test.ts` | passed |
 | DS12 | the reveal score table › closes the table with the round total | `tests/unit/reveal.test.ts` | passed |
+| DS12 | the reveal score table › puts the score table directly after the wall label, before the map and journey fact | `tests/unit/reveal.test.ts` | passed |
 | DS13 | menu → New game with a slow history › opens the confirmation only after the menu has closed, and Start over runs once | `tests/unit/overlay.test.ts` | passed |
 | DS13 | overlays and history › Back closes the photo lightbox and keeps the round (phone) | `tests/e2e/game.spec.ts` | passed |
 | DS13 | overlays and history › the menu opens How to play, Credits (one row per photo) and About & privacy (phone) | `tests/e2e/game.spec.ts` | passed |
@@ -63,15 +68,31 @@ Last run: 2026-10-14.
 | DS17 | reveal details › the difficulty row shows after round 3 only; Next works at once and stays visible (phone) | `tests/e2e/game.spec.ts` | passed |
 | DS17 | reveal details › the reveal shows the journey fact, three score rows and a credit line (phone) | `tests/e2e/game.spec.ts` | passed |
 | DS19 | layout › the round screen never scrolls and Confirm stays on screen (phone) | `tests/e2e/game.spec.ts` | passed |
-| DS19 | layout › the reveal reads top to bottom: top bar, wall label, map, then Next on screen (phone) | `tests/e2e/game.spec.ts` | passed |
+| DS19 | layout › the reveal puts scores after the wall label and keeps Next on screen (phone) | `tests/e2e/game.spec.ts` | passed |
 | DS19 | layout › the round screen never scrolls and Confirm stays on screen (phone-landscape) | `tests/e2e/game.spec.ts` | passed |
-| DS19 | layout › the reveal reads top to bottom: top bar, wall label, map, then Next on screen (phone-landscape) | `tests/e2e/game.spec.ts` | passed |
+| DS19 | layout › the reveal puts scores after the wall label and keeps Next on screen (phone-landscape) | `tests/e2e/game.spec.ts` | passed |
 | DS19 | layout › the round screen never scrolls and Confirm stays on screen (desktop) | `tests/e2e/game.spec.ts` | passed |
-| DS19 | layout › the reveal reads top to bottom: top bar, wall label, map, then Next on screen (desktop) | `tests/e2e/game.spec.ts` | passed |
+| DS19 | layout › the reveal puts scores after the wall label and keeps Next on screen (desktop) | `tests/e2e/game.spec.ts` | passed |
 | DS19 | layout › the round screen never scrolls and Confirm stays on screen (phone-small) | `tests/e2e/game.spec.ts` | passed |
-| DS19 | layout › the reveal reads top to bottom: top bar, wall label, map, then Next on screen (phone-small) | `tests/e2e/game.spec.ts` | passed |
+| DS19 | layout › the reveal puts scores after the wall label and keeps Next on screen (phone-small) | `tests/e2e/game.spec.ts` | passed |
 | DS19 | layout › the round screen never scrolls and Confirm stays on screen (phone-inapp) | `tests/e2e/game.spec.ts` | passed |
-| DS19 | layout › the reveal reads top to bottom: top bar, wall label, map, then Next on screen (phone-inapp) | `tests/e2e/game.spec.ts` | passed |
+| DS19 | layout › the reveal puts scores after the wall label and keeps Next on screen (phone-inapp) | `tests/e2e/game.spec.ts` | passed |
+| DS21 | the reveal score table › puts the score table directly after the wall label, before the map and journey fact | `tests/unit/reveal.test.ts` | passed |
+| DS21 | layout › the reveal puts scores after the wall label and keeps Next on screen (phone) | `tests/e2e/game.spec.ts` | passed |
+| DS21 | layout › the reveal puts scores after the wall label and keeps Next on screen (phone-landscape) | `tests/e2e/game.spec.ts` | passed |
+| DS21 | layout › the reveal puts scores after the wall label and keeps Next on screen (desktop) | `tests/e2e/game.spec.ts` | passed |
+| DS21 | layout › the reveal puts scores after the wall label and keeps Next on screen (phone-small) | `tests/e2e/game.spec.ts` | passed |
+| DS21 | layout › the reveal puts scores after the wall label and keeps Next on screen (phone-inapp) | `tests/e2e/game.spec.ts` | passed |
+| DS22 | reveal fit clearance › keeps the landscape World button and attribution below every fitted pin label | `tests/unit/map-layout.test.ts` | passed |
+| DS22 | reveal fit clearance › keeps the landscape World button and attribution below every fitted pin label | `tests/unit/map-layout.test.ts` | passed |
+| DS22 | reveal fit clearance › reserves the desktop controls column as well as half the answer label width | `tests/unit/map-layout.test.ts` | passed |
+| DS22 | reveal fit clearance › reserves the desktop controls column as well as half the answer label width | `tests/unit/map-layout.test.ts` | passed |
+| DS22 | reveal fit clearance › keeps landscape pins right of World and above two-line production credits | `tests/unit/map-layout.test.ts` | passed |
+| DS22 | reveal fit clearance › keeps landscape pins right of World and above two-line production credits | `tests/unit/map-layout.test.ts` | passed |
+| DS22 | reveal fit clearance › increases the bottom clearance when late tile credits wrap to another line | `tests/unit/map-layout.test.ts` | passed |
+| DS22 | reveal fit clearance › increases the bottom clearance when late tile credits wrap to another line | `tests/unit/map-layout.test.ts` | passed |
+| DS22 | reveal fit clearance › accepts hidden phone controls and leaves a positive fit area in tiny hosts | `tests/unit/map-layout.test.ts` | passed |
+| DS22 | reveal fit clearance › accepts hidden phone controls and leaves a positive fit area in tiny hosts | `tests/unit/map-layout.test.ts` | passed |
 | DS22 | reveal map emphasis › highlights the country where the object is kept today and the one where it was made, each with its role | `tests/unit/map.test.ts` | passed |
 | DS22 | reveal map emphasis › marks one country as both when the object was made and is kept in the same country | `tests/unit/map.test.ts` | passed |
 | DS22 | reveal map emphasis › leaves out a point at sea instead of guessing a country | `tests/unit/map.test.ts` | passed |
@@ -103,6 +124,14 @@ Last run: 2026-10-14.
 | DS34 | tour card placement › puts the card above the lit element when there is no room below | `tests/unit/tour.test.ts` | passed |
 | DS34 | tour card placement › keeps the card fully on screen even when the lit element fills the screen | `tests/unit/tour.test.ts` | passed |
 | DS34 | tour card placement › has a title and a body for every step | `tests/unit/tour.test.ts` | passed |
+| DS34 | tour card placement › places the small-phone map card above the map after restoring the photo share | `tests/unit/tour.test.ts` | passed |
+| DS34 | tour card placement › places the small-phone map card above the map after restoring the photo share | `tests/unit/tour.test.ts` | passed |
+| DS34 | tour card placement › narrows the landscape photo card into the free side column | `tests/unit/tour.test.ts` | passed |
+| DS34 | tour card placement › narrows the landscape photo card into the free side column | `tests/unit/tour.test.ts` | passed |
+| DS34 | tour card placement › bounds enlarged map instructions to the space above the target before overlapping it | `tests/unit/tour.test.ts` | passed |
+| DS34 | tour card placement › bounds enlarged map instructions to the space above the target before overlapping it | `tests/unit/tour.test.ts` | passed |
+| DS34 | tour card placement › describes year controls as appearing only on When, not under the Confirm spotlight | `tests/unit/tour.test.ts` | passed |
+| DS34 | tour card placement › describes year controls as appearing only on When, not under the Confirm spotlight | `tests/unit/tour.test.ts` | passed |
 | DS34 | the first-visit tour › opens on round 1, lights up each part of the screen in turn, and Let’s start begins the game (phone) | `tests/e2e/tour.spec.ts` | passed |
 | DS34 | the first-visit tour › Back returns to the previous step (phone) | `tests/e2e/tour.spec.ts` | passed |
 | DS34 | the first-visit tour › Skip closes it as skipped, and it does not come back after a reload (phone) | `tests/e2e/tour.spec.ts` | passed |
