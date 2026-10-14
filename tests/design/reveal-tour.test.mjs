@@ -1,5 +1,5 @@
 // Offline visual-contract checks; these do not substitute for browser captures.
-// Run: node --test docs/design/reveal-tour.test.mjs
+// Runs with npm test (test:design).
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';

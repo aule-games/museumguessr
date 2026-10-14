@@ -11,17 +11,17 @@ Last run: 2026-10-14.
 | type check | passed (2 s) |
 | generated files are current | passed (0 s) |
 | item check | passed (0 s) |
-| unit tests | passed (8 s) |
+| unit tests | passed (9 s) |
 | design checks | passed (1 s) |
 | lint | passed (2 s) |
 | build | passed (1 s) |
 | build checks | passed (0 s) |
-| browser tests (5 viewports) | failed (60 s) |
+| browser tests (5 viewports) | passed (66 s) |
 | release scan (publish candidate) | passed (4 s) |
 
 ## Automated checks
 
-240 tests, 239 passed, 81 requirement IDs.
+241 tests, 241 passed, 81 requirement IDs.
 
 | ID | Rule | Test file | Result |
 | --- | --- | --- | --- |
@@ -57,7 +57,7 @@ Last run: 2026-10-14.
 | DS12 | the reveal score table › closes the table with the round total | `tests/unit/reveal.test.ts` | passed |
 | DS13 | menu → New game with a slow history › opens the confirmation only after the menu has closed, and Start over runs once | `tests/unit/overlay.test.ts` | passed |
 | DS13 | overlays and history › Back closes the photo lightbox and keeps the round (phone) | `tests/e2e/game.spec.ts` | passed |
-| DS13 | overlays and history › the menu opens How to play, Credits (one row per photo) and About & privacy (phone) | `tests/e2e/game.spec.ts` | failed |
+| DS13 | overlays and history › the menu opens How to play, Credits (one row per photo) and About & privacy (phone) | `tests/e2e/game.spec.ts` | passed |
 | DS13 | overlays and history › New game from the menu asks first (phone) | `tests/e2e/game.spec.ts` | passed |
 | DS15 | a full game › ten rounds end on the results screen; Copy result copies the template; replay starts over (phone) | `tests/e2e/game.spec.ts` | passed |
 | DS17 | reveal details › the difficulty row shows after round 3 only; Next works at once and stays visible (phone) | `tests/e2e/game.spec.ts` | passed |
@@ -75,14 +75,16 @@ Last run: 2026-10-14.
 | DS22 | reveal map emphasis › highlights the country where the object is kept today and the one where it was made, each with its role | `tests/unit/map.test.ts` | passed |
 | DS22 | reveal map emphasis › marks one country as both when the object was made and is kept in the same country | `tests/unit/map.test.ts` | passed |
 | DS22 | reveal map emphasis › leaves out a point at sea instead of guessing a country | `tests/unit/map.test.ts` | passed |
+| DS22 | image and map readiness › the reveal draws its faded map, country tints and lines (phone) | `tests/e2e/game.spec.ts` | passed |
 | DS23 | image and map readiness › a blocked photo: Start waits at most 4 s, Confirm stays disabled, retry, then skip after 3 failures (phone) | `tests/e2e/game.spec.ts` | passed |
 | DS23 | image and map readiness › no WebGL: the start screen says so and one client_error is sent (phone) | `tests/e2e/game.spec.ts` | passed |
 | DS23 | image and map readiness › blocked tiles switch to the bundled map and pins still work (phone) | `tests/e2e/game.spec.ts` | passed |
+| DS23 | image and map readiness › the reveal draws its faded map, country tints and lines (phone) | `tests/e2e/game.spec.ts` | passed |
 | DS23 | image and map readiness › map error reports carry no web addresses (phone) | `tests/e2e/game.spec.ts` | passed |
 | DS24 | resume › a later visit sees Continue on the start screen; New game starts over (phone) | `tests/e2e/game.spec.ts` | passed |
 | DS25 | a full game › ten rounds end on the results screen; Copy result copies the template; replay starts over (phone) | `tests/e2e/game.spec.ts` | passed |
 | DS27 | overlays and history › Back closes the photo lightbox and keeps the round (phone) | `tests/e2e/game.spec.ts` | passed |
-| DS27 | overlays and history › the menu opens How to play, Credits (one row per photo) and About & privacy (phone) | `tests/e2e/game.spec.ts` | failed |
+| DS27 | overlays and history › the menu opens How to play, Credits (one row per photo) and About & privacy (phone) | `tests/e2e/game.spec.ts` | passed |
 | DS27 | overlays and history › New game from the menu asks first (phone) | `tests/e2e/game.spec.ts` | passed |
 | DS28 | piecewise slider scale › gives each segment an equal share of the track | `tests/unit/scoring.test.ts` | passed |
 | DS28 | piecewise slider scale › round-trips every year in bounds within one year | `tests/unit/scoring.test.ts` | passed |
@@ -281,7 +283,7 @@ Last run: 2026-10-14.
 | ENG14 | resume › a corrupt save starts a new game and keeps the test flag (phone) | `tests/e2e/game.spec.ts` | passed |
 | ENG17 | menu → New game with a slow history › opens the confirmation only after the menu has closed, and Start over runs once | `tests/unit/overlay.test.ts` | passed |
 | ENG17 | overlays and history › Back closes the photo lightbox and keeps the round (phone) | `tests/e2e/game.spec.ts` | passed |
-| ENG17 | overlays and history › the menu opens How to play, Credits (one row per photo) and About & privacy (phone) | `tests/e2e/game.spec.ts` | failed |
+| ENG17 | overlays and history › the menu opens How to play, Credits (one row per photo) and About & privacy (phone) | `tests/e2e/game.spec.ts` | passed |
 | ENG17 | overlays and history › New game from the menu asks first (phone) | `tests/e2e/game.spec.ts` | passed |
 | ENG19 | README credits and privacy › credits the photo of Under the Wave off Kanagawa (The Great Wave) | `tests/unit/readme.test.ts` | passed |
 | ENG19 | README credits and privacy › credits the photo of Las Meninas | `tests/unit/readme.test.ts` | passed |
@@ -441,6 +443,7 @@ Last run: 2026-10-14.
 | R1 | image and map readiness › a blocked photo: Start waits at most 4 s, Confirm stays disabled, retry, then skip after 3 failures (phone) | `tests/e2e/game.spec.ts` | passed |
 | R1 | image and map readiness › no WebGL: the start screen says so and one client_error is sent (phone) | `tests/e2e/game.spec.ts` | passed |
 | R1 | image and map readiness › blocked tiles switch to the bundled map and pins still work (phone) | `tests/e2e/game.spec.ts` | passed |
+| R1 | image and map readiness › the reveal draws its faded map, country tints and lines (phone) | `tests/e2e/game.spec.ts` | passed |
 | R1 | image and map readiness › map error reports carry no web addresses (phone) | `tests/e2e/game.spec.ts` | passed |
 | R2 | answer submits are idempotent › a double tap records one answer and one event | `tests/unit/reducer.test.ts` | passed |
 | R2 | answer submits are idempotent › ignores a stale submit for another round | `tests/unit/reducer.test.ts` | passed |

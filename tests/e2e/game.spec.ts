@@ -101,6 +101,14 @@ test.describe('[DS23] [R1] image and map readiness', () => {
     await expect(page.locator('.map__label')).toContainText('Near');
   });
 
+  test('[DS22] the reveal draws its faded map, country tints and lines', async ({ page }) => {
+    await start(page);
+    await playRound(page);
+    await expect(page.locator('.map')).toHaveAttribute('data-reveal', 'drawn', { timeout: 8000 });
+    await page.locator('[data-test=next]').click();
+    await expect(page.locator('.map')).not.toHaveAttribute('data-reveal', 'drawn');
+  });
+
   test('[PH2] map error reports carry no web addresses', async ({ page, recorder }) => {
     await start(page);
     await expect(page.locator('.map')).toHaveAttribute('data-state', 'fallback', { timeout: 6000 });

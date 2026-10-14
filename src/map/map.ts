@@ -488,10 +488,31 @@ export class GameMap {
     }
   }
 
-  /** Re-add the reveal layers after any style change; the reveal fades the base map and hides its labels. */
+  /**
+   * Re-add the reveal layers after any style change; the reveal fades the base
+   * map and hides its labels. `data-reveal="drawn"` marks the map once they
+   * have rendered.
+   */
   private redrawLayers() {
     const map = this.map;
-    if (!map || !map.isStyleLoaded()) return;
+    if (!map) return;
+    delete this.element.dataset.reveal;
+    try {
+      this.drawLayers(map);
+    } catch {
+      // Only the style document itself can still be loading here, and its
+      // style.load event runs this again. (isStyleLoaded() is also false while
+      // tiles load, which would skip the reveal layers for good.)
+      return;
+    }
+    if (this.revealData) {
+      map.once('idle', () => {
+        if (this.mode === 'reveal' && this.revealData) this.element.dataset.reveal = 'drawn';
+      });
+    }
+  }
+
+  private drawLayers(map: ML.Map) {
     for (const id of REVEAL_LAYERS) {
       if (map.getLayer(id)) map.removeLayer(id);
     }

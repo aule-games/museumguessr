@@ -100,6 +100,8 @@ try {
         await confirm(page);
       } else await playRound(page);
       if (round === 1 || round === 3) {
+        // capture only once the reveal layers (veil, countries, lines) have rendered
+        await expect(page.locator('.map')).toHaveAttribute('data-reveal', 'drawn', { timeout: 8000 });
         await capture(`reveal-${round}`);
         await page.locator('[data-test=row-when]').click();
         await capture(`reveal-${round}-expanded`);

@@ -87,7 +87,7 @@ export const COPY = {
   'reveal.sameArea': 'Made and held in the same area: {place}',
   'reveal.madeRegion': 'made somewhere in {place} ({precision})',
   'reveal.source': 'source',
-  'reveal.legend': 'Blue: where it is kept today · plum: where it was made · hollow pins: your guesses',
+  'reveal.legend': 'Blue square: kept today · plum diamond: made here · hollow shapes: your guesses',
   'reveal.lineLabel': 'made here · held here now',
   'reveal.row.kept': 'Kept',
   'reveal.row.made': 'Made',
