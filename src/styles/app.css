@@ -2131,10 +2131,8 @@ p {
     text-align: center;
   }
 
-  /* lift Next off the bottom edge; the map gives up that height */
   .reveal .actionbar {
     grid-template-columns: 55fr 45fr;
-    padding-block: var(--space-2) calc(var(--space-7) + env(safe-area-inset-bottom));
   }
 
   .reveal .actionbar > * {
@@ -2143,6 +2141,33 @@ p {
 }
 
 @media (width >= 900px) {
+  /* lift Confirm/Back off the bottom edge on desktop rounds, like the reveal's
+     Next; the map and photo give up that height */
+  .round {
+    grid-template-rows: var(--layout-topbar) auto minmax(0, 1fr) calc(var(--layout-actionbar) + var(--space-7) + env(safe-area-inset-bottom));
+  }
+
+  .round .actionbar {
+    align-content: end;
+    padding-bottom: calc(var(--space-7) + env(safe-area-inset-bottom));
+  }
+
+  /* the reveal's Next takes exactly Confirm's place and size: same column,
+     same insets, same 48 px lift off the bottom edge */
+  .reveal .actionbar {
+    column-gap: 0;
+    padding: var(--space-2) 0 calc(var(--space-7) + env(safe-area-inset-bottom));
+  }
+
+  .reveal .actionbar > * {
+    width: auto;
+    margin-inline: var(--space-2) var(--space-3);
+  }
+
+  .round__photo {
+    margin-bottom: calc(var(--space-7) + var(--space-2));
+  }
+
   .steps {
     flex: none;
     padding-top: var(--space-2);

@@ -25,8 +25,9 @@ flow and token names are unchanged.
   `currentColor`, 32 × 40 with the tip at y = 37.
 - **Top bar and results:** the round counter is lime text on the bar and the
   running score a lime pill with navy text. Score rows lead with large glyphs: the made and kept pins
-  and a wristwatch for When (`src/assets/icons/when.svg`). On desktop the
-  reveal's Next sits 48 px above the bottom edge; the map gives up that height.
+  and a wristwatch for When (`src/assets/icons/when.svg`). On desktop,
+  Confirm, Back and the reveal's Next share one place and size: the right
+  column, 48 px above the bottom edge; the map and photo give up that height.
 - **Logo:** the kept pin in navy on a lime rounded tile, then "Museum" in
   off-white and "Guessr" in lime. The favicon is the tile alone
   (`node scripts/og.mjs --icons`).
