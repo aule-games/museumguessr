@@ -29,13 +29,17 @@ function madeRadius(item: Item): number {
   return madeFullMarksKm(item.made.precision, item.made.full_marks_km);
 }
 
-/** A score row's visible result: how far off the guess was, in plain words (DS12). */
-export function rowResult(step: Step, item: Item, r: RoundResult): string {
-  if (r.skipped) return t('reveal.skipped');
-  if (r[step].points === MAX_POINTS) return t('reveal.spotOn');
-  if (step === 'when') return t('result.years', { years: yearCount(r.when.yearsOff), range: formatRange(item.when.start, item.when.end) });
+/** A score row's visible result: how far off the guess was, in plain words (DS12). `value` is the difference itself, which the row emphasises. */
+export function rowResult(step: Step, item: Item, r: RoundResult): { text: string; value: string | null } {
+  if (r.skipped) return { text: t('reveal.skipped'), value: null };
+  if (r[step].points === MAX_POINTS) return { text: t('reveal.spotOn'), value: null };
+  if (step === 'when') {
+    const years = yearCount(r.when.yearsOff);
+    return { text: t('result.years', { years, range: formatRange(item.when.start, item.when.end) }), value: years };
+  }
   const place = step === 'kept' ? item.kept.city : item.made.place;
-  return t('result.km', { km: formatNumber(step === 'kept' ? r.kept.km : r.made.km), place });
+  const distance = t('reveal.kmCount', { km: formatNumber(step === 'kept' ? r.kept.km : r.made.km) });
+  return { text: t('result.km', { distance, place }), value: distance };
 }
 
 /** How a row's points were computed, with this round's numbers (the hover and tap explanation). */

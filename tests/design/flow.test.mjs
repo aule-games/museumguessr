@@ -7,34 +7,29 @@ const read = (path) => readFileSync(new URL(`../../${path}`, import.meta.url), '
 const box = (left, top, width, height) => ({ left, top, width, height, right: left + width, bottom: top + height });
 function measured(step = 'when', width = 375, height = 667) {
   const portrait = width < 900 && height > width;
-  const available = height - 48 - 56 - 44 - 64;
-  const photo = portrait ? available * (step === 'when' ? 0.3 : 0.4) : height - 48 - 44;
-  const image = box(0, 104, width, photo);
+  const available = height - 48 - 56 - 64;
+  const photo = portrait ? available * 0.4 : height - 48;
+  const image = box(0, 48, width, photo);
   return {
     viewport: { width, height }, page: { width, height }, step, ready: true,
-    image, imageFit: 'contain',
-    caption: box(0, image.bottom, width - 100, 44), hint: box(width - 100, image.bottom, 100, 44),
-    lines: [box(12, image.bottom + 8, width - 124, 14)],
-    captionFont: 12, captionOverflow: false, captionEllipsis: false,
-    answer: box(0, image.bottom + 44, width, available - photo),
+    photo: image, image, imageFit: 'contain',
+    hint: box(width - 40, image.bottom - 40, 32, 32),
+    captionText: 'Colour print of a curling wave above three boats',
+    answer: box(0, image.bottom + 56, width, available - photo),
     back: step === 'made' ? null : box(16, height - 56, 70, 48),
     confirm: box(step === 'made' ? 16 : 94, height - 56, width - (step === 'made' ? 32 : 110), 48),
     primaryCount: 1, dimmed: null, mapReady: false, tour: null,
   };
 }
 
-test('[DS37] The rail check rejects caption or View photo overlap with the image', () => {
+test('[DS37] The enlarge check rejects a text rail, a mark outside the photo corner, or a missing caption', () => {
   assert.deepEqual(flowGeometryIssues(measured()), []);
-  for (const part of ['caption', 'hint']) {
-    const m = measured(); m[part].top -= 20;
-    assert.ok(flowGeometryIssues(m).some((s) => s.includes('separate rail')));
-  }
-  for (const key of ['captionOverflow', 'captionEllipsis']) {
-    const m = measured(); m[key] = true;
-    assert.ok(flowGeometryIssues(m).some((s) => s.includes('full caption')));
-  }
-  const m = measured(); m.lines[0].right = m.caption.right + 10;
-  assert.ok(flowGeometryIssues(m).some((s) => s.includes('full caption')));
+  const wide = measured(); wide.hint = box(0, wide.image.bottom, wide.viewport.width, 44);
+  assert.ok(flowGeometryIssues(wide).some((s) => s.includes('corner mark')));
+  const off = measured(); off.hint = box(8, 56, 32, 32);
+  assert.ok(flowGeometryIssues(off).some((s) => s.includes('corner mark')));
+  const bare = measured(); bare.captionText = '';
+  assert.ok(flowGeometryIssues(bare).some((s) => s.includes('screen readers')));
 });
 
 test('[DS36] The action check rejects offscreen, undersized, overlapping or competing buttons at all five viewports', () => {
@@ -52,12 +47,12 @@ test('[DS36] The action check rejects offscreen, undersized, overlapping or comp
   }
 });
 
-test('[DS19] The photo share check measures the image rather than counting the caption as artwork', () => {
+test('[DS19] The photo share check measures the image itself', () => {
   for (const step of ['made', 'when', 'kept']) {
     const m = measured(step);
     assert.deepEqual(flowGeometryIssues(m), []);
-    m.image.height -= 44;
-    assert.ok(flowGeometryIssues(m).some((s) => s.includes('caption rail excluded')));
+    m.image.height -= 80;
+    assert.ok(flowGeometryIssues(m).some((s) => s.includes('photo share')));
   }
 });
 
@@ -80,14 +75,14 @@ test('[DS34] The tour check rejects a misplaced spotlight or a card covering its
   assert.ok(flowGeometryIssues(m).some((s) => s.startsWith('[DS34]')));
 });
 
-test('[DS37] Caption and photo affordance use flow tracks, not absolute overlays', () => {
+test('[DS37] The round spends no row on a caption: an icon marks the photo and the caption is visually hidden', () => {
   const css = read('src/styles/app.css');
-  for (const name of ['caption', 'hint']) {
-    const rule = css.match(new RegExp(`\\.photo__${name} \\{([^}]+)\\}`))[1];
-    assert.match(rule, /grid-area: 2 \/ /);
-    assert.doesNotMatch(rule, /position: absolute|ellipsis|overflow: hidden|max-width: 62%/);
-  }
-  assert.match(css, /grid-template-areas: 'top' 'prompt' 'photo' 'caption' 'answer' 'action'/);
+  const hint = css.match(/\.photo__hint \{([^}]+)\}/)[1];
+  assert.match(hint, /width: var\(--space-6\)/);
+  assert.match(hint, /height: var\(--space-6\)/);
+  assert.match(css.match(/\.photo__caption \{([^}]+)\}/)[1], /clip-path: inset\(50%\)/);
+  assert.match(css, /grid-template-areas: 'top' 'photo' 'prompt' 'answer' 'action'/);
+  assert.match(read('src/ui/lightbox.ts'), /registerElement\(\{ name: 'caption'/);
   const round = read('src/ui/screens/round.ts');
   assert.match(round, /class: 'photo round__photo'/);
   assert.match(round, /t\(p.step === 'kept' \? 'confirm.last' : 'confirm'\)/);
@@ -100,7 +95,7 @@ test('[DS35] The carried pin uses the hollow asset and keeps readable ink withou
   assert.match(map, /pinElement\(step === 'made' \? 'guess-made' : 'guess-kept', label, 'pin--dimmed'\)/);
   assert.match(map, /t\('map.previousGuess', \{ step: t\(`step\.\$\{step\}`\) \}\)/);
   const rule = css.match(/\.pin--dimmed \{([^}]+)\}/)[1];
-  assert.match(rule, /color: var\(--color-ink-muted\)/);
+  assert.match(rule, /color: var\(--color-guess-line\)/);
   assert.match(rule, /pointer-events: none/);
   assert.doesNotMatch(rule, /opacity/);
   const tokens = JSON.parse(read('src/design/tokens.json'));
@@ -108,6 +103,28 @@ test('[DS35] The carried pin uses the hollow asset and keeps readable ink withou
     .map((v) => v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4)
     .reduce((sum, v, i) => sum + v * [0.2126, 0.7152, 0.0722][i], 0);
   const ratio = (a, b) => (Math.max(light(a), light(b)) + 0.05) / (Math.min(light(a), light(b)) + 0.05);
-  for (const surface of ['water', 'land', 'landcover']) assert.ok(ratio(tokens.color['ink-muted'], tokens.map[surface]) >= 3);
-  assert.ok(ratio(tokens.color['ink-muted'], tokens.color.surface) >= 4.5);
+  for (const surface of ['water', 'land', 'landcover']) assert.ok(ratio(tokens.color['guess-line'], tokens.map[surface]) >= 3);
+  // its label sits on a map-ground pill
+  assert.ok(ratio(tokens.color['guess-line'], tokens.map.land) >= 4.5);
+});
+
+test('[DS19] The question row sits on the gallery wall with no box, and the year slider shows its handle before the first touch', () => {
+  const css = read('src/styles/app.css');
+  const prompt = css.match(/\n\.prompt \{([^}]+)\}/)[1];
+  assert.match(prompt, /background: var\(--color-bg\)/);
+  assert.match(prompt, /color: var\(--color-ink\)/);
+  // the untouched handle looks like the touched one: no ghost style, never hidden
+  assert.doesNotMatch(css, /\.year__track\[data-touched='false'\] \.year__thumb/);
+  assert.match(read('src/ui/year.ts'), /thumb\.style\.left = '50%'/);
+});
+
+test('[DS12] The round total is the one vermilion panel, white on the accent, with large display-face points', () => {
+  const css = read('src/styles/app.css');
+  const total = css.match(/\n\.scores__total \{([^}]+)\}/)[1];
+  assert.match(total, /background: var\(--color-accent\)/);
+  assert.match(total, /color: var\(--color-accent-ink\)/);
+  assert.match(css.match(/\n\.score__points \{([^}]+)\}/)[1], /font-family: var\(--font-display\)/);
+  const score = css.match(/\n\.reveal__score \{([^}]+)\}/)[1];
+  assert.match(score, /font-size: var\(--text-xl\)/);
+  assert.match(score, /font-weight: 800/);
 });

@@ -61,9 +61,15 @@ describe('[DS12] the reveal score table', () => {
 
   it('each row names how far off the guess was, with the points in their own column', () => {
     const e = el();
-    expect(e.querySelector('[data-test=row-kept] .score__result')?.textContent).toBe('976 km from Amsterdam');
+    expect(e.querySelector('[data-test=row-kept] .score__result')?.textContent).toBe('Your pin is 976 km away from Amsterdam');
     expect(e.querySelector('[data-test=points-kept]')?.textContent).toBe('462');
-    expect(e.querySelector('[data-test=row-when] .score__result')?.textContent).toBe('1,069 years from 1829–1833 CE');
+    expect(e.querySelector('[data-test=row-when] .score__result')?.textContent).toBe('Your selection is 1,069 years away from 1829–1833 CE');
+  });
+
+  it('the difference in each row is bold so it reads at a glance', () => {
+    const e = el();
+    expect(e.querySelector('[data-test=row-kept] .score__value')?.textContent).toBe('976 km');
+    expect(e.querySelector('[data-test=row-when] .score__value')?.textContent).toBe('1,069 years');
   });
 
   it('explains each row with the rule and this round’s numbers', () => {
@@ -73,8 +79,9 @@ describe('[DS12] the reveal score table', () => {
     expect(howText('when', wave, result)).toBe(
       'Full marks inside 1829–1833 CE. Outside it, points halve about every 51 years (older objects get a wider margin): 1,069 years off scores 0 of 1,000.',
     );
-    const tip = el().querySelector('[data-test=row-kept]');
-    expect(document.getElementById(tip?.getAttribute('aria-describedby') ?? '') ?? el().querySelector('.score__tip')).toBeTruthy();
+    const row = el().querySelector('[data-test=row-kept]');
+    const how = row?.querySelector(`#${row.getAttribute('aria-describedby')}`);
+    expect(how?.textContent, 'the explanation sits inside its own row, without a heading').toBe(howText('kept', wave, result));
   });
 
   it('closes the table with the round total', () => {

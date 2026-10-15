@@ -581,7 +581,7 @@ export class GameMap {
     const css = getComputedStyle(document.documentElement);
     const color = (name: string, fallback: string) => css.getPropertyValue(name).trim() || fallback;
     map.addSource('reveal-veil', { type: 'geojson', data: VEIL });
-    map.addLayer({ id: 'reveal-veil', type: 'fill', source: 'reveal-veil', paint: { 'fill-color': color('--color-surface', '#fff'), 'fill-opacity': VEIL_OPACITY } });
+    map.addLayer({ id: 'reveal-veil', type: 'fill', source: 'reveal-veil', paint: { 'fill-color': color('--map-land', '#fff'), 'fill-opacity': VEIL_OPACITY } });
     const byRole = (kept: string, made: string, both: string): ML.ExpressionSpecification => ['match', ['get', 'role'], 'kept', kept, 'made', made, both];
     const kept = color('--color-kept', '#234fba');
     const made = color('--color-made', '#8b3653');

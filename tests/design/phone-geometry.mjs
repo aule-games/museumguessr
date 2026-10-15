@@ -71,8 +71,9 @@ export function phoneGeometryIssues(state) {
       range.selectNodeContents(result);
       const bounds = row.getBoundingClientRect();
       check(getComputedStyle(result).textOverflow !== 'ellipsis' && result.scrollWidth <= result.clientWidth + 1 &&
-        [...range.getClientRects()].every((line) => line.left >= bounds.left && line.right <= points.left && line.bottom <= bounds.bottom + 1),
-      '[DS31] Score results wrap in full without ellipsis, clipping or entering the points column');
+        [...range.getClientRects()].every((line) => line.left >= bounds.left && line.right <= bounds.right + 1 && line.bottom <= bounds.bottom + 1 &&
+          (line.right <= points.left + 1 || line.top >= points.bottom - 1)),
+      '[DS31] Score results show in full without ellipsis, clipping or overlapping the points');
     }
     const map = rect('.reveal__map');
     const controls = [...document.querySelectorAll('.map__btn')].map((node) => node.getBoundingClientRect()).filter(visible);

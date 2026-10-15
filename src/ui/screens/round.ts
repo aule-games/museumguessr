@@ -1,5 +1,5 @@
 // Round screen (DS1, DS16, DS19, DS20, DS23, DS35, DS36, E1, A1). Fixed rows: top bar,
-// prompt row, photo, map or year control, Back (after the first question) and Confirm.
+// photo, prompt row, map or year control, Back (after the first question) and Confirm.
 
 import { STEPS, type Step } from '../../analytics/events.ts';
 import { HINT, QUESTION, formatNumber, t } from '../../copy.ts';
@@ -7,7 +7,7 @@ import { imageUrl } from '../../content/items.ts';
 import type { GameMap } from '../../map/map.ts';
 import type { LatLng } from '../../scoring/geo.ts';
 import type { Item } from '../../types/item.ts';
-import { h } from '../dom.ts';
+import { h, s } from '../dom.ts';
 import { openLightbox } from '../lightbox.ts';
 import { yearControl } from '../year.ts';
 
@@ -44,11 +44,17 @@ export class PhotoRegion {
     this.status = h('div', { class: 'photo__status', role: 'status' }, t('photo.loading'));
     const open = h(
       'button',
-      { type: 'button', class: 'photo__open', 'aria-label': t('photo.open'), onclick: (e: MouseEvent) => void openLightbox(this.img, e.currentTarget as HTMLElement) },
+      { type: 'button', class: 'photo__open', 'aria-label': t('photo.open'), onclick: (e: MouseEvent) => void openLightbox(this.img, e.currentTarget as HTMLElement, item.caption) },
       this.img,
-      h('span', { class: 'photo__hint', 'aria-hidden': 'true' }, t('photo.view'), ' ↗'),
+      // A small enlarge icon in the photo's corner; the whole photo is the button (DS37).
+      h(
+        'span',
+        { class: 'photo__hint', 'aria-hidden': 'true' },
+        s('svg', { viewBox: '0 0 24 24', class: 'photo__hint-icon' }, s('path', { d: 'M14 4h6v6M20 4l-7 7M10 20H4v-6M4 20l7-7' })),
+      ),
     );
     // A short neutral subject line (DS37): what the object is, never its title, place or date (A1).
+    // Read by screen readers here; shown under the enlarged photo.
     const caption = h('figcaption', { class: 'photo__caption', 'data-test': 'photo-caption' }, item.caption);
     this.element = h('figure', { class: 'photo round__photo', 'data-state': 'loading', 'data-test': 'photo' }, open, caption, this.status);
     this.img.addEventListener('load', () => this.loaded());
@@ -102,7 +108,6 @@ export interface RoundProps {
   answer: LatLng | number | null;
   /** The confirmed Made pin, shown dimmed on the Kept step. */
   madePin: LatLng | null;
-  showHint: boolean;
   photo: PhotoRegion;
   map: GameMap | null;
   webgl: boolean;
@@ -122,7 +127,6 @@ export interface RoundView {
 
 export function roundScreen(p: RoundProps): RoundView {
   let draft: LatLng | number | null = p.answer;
-  let hintOpen = p.showHint;
 
   const dots = h(
     'ol',
@@ -135,18 +139,10 @@ export function roundScreen(p: RoundProps): RoundView {
     }),
   );
   const question = h('h2', { class: 'prompt__question', tabindex: -1, 'data-test': 'question' }, t(QUESTION[p.step]));
-  const hint = h('p', { class: 'prompt__hint', 'data-test': 'hint', hidden: !hintOpen }, t(HINT[p.step]));
-  const hintBtn = h(
-    'button',
-    { type: 'button', class: 'prompt__help', 'aria-label': t('hint.show'), 'aria-expanded': String(hintOpen), onclick: () => toggleHint() },
-    '?',
-  );
-  const toggleHint = () => {
-    hintOpen = !hintOpen;
-    hint.hidden = !hintOpen;
-    hintBtn.setAttribute('aria-expanded', String(hintOpen));
-  };
-  const prompt = h('div', { class: 'prompt' }, dots, h('div', { class: 'prompt__text' }, question, hint), hintBtn);
+  // The step's rule, always shown under the question: one short sentence, no toggle.
+  const hint = h('p', { class: 'prompt__hint', 'data-test': 'hint' }, t(HINT[p.step]));
+  // the question leads the row; the step dots sit at its end
+  const prompt = h('div', { class: 'prompt' }, h('div', { class: 'prompt__text' }, question, hint), dots);
 
   const confirm = h('button', { type: 'button', class: 'btn btn--primary btn--wide', 'data-test': 'confirm', disabled: true }, t(p.step === 'kept' ? 'confirm.last' : 'confirm'));
   let submitted = false;
@@ -186,8 +182,8 @@ export function roundScreen(p: RoundProps): RoundView {
     'main',
     { class: `screen round round--${p.step}`, 'data-screen': 'round', 'data-step': p.step, 'data-round': p.round + 1 },
     topBar(p.round, p.total, p.onMenu),
-    prompt,
     p.photo.element,
+    prompt,
     answer,
     h('div', { class: `actionbar${back ? ' actionbar--back' : ''}` }, back, confirm),
   );

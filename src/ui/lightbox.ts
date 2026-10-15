@@ -4,7 +4,7 @@
 
 import { pushOverlay } from './overlay.ts';
 
-export async function openLightbox(img: HTMLImageElement, opener: HTMLElement) {
+export async function openLightbox(img: HTMLImageElement, opener: HTMLElement, caption?: string) {
   if (!img.naturalWidth) return;
   const [{ default: PhotoSwipe }] = await Promise.all([import('photoswipe'), import('photoswipe/style.css')]);
   const pswp = new PhotoSwipe({
@@ -14,6 +14,12 @@ export async function openLightbox(img: HTMLImageElement, opener: HTMLElement) {
     showHideAnimationType: 'none',
     returnFocus: false,
   });
+  // the round's neutral caption sits under the enlarged photo (DS37); text only (SEC1)
+  if (caption) {
+    pswp.on('uiRegister', () => {
+      pswp.ui?.registerElement({ name: 'caption', appendTo: 'root', onInit: (el) => { el.textContent = caption; } });
+    });
+  }
   let closedByHistory = false;
   const requestClose = pushOverlay(() => {
     closedByHistory = true;

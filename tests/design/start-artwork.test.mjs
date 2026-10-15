@@ -13,9 +13,11 @@ test('production mini map and wordmark retain semantics, silhouettes and wrapped
     const { miniMap, wordmark } = await server.ssrLoadModule('/src/ui/screens/start.ts');
     const mark = wordmark();
     assert.equal(mark.textContent, 'MuseumGuessr');
-    assert.equal(mark.querySelector('.wordmark__glyphs').getAttribute('aria-hidden'), 'true');
-    assert.equal(mark.querySelectorAll('.pin--made,.pin--kept').length, 2);
-    assert.equal(mark.querySelectorAll('.pin--combined').length, 0);
+    // the logo: one museum pin on the accent tile, hidden from assistive technology
+    assert.equal(mark.querySelector('.wordmark__mark').getAttribute('aria-hidden'), 'true');
+    assert.equal(mark.querySelectorAll('.wordmark__mark .pin--kept').length, 1);
+    assert.equal(mark.querySelectorAll('.pin--made,.pin--combined').length, 0);
+    assert.equal(mark.querySelector('.wordmark__accent').textContent, 'Guessr');
     for (const [made, kept] of [
       [{lat:36.1,lng:43.3}, {lat:40.8,lng:-74}],
       [{lat:-20,lng:179}, {lat:25,lng:-179}],

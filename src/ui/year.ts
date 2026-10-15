@@ -1,6 +1,7 @@
 // Year control (DS5, DS28). The exact field is authoritative; the field, the
-// BCE | CE switch and the piecewise slider are one state. The slider shows no
-// thumb until the first touch; a tap on the track places it there.
+// BCE | CE switch and the piecewise slider are one state. Until the first touch
+// the slider shows its handle mid-track (no value yet); a tap on the track
+// moves it there.
 
 import { t } from '../copy.ts';
 import { SLIDER } from '../scoring/config.ts';
@@ -67,6 +68,7 @@ export function yearControl(initial: number | null, onChange: (year: number | nu
   const eraGroup = h('div', { class: 'year__eras', role: 'group', 'aria-label': t('year.era') }, bce, ce);
 
   const thumb = h('div', { class: 'year__thumb' });
+  thumb.style.left = '50%'; // the ghost's spot until a year is set
   const fill = h('div', { class: 'year__fill' });
   const track = h(
     'div',

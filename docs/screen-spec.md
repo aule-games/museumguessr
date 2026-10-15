@@ -31,14 +31,14 @@ requirement IDs; the sentence before each one is the rule.
 
 | Viewport | Round | Reveal | Start and end |
 | --- | --- | --- | --- |
-| Phone portrait (< 900 px wide) | Fixed rows, no page scroll: top bar 48, prompt 56, image 2fr, content-sized caption rail, answer 3fr (min 220), action bar 64 + safe area | Top bar, scrolling body, sticky action bar | One column, page scrolls |
-| Short phone (portrait, height ≤ 700) | Keep the 2:3 photo/map share; When keeps 3:7, with internally scrolling year controls | Compact wall label, then scores before the map | as phone |
+| Phone portrait (< 900 px wide) | Fixed rows, no page scroll: top bar 48, image 2fr, prompt 56, answer 3fr (min 220, the same for map and year), action bar 64 + safe area | Top bar, scrolling body, sticky action bar | One column, page scrolls |
+| Short phone (portrait, height ≤ 700) | Keep the 2:3 photo/answer share on every step, with internally scrolling year controls | Compact wall label, then scores before the map | as phone |
 | Landscape phone (height ≤ 500) | Photo left 55%, prompt/answer/action right 45% | Map left 55%, compact label and scores right; total visually leads the table | as phone |
 | Desktop (≥ 900 px wide) | Photo left 55%, prompt/answer/action right 45% | Map left 55% (sticky), wall label and scores right | Two columns: text 45%, sample or recap 55% |
 
-On the When step the photo gets about 30% of the answer space and the year
-control 70% (phone), after reserving the caption rail. Measure this share
-from the image box, excluding the caption. The content column is at most
+On phones every step splits the photo and the answer 2:3, so the year
+control gets the same box as the map. Measure this share from the image box.
+The content column is at most
 1200 px wide and centred.
 The E2E suite runs every layout check at 390×844, 844×390, 1280×800, 375×667
 and 390×664 (an in-app browser).
@@ -50,7 +50,7 @@ Order (top to bottom; desktop puts the sample in the right column):
 | Region | Content | Copy keys | Overflow |
 | --- | --- | --- | --- |
 | Wordmark bar | Made and Kept glyphs + name | `app.name` | one line |
-| Intro | eyebrow, then the three-sentence headline, one sentence per line, the last in the accent colour | `start.eyebrow`, `app.tagline` | headline wraps by sentence |
+| Intro | eyebrow, then the three-sentence headline, one sentence per line, the last set white on a vermilion highlight | `start.eyebrow`, `app.tagline` | headline wraps by sentence |
 | Sample card | the sample object's photo (whole object, never cropped) tagged "Example", over a static made→kept mini map | `start.example`, `start.sampleCaption` (mini map label) | photo `contain` on matte |
 | Caption | sample title, made → now in, photo credit | `start.sampleCaption`, `reveal.credit` | wraps |
 | Actions | see states | `start.*` | Start fills the width |
@@ -72,9 +72,9 @@ States:
 
 | Region | Content | Copy keys | Overflow |
 | --- | --- | --- | --- |
-| Top bar | round counter, running total, menu button | `round.counter`, `round.total`, `menu.open` | one line, tabular numbers |
-| Prompt | three step dots (done ✓, active filled, to do outline; names on desktop), the question, the hint, the `?` toggle | `step.*`, `q.*`, `hint.*`, `hint.show` | question one line on phone; hint up to two lines |
-| Photo | the object's photo, whole, on matte; below it a separate rail with the neutral `caption` and View photo affordance (DS37); one lightbox button covers image and rail, with a semantic sibling `figcaption`; caption and affordance hide while loading or failed | `photo.open`, `photo.view`; caption from item data | `contain`, never cropped; rail sizes to its text, at least 12 px; neither text nor affordance overlaps the image; no truncation |
+| Top bar | round counter, running total, menu button, on the gallery wall; the running total sits in a white pill (the start and end brand bar matches) | `round.counter`, `round.total`, `menu.open` | one line, tabular numbers; counter and total share one face, size and weight |
+| Prompt | the question first, then three step dots at the row end (done ✓, active filled, to do outline; dots only, names for screen readers), the step's rule as one short sentence under it, always shown | `step.*`, `q.*`, `hint.*` | question one line on phone; hint up to two lines |
+| Photo | the object's photo, whole, on matte; a 32 px enlarge icon in its bottom-right corner (DS37); the whole photo is one lightbox button; the neutral `caption` is a visually hidden sibling `figcaption` for screen readers and shows under the enlarged photo; icon hides while loading or failed | `photo.open`; caption from item data | `contain`, never cropped; no text over the image; no row spent on the caption |
 | Answer (Made, Kept) | the map with zoom in/out/World, the drop label top-left; on Kept the earlier Made guess remains hollow, muted and non-interactive, with a visible and accessible player-guess label beside it | `map.*`, including `map.previousGuess` | map fills the region |
 | Answer (When) | year readout, year field + BCE / CE switch, error line, slider with ticks, caption | `year.*` | scrolls inside the region if needed |
 | Action bar | secondary Back (from When on); primary Confirm on Made/When, Reveal answers on Kept | `back`, `confirm`, `confirm.last` | first action full width; thereafter Back left, primary fills remaining width, 8 px gap; both at least 44 × 44 px and fully on screen (DS36) |
@@ -83,7 +83,7 @@ Questions come in story order: Made, then When, then Kept (DS35). Nothing is
 revealed until Reveal answers on Kept, so Back can reopen any earlier question
 of the round (DS36).
 
-The hint is open on round 1 and closed afterwards; `?` toggles it.
+The rule line is always shown; there is no toggle.
 Short portrait screens retain the photo's share instead of a fixed thumbnail;
 Back and the forward action stay on screen. (DS19) The bundled fallback map
 admits only rank-zero cities at world zoom, adds ranks as zoom increases, and suppresses labels whose
@@ -109,7 +109,7 @@ States:
 | Kept step | the confirmed Made **guess** stays hollow and muted; `map.previousGuess` labels it as the player's guess, never an answer |
 | Back pressed (DS36) | the previous question of the same round opens with its answer in place (pin, or year) as the draft; Confirm is enabled; a changed answer replaces the old one. Back is absent on the first question and gone once Reveal answers opens the reveal |
 | Keyboard on the map | arrows pan, + / − zoom, Enter drops the pin at the centre crosshair, Escape leaves (`map.label`) |
-| Year empty | readout "—", no slider thumb, Confirm disabled (no default year is ever implied) |
+| Year empty | readout "—", the slider handle mid-track but no value, Confirm disabled (no default year is ever submitted) |
 | Year invalid | `year.noZero`, `year.notNumber` or `year.outOfRange` under the field; Confirm disabled |
 | Year set | readout ("1200 BCE"), thumb shown, Confirm enabled |
 | Confirm pressed twice | one answer is recorded |
@@ -127,11 +127,11 @@ side column (at least 280 px) or scroll within the available vertical space
 the least target overlap. The 375×667 map step and 844×390 photo step must leave
 their whole target uncovered. (DS34)
 
-Visual treatment: squared white catalogue card, cobalt top rule, condensed
+Visual treatment: rounded raised catalogue card, accent top rule, display-face
 title, numeric progress count and decorative seven-step rail. The card is at
 most 384 px wide with 12 px viewport gutters and a bounded, scrollable height.
 Its ruled footer separates Skip from Back/Next; buttons wrap rather than
-shrink below their touch targets. A cobalt/surface double boundary outlines
+shrink below their touch targets. An accent/surface double boundary outlines
 the spotlight. Only the spotlight geometry transitions (150 ms); reduced
 motion suppresses it. Focus, step count, events and completion behaviour are
 unchanged. `tour.confirm.body` explicitly says that the year controls appear
@@ -171,12 +171,12 @@ and there is only one score live region. (DS21)
 | Region | Content | Copy keys | Overflow |
 | --- | --- | --- | --- |
 | Top bar | as in rounds | as in rounds | one line |
-| Wall label | object title; made place and date → now in museum, city; title uses 26 px on phones, 20 px on short landscape, 52 px on desktop | `reveal.madeKept`, or `reveal.sameArea` when made and held in the same area | title and identity remain complete; no truncation |
+| Wall label | set straight on the gallery wall, no block; object title in the display face; made place and date → now in museum, city; title uses 20 px on phones and short landscape, 26 px on desktop | `reveal.madeKept`, or `reveal.sameArea` when made and held in the same area | title and identity remain complete; no truncation |
 | Journey | the sourced journey fact | `reveal.source` | wraps |
-| Map | answer pins (filled), guesses (hollow), one made→kept line, dashed guess links, the full-marks area for a region or country origin; a 78% surface veil fades the base map, with its labels hidden; answer countries have 28% Kept/Made tints and opaque 2 px outlines; pins have a surface keyline | `reveal.madeRegion`, `reveal.lineLabel` | fitted with measured pin-label/control/attribution clearance; controls hidden in phone portrait, only World at top-left in short landscape, with a reserved left column; credit resizing re-fits until the player moves the map; pinch, double-tap and keyboard zoom remain; long pin labels wrap at 192 px (DS22) |
+| Map | answer pins (filled), guesses (hollow), one made→kept line, dashed guess links, the full-marks area for a region or country origin; a 78% veil in the map's own ground colour fades the base map, with its labels hidden; answer countries have 28% Kept/Made tints and opaque 2 px outlines; every pin has a map-ground keyline and a soft shadow; kept pins are rounded squares with a museum icon, made pins round teardrops with a paintbrush, guesses the same shapes outlined | `reveal.madeRegion`, `reveal.lineLabel` | fitted with measured pin-label/control/attribution clearance; controls hidden in phone portrait, only World at top-left in short landscape, with a reserved left column; credit resizing re-fits until the player moves the map; pinch, double-tap and keyboard zoom remain; long pin labels wrap at 192 px (DS22) |
 | Legend | raised caption rail under the map, normal line height; in the split layout map and legend fit the actual body height above the action bar, including feedback | `reveal.legend` | wraps; never reserved outside the map's available height |
-| Score rows | Made / When / Kept (question order, DS35): glyph, name and disclosure chevron, the result (`result.km` / `result.years`, or `reveal.spotOn`), a shared 88 px tinted right-hand points column; on phones the result sits below the question, not in a third narrow column; on hover-capable devices hover or keyboard focus shows the tooltip as an attached in-flow strip; tap opens the same text inline (When adds the timeline, Made the place note) | `reveal.row.*`, `result.*`, `reveal.spotOn`, `reveal.yearCount`, `reveal.yearOne`, `reveal.how`, `scoring.*` | results wrap in full without ellipsis; minimum 48 px rows; explanations scroll with the table, not over the action bar (DS31) |
-| Round total | the table's final raised row with cobalt top rule: uppercase label + white numeric cell showing points out of 3,000 (announced) | `reveal.scoreLabel`, `reveal.score` | one line; focus ring remains outside the cell |
+| Score rows | Made / When / Kept (question order, DS35): glyph, name and disclosure chevron, the result (`result.km` / `result.years` with the difference in bold, or `reveal.spotOn`), a shared 88 px right-hand points column in large display-face numbers on the white rounded table (green when full marks); the round total row is a vermilion bar, white text; on every viewport the name and points share the top line and the result runs full width below it; hover or keyboard focus (hover-capable devices) and tap cover the whole row (name, result and points) with the scoring explanation, white on ink, in the same place and with no heading; tap also opens the row's extras below (When's timeline, Made's place note) | `reveal.row.*`, `result.*`, `reveal.spotOn`, `reveal.kmCount`, `reveal.yearCount`, `reveal.yearOne`, `scoring.*` | each result stays on one line, its font stepping down to 11 px to fit, and only then wraps (never cut off or ellipsed); minimum 68 px rows; explanations scroll with the table, not over the action bar (DS31) |
+| Round total | the table's final row, a vermilion bar: label + points out of 3,000 in white (announced) | `reveal.scoreLabel`, `reveal.score` | one line; focus ring remains outside the cell |
 | Contested | the sourced claim | `reveal.contested` | wraps |
 | Facts | sourced facts | `reveal.source` | list |
 | Credit | photo credit, photo source, museum record | `reveal.credit`, `reveal.creditSource`, `reveal.record` | wraps |
@@ -202,7 +202,7 @@ recap right. Copy result is above the fold at 390×844.
 
 | Region | Content | Copy keys | Overflow |
 | --- | --- | --- | --- |
-| Summary | total out of 30,000, tier name | `end.total` | one line on a phone |
+| Summary | total out of 30,000 and tier name, white on a vermilion rounded panel like the reveal round total | `end.total` | one line on a phone |
 | Copy result | copies the share text | `end.copy`, `share.*` | — |
 | Copied | shown only after the clipboard write succeeds (announced) | `end.copied` | — |
 | Manual copy | if the clipboard fails: selectable text, focused and selected | `end.copyManual` | textarea |

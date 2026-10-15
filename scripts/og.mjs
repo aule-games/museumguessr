@@ -87,7 +87,8 @@ export function renderIcon(size) {
   return new Resvg(read('public/favicon.svg'), { fitTo: { mode: 'width', value: size }, font: { loadSystemFonts: false } }).render().asPng();
 }
 if (process.argv[1] === fileURLToPath(import.meta.url) && process.argv.includes('--icons')) {
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64"><rect width="64" height="64" rx="4" fill="${token.color.bg}"/><path d="${pathData('src/assets/pins/made.svg')}" transform="translate(3 12) scale(.8)" fill="${token.color.made}"/><path d="M29 26h5" stroke="${token.color['answer-line']}" stroke-width="2"/><path d="${pathData('src/assets/pins/kept.svg')}" transform="translate(35 12) scale(.8)" fill="${token.color.kept}"/></svg>`;
+  // the logo mark: the museum pin cut out of an accent tile
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="${token.color.accent}"/><path d="${pathData('src/assets/pins/kept.svg')}" fill-rule="evenodd" transform="translate(12 7) scale(1.25)" fill="${token.color['accent-ink']}"/></svg>`;
   writeFileSync(new URL('public/favicon.svg', root), optimize(svg, { multipass: true }).data + '\n');
   writeFileSync(new URL('public/favicon.png', root), renderIcon(32));
   writeFileSync(new URL('public/apple-touch-icon.png', root), renderIcon(180));

@@ -5,12 +5,48 @@
 built screens. Direction B, "Object Club", was not chosen; its study stays in
 [the comparison](docs/design/directions/index.html) for the record.
 
+**Gallery redesign (2026-10-15).** Production replaces A's look; layout,
+flow and token names are unchanged.
+
+- **Type:** Bricolage Grotesque (600/700/800) for the logo, hero, questions,
+  titles and scores, tight tracking, sentence case; Instrument Sans (400–700)
+  for reading text and numbers (`font.numeric` uses tabular figures).
+- **Colour:** a navy UI (`bg` #132036, panels #1a2a45 / #223554) with
+  off-white text and one lime accent (#c8ef5c, navy text) used as a fill:
+  primary buttons, the hero highlight, the current step, the round total, the
+  final score and the logo tile. The map stays light (`map.land` #f3f5f1) so
+  places stay readable; the reveal veil uses the map's own ground colour, not
+  the UI surface.
+- **Pins:** shape and icon carry the meaning, colour backs it up. Kept is a
+  rounded-square marker with a museum (columns) cut-out in cobalt; made is a
+  round teardrop with a paintbrush cut-out in magenta; combined is the kept
+  marker with the brush; guesses are the same shapes outlined. Every pin has
+  a map-ground keyline and a soft shadow. All five glyphs stay single-path,
+  `currentColor`, 32 × 40 with the tip at y = 37.
+- **Top bar and results:** the round counter is lime text on the bar and the
+  running score a lime pill with navy text. Score rows lead with large glyphs: the made and kept pins
+  and a wristwatch for When (`src/assets/icons/when.svg`). On desktop the
+  reveal's Next sits 48 px above the bottom edge; the map gives up that height.
+- **Logo:** the kept pin in navy on a lime rounded tile, then "Museum" in
+  off-white and "Guessr" in lime. The favicon is the tile alone
+  (`node scripts/og.mjs --icons`).
+- **Shape:** pill buttons, chips, switches and labels; 10 px fields; 16 px
+  rounded panels; soft shadows instead of hard rules. On phones the answer
+  panel is full width with rounded top corners.
+- **Motion:** pointer presses scale buttons to 0.97, the forward arrow nudges
+  on hover, the explanation fades in; reduced motion removes them.
+
+The A and B studies in `docs/design/directions/` stay as the record (they
+embed the live pin glyphs); the share image still uses A's fonts and colours
+until it is redrawn.
+
 Where the game differs from the static studies, on purpose:
 
 - `layout.reveal-map` stays `32vh`: the game has no size container (see Tokens).
 - The year slider keeps the game's three equal segments (4000 BCE–1 CE, 1–1000,
-  1000–2000) and shows no thumb until the first touch, so no default year is
-  ever implied. Tick labels put the era under the number so they never collide.
+  1000–2025). Until the first touch it shows the normal handle mid-track so
+  players see it can be dragged; the readout stays empty and Confirm
+  disabled, so no default year is ever submitted. Tick labels put the era under the number so they never collide.
 - The reveal keeps the top bar (round, running total, menu) above the wall label.
 - On a phone in portrait, the reveal map hides its zoom buttons: the view is
   already fitted to every pin, and pinch or double-tap still zoom.
@@ -33,34 +69,34 @@ All artwork and recap images there are patterned boxes labelled **photo**.
 
 - **Phone rounds:** one fixed `100dvh` application viewport, no page scroll.
   The study represents it with an exact **390 × 844 px** frame. Rows are a
-  **48 px** top bar, **56 px** prompt, image/map in a **2:3** flex ratio
-  with a separate caption rail, and
+  **48 px** top bar, image, **56 px** prompt, map or year in a **2:3** flex
+  ratio, and
   **64 px + bottom safe area** action bar. There is exactly one primary action,
   **Confirm** on Made/When, **Reveal answers** on Kept. From When onward,
   secondary **Back** sits to its left with an 8 px gap. Both stay on screen
   and at least 44 × 44 px; only the forward action is primary. (DS35, DS36)
-- **Prompt:** three state dots identify Made/When/Kept; the active question is
-  the heading, the round-one hint is the second line, and `?` occupies a 44 px
-  target. On the compact phone composition the dots' names are available to
-  assistive technology; desktop shows the names. Done uses a check, active is
-  filled, todo is an outline. State is not communicated by colour alone.
+- **Prompt:** white on dark ink. The active question is the heading, its rule
+  is always the second line (no toggle), and three state dots at the row end
+  identify Made/When/Kept on every viewport; their names are available to
+  assistive technology. Done uses a check, active is filled, todo is an
+  outline. State is not communicated by colour alone.
 - **Photo:** preserve the whole artwork on `color.matte`, using `object-fit:
   contain` in the eventual game. Never crop to fill. Tapping the photo opens a
-  lightbox; the static study shows its explicit affordance only. In When, photo
-  gets approximately 30% of the answer-content region; year controls take 70%.
-  Short portrait screens keep these shares (2:3 for photo/map, 3:7 for When),
-  rather than forcing the photo to a 96 px thumbnail. Year controls may scroll
+  lightbox; the static study shows its explicit affordance only. On phones the
+  prompt row sits under the photo, right above the answer, and every step uses
+  the same 2:3 photo/answer split, so the year control gets the same box as the
+  map. Short portrait screens keep this share rather than forcing the photo to a
+  96 px thumbnail. Year controls may scroll
   internally; Back and the forward action must stay visible. Photo share is
-  measured from the image box, not from the caption rail. (DS19)
+  measured from the image box. (DS19)
 - **Round caption:** a plain, neutral subject description (10–70 characters),
-  never a title, artist, culture, place or date. Put the semantic `figcaption`
-  in a content-sized strip **below** the image on every viewport, with 12 px
-  type and no truncation. The View photo affordance sits at its right, also
-  outside the image. One lightbox button covers image and strip, retaining
-  a single keyboard stop. Shared grid rows size the rail before dividing the
-  remaining image/answer space 2:3 (3:7 on When); the strip does not pretend
-  to be photo area. Desktop/landscape retain the same rail in the left pane.
-  Loading/failure hides caption and affordance without collapsing the rail. (DS37)
+  never a title, artist, culture, place or date. The round spends no row on
+  it: the semantic `figcaption` is visually hidden (screen readers still get
+  it) and shows under the enlarged photo. A 32 px enlarge icon sits in the
+  photo's bottom-right corner; it is the only mark over the image, and an
+  earlier text rail over the image was rejected for covering the object. The
+  whole photo is one lightbox button, a single keyboard stop. Loading/failure
+  hides the icon. (DS37)
 - **Desktop:** exact **1280 × 800 px** study. Rounds put the photo in the left
   55%, prompt/answer/Confirm in the right 45%. Reveal replaces that photo with
   the map. Production text is wall-label → scores → journey → facts → credit;
@@ -313,12 +349,12 @@ first with its cobalt rule below; it is not a duplicated live region and stays
 last in DOM reading order. Its existing 3 px / 2 px focus ring remains visible;
 do not clip the table's overflow to obtain square corners.
 
-On hover-capable devices, show the tooltip as an **attached explanation strip
-below its row**, in normal scroll flow. Inverse ink, 14 px body type and normal
-line height separate it from results; its heading has its own line. This is
-deliberately not an absolutely positioned bubble above the row, which can be
-cut off by the scrolling column. Tap still expands the existing inline reason
-and any timeline/note, replacing the hover strip. Long explanations scroll
+On hover or keyboard focus (hover-capable devices) and on tap, the scoring
+explanation **covers its whole row in place** (name, result and points hide),
+white on ink in 14 px body type with no heading, so the table never grows
+an extra strip; the row only grows if the explanation needs more lines. It is
+deliberately not an absolutely positioned bubble, which can be cut off by the
+scrolling column. Tap also opens the row's timeline or note below it. Long explanations scroll
 with the reveal, never overlay the sticky forward action. Round-one portrait
 acceptance requires the complete collapsed table above the action bar. Long
 titles elsewhere and enlarged text may scroll; never truncate the identity or
@@ -431,6 +467,10 @@ introducing a new size key. Body text is never set in the condensed face.
 
 All packages are exact **5.3.0**, licensed **SIL Open Font License 1.1**:
 
+- Production now uses Bricolage Grotesque (credit below, under Direction B) and
+  Instrument Sans: © 2022 The Instrument Sans Project Authors. Credit and
+  licence: [`@fontsource/instrument-sans/LICENSE`](node_modules/@fontsource/instrument-sans/LICENSE).
+  The share image keeps Barlow Condensed and IBM Plex.
 - Barlow Condensed: © 2017 The Barlow Project Authors. Credit and licence:
   [`@fontsource/barlow-condensed/LICENSE`](node_modules/@fontsource/barlow-condensed/LICENSE).
 - IBM Plex Sans: © 2019 IBM Corp. Credit and licence:

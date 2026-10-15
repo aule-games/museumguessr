@@ -30,9 +30,9 @@ export const YEARS = {
 /** Year control bounds and piecewise scale (DS5, DS28): each segment gets an equal share. */
 export const SLIDER = {
   min: -4000,
-  max: 2000,
-  breakpoints: [-4000, 1, 1000, 2000],
-  ticks: [-4000, -2000, 1, 500, 1000, 1500, 2000],
+  max: 2025,
+  breakpoints: [-4000, 1, 1000, 2025],
+  ticks: [-4000, -2000, 1, 500, 1000, 1500, 2025],
 } as const;
 
 /** Total-score tiers for the end screen (DS7, DS25); lower bound inclusive. */

@@ -41,7 +41,8 @@ test('[DS22] Map credit text and provider links retain 4.5:1 at the 12 pixel min
 test('[DS22] Reveal pins and paths retain 3:1 on faded and tinted map surfaces, including the full-marks area', (t) => {
   let minimum = { ratio: Infinity, pair: '' };
   for (const base of ['background', 'water', 'land', 'landcover', 'border', 'border-minor', 'road', 'graticule']) {
-    const faded = over(color('surface'), rgb(tokens.map[base]), veil);
+    // the reveal veil is the map's own light ground, so the map stays light under the UI
+    const faded = over(rgb(tokens.map.land), rgb(tokens.map[base]), veil);
     for (const role of [null, 'kept', 'made']) {
       const filled = role ? over(color(role), faded, tint) : faded;
       for (const withArea of [false, true]) {
@@ -79,18 +80,22 @@ test('[DS31] Score text meets 4.5:1, including full-marks cells, and boundaries 
   t.diagnostic(`Minimum checked score-text contrast: ${minimum.toFixed(3)}:1.`);
 });
 
-test('[DS31] Hover explanations stay in scroll flow and disclosure is visible without hover', () => {
-  assert.doesNotMatch(rule('.score__tip'), /position:\s*(absolute|fixed)|\b(bottom|top):/);
-  assert.match(rule('.score__tip'), /overflow-wrap: anywhere/);
+test('[DS31] Explanations cover their whole row in place and disclosure is visible without hover', () => {
+  assert.match(rule('.score__how'), /grid-column: 1 \/ -1/);
+  assert.match(rule('.score__how'), /grid-row: 1 \/ -1/);
+  assert.doesNotMatch(rule('.score__how'), /position:\s*(absolute|fixed)|\b(bottom|top):/);
+  assert.match(rule('.score__how'), /overflow-wrap: anywhere/);
   assert.match(rule('.score__label::after'), /border-bottom:/);
   assert.match(rule('.score__row[aria-expanded=\'true\'] .score__label::after'), /rotate\(225deg\)/);
   assert.match(rule('.score__row'), /minmax\(0, 1fr\)/);
-  assert.match(css, /\.score__row\[aria-expanded='true'\] ~ \.score__tip\s*\{\s*display: none;/);
+  assert.match(css, /\.score__row\[aria-expanded='true'\] > :not\(\.score__how\)\s*\{\s*visibility: hidden;/);
+  assert.doesNotMatch(css, /\.score__tip/);
 });
 
 test('[DS22] The split reveal reserves legend space inside the available body height', () => {
   assert.match(css, /\.reveal__scroll\s*\{[^}]*container-type: size;/);
-  assert.match(css, /\.reveal__scroll > \.reveal__media\s*\{[^}]*height: 100cqh;[^}]*grid-template-rows: minmax\(0, 1fr\) auto;/);
+  // the media panel fills the body height less its own inset margins
+  assert.match(css, /\.reveal__scroll > \.reveal__media\s*\{[^}]*height: (100cqh|calc\(100cqh - [^;]+\));[^}]*grid-template-rows: minmax\(0, 1fr\) auto;/);
 });
 
 test('[DS34] The decorative progress rail matches the seven existing tour steps', () => {

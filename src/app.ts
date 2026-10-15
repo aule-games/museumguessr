@@ -372,7 +372,6 @@ export class App {
       total,
       answer: s.answers[s.round]?.[s.step] ?? null,
       madePin: s.answers[s.round]?.made ?? null,
-      showHint: s.round === 0,
       photo: this.photo,
       map: s.step === 'when' ? this.map : this.ensureMap(),
       webgl: this.webgl,

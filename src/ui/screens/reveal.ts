@@ -62,25 +62,57 @@ function whenExtra(item: Item, guess: number | null): Node {
 
 let rowIds = 0;
 
-function scoreRow(step: Step, points: number, result: string, how: string, extra?: Node | null): HTMLElement {
+/** The result line with the difference in bold, so it reads at a glance (DS12). */
+function resultLine({ text, value }: { text: string; value: string | null }): HTMLElement {
+  const at = value ? text.indexOf(value) : -1;
+  const line = !value || at < 0
+    ? h('span', { class: 'score__result' }, text)
+    : h('span', { class: 'score__result' }, text.slice(0, at), h('strong', { class: 'score__value' }, value), text.slice(at + value.length));
+  fitOneLine(line);
+  return line;
+}
+
+export const MIN_RESULT_PX = 11;
+
+/** Keep a result on one line: step its font down (not below MIN_RESULT_PX) until it
+ *  fits; only if it still does not fit may it wrap, so nothing is ever cut off. */
+function fitOneLine(el: HTMLElement) {
+  if (typeof ResizeObserver === 'undefined') return;
+  const fit = () => {
+    el.style.removeProperty('font-size');
+    el.style.removeProperty('white-space');
+    let size = parseFloat(getComputedStyle(el).fontSize);
+    while (el.scrollWidth > el.clientWidth + 1 && size > MIN_RESULT_PX) {
+      size = Math.max(MIN_RESULT_PX, size - 0.5);
+      el.style.fontSize = `${size}px`;
+    }
+    if (el.scrollWidth > el.clientWidth + 1) el.style.whiteSpace = 'normal';
+  };
+  new ResizeObserver(fit).observe(el);
+}
+
+function scoreRow(step: Step, points: number, result: { text: string; value: string | null }, how: string, extra?: Node | null): HTMLElement {
   const full = points === MAX_POINTS;
-  const tipId = `how-${step}-${++rowIds}`;
-  // the explanation: a tooltip on hover or keyboard focus; on tap it opens inline
-  const tip = h('p', { class: 'score__tip', id: tipId, role: 'tooltip' }, h('strong', {}, t('reveal.how')), ' ', how);
-  const detail = h('div', { class: 'score__detail', hidden: true }, h('p', { class: 'score__how' }, h('strong', {}, t('reveal.how')), ' ', how), extra ?? null);
+  const howId = `how-${step}-${++rowIds}`;
+  // the explanation takes the result line's place on hover, keyboard focus or tap,
+  // so the row explains itself and the table grows no extra strip
+  const howLine = h('span', { class: 'score__how', id: howId }, how);
+  // a tap also opens the row's extras (When's timeline, a place or date note)
+  const detail = extra ? h('div', { class: 'score__detail', hidden: true }, extra) : null;
   const btn = h(
     'button',
-    { type: 'button', class: 'score__row', 'aria-expanded': 'false', 'aria-describedby': tipId, 'data-test': `row-${step}`, 'data-full': String(full) },
+    { type: 'button', class: 'score__row', 'aria-expanded': 'false', 'aria-describedby': howId, 'data-test': `row-${step}`, 'data-full': String(full) },
     h('span', { class: 'score__label' }, t(`reveal.row.${step}` as CopyKey)),
-    h('span', { class: 'score__result' }, result),
+    resultLine(result),
+    howLine,
     h('span', { class: 'score__points', 'data-test': `points-${step}` }, formatNumber(points)),
   );
   btn.addEventListener('click', () => {
     const open = btn.getAttribute('aria-expanded') !== 'true';
     btn.setAttribute('aria-expanded', String(open));
-    detail.hidden = !open;
+    if (detail) detail.hidden = !open;
   });
-  return h('li', { class: `score score--${step}${full ? ' score--spot-on' : ''}` }, btn, tip, detail);
+  return h('li', { class: `score score--${step}${full ? ' score--spot-on' : ''}` }, btn, detail);
 }
 
 export interface RevealView {

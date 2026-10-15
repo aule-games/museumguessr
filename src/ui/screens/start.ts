@@ -67,18 +67,17 @@ export function miniMap(made: LatLng, kept: LatLng, label: string): SVGSVGElemen
   );
 }
 
-/** The two distinct silhouettes linked in reading order; the name stays text. */
+/** The logo: the museum pin on an accent tile, then the name with its second half in the accent. */
 export function wordmark(): HTMLElement {
-  const glyph = (kind: 'made' | 'kept') => {
-    const el = pinElement(kind, '');
-    el.removeAttribute('role');
-    el.removeAttribute('aria-label');
-    el.classList.add('wordmark__glyph');
-    return el;
-  };
+  const pin = pinElement('kept', '');
+  pin.removeAttribute('role');
+  pin.removeAttribute('aria-label');
+  pin.classList.add('wordmark__glyph');
+  const name = t('app.name');
+  const split = name.indexOf('Guessr');
   return h('p', { class: 'wordmark' },
-    h('span', { class: 'wordmark__glyphs', 'aria-hidden': 'true' }, glyph('made'), glyph('kept')),
-    h('span', { class: 'wordmark__name' }, t('app.name')),
+    h('span', { class: 'wordmark__mark', 'aria-hidden': 'true' }, pin),
+    h('span', { class: 'wordmark__name' }, split > 0 ? name.slice(0, split) : name, split > 0 ? h('span', { class: 'wordmark__accent' }, name.slice(split)) : null),
   );
 }
 

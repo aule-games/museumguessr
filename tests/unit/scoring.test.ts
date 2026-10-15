@@ -59,7 +59,8 @@ describe('[DS5] year display never shows negative numbers', () => {
     expect(inSliderBounds(SLIDER.min)).toBe(true);
     expect(inSliderBounds(SLIDER.max)).toBe(true);
     expect(inSliderBounds(-5000)).toBe(false);
-    expect(inSliderBounds(2001)).toBe(false);
+    expect(inSliderBounds(2025)).toBe(true);
+    expect(inSliderBounds(2026)).toBe(false);
   });
 });
 
@@ -68,7 +69,8 @@ describe('[DS28] piecewise slider scale', () => {
     expect(yearToPosition(-4000)).toBeCloseTo(0, 6);
     expect(yearToPosition(1)).toBeCloseTo(1 / 3, 6);
     expect(yearToPosition(1000)).toBeCloseTo(2 / 3, 6);
-    expect(yearToPosition(2000)).toBeCloseTo(1, 6);
+    expect(yearToPosition(2025)).toBeCloseTo(1, 6);
+    expect(yearToPosition(2000)).toBeLessThan(1);
   });
   it('round-trips every year in bounds within one year', () => {
     for (let y: number = SLIDER.min; y <= SLIDER.max; y += 7) {
