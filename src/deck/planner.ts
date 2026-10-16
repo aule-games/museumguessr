@@ -68,7 +68,10 @@ class Exhausted extends Error {}
 
 class Budget {
   private steps = 0;
-  constructor(private readonly max: number) {}
+  private readonly max: number;
+  constructor(max: number) {
+    this.max = max;
+  }
   spend() {
     if (++this.steps > this.max) throw new Exhausted();
   }
@@ -323,6 +326,22 @@ export function drawDeck(pool: readonly DeckItem[], seen: ReadonlySet<string>, r
     if (b) return finish(b, seen, rng, 'best');
   }
   return finish(greedy(pool, seen, rng), seen, rng, 'greedy');
+}
+
+/**
+ * For the item check: whether the whole pool splits into floor(N / 10) valid
+ * decks, so a new device can play every fresh deck the pool allows.
+ * `unknown` means the search ran out of steps before deciding.
+ */
+export function poolSplits(pool: readonly DeckItem[], seed = 1, budget = 20 * DECK.searchBudget): 'yes' | 'no' | 'unknown' {
+  const steps = new Budget(budget);
+  try {
+    for (const lateEasy of [false, true]) if (split(pool, seededRng(seed), steps, lateEasy)) return 'yes';
+    return 'no';
+  } catch (err) {
+    if (err instanceof Exhausted) return 'unknown';
+    throw err;
+  }
 }
 
 /**

@@ -18,6 +18,8 @@
     "items:new": "node scripts/items.mjs new",
     "items:add-image": "node scripts/items.mjs add-image",
     "items:promote": "node scripts/items.mjs promote",
+    "items:swap": "node scripts/items.mjs swap",
+    "items:retire": "node scripts/items.mjs retire",
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",

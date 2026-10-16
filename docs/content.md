@@ -7,16 +7,20 @@ How MuseumGuessr's objects are chosen, recorded and checked. Every
 
 | File | What it holds |
 |------|---------------|
-| `data/items.json` | The 10 rounds, in play order (easiest first). |
+| `data/items.json` | The live pool: the fixed set of 10 (played in file order, easiest first) or at least 30 objects that every game draws its 10 from. |
 | `data/sample.json` | One start-screen example object; never a round. |
-| `data/reserve.json` | 4-5 fully researched swap-ins. Their images are not committed. |
+| `data/reserve.json` | Fully researched swap-ins. Their images are not committed. |
 | `data/items.schema.json` | The JSON Schema all three files follow. |
-| `images/<id>.jpg` | One photo per round and for the sample. |
+| `data/regions.json` | The continent and UN M49 sub-region of every Kept and Made country. |
+| `data/retired.json` | Ids taken out of the pool, with the date and reason; never reused. Optional until the first retirement. |
+| `images/<id>.jpg` | One photo per pool object and for the sample. |
 
 ## Schema
 
 Fields are grouped by question: `kept` (where it is kept today), `made` (where
-it was made) and `when` (when it was made). The TypeScript `Item` type is
+it was made) and `when` (when it was made). Two fields serve the deck rules:
+`difficulty` (see "Difficulty") and `object_type` (painting, print, drawing,
+sculpture, vessel, textile, architecture or other). The TypeScript `Item` type is
 generated from the schema with `npm run types`; `npm test` fails when it is
 stale.
 
@@ -115,19 +119,50 @@ numbers, watermarks, colour charts or a recognisable gallery room.
 
 ## Ids
 
-Ids are opaque two-digit strings (`07`), never derived from a title or place,
-and never reused: a promoted reserve item keeps its own id.
+Ids are opaque two- or three-digit strings (`07`, `112`), never derived from a
+title or place, and never reused: a promoted reserve item keeps its own id,
+and a retired id stays in `data/retired.json` so an old challenge link never
+opens a different object.
 
-## Order
+## Pool
 
-Rounds play in file order. Rounds 1-3 use the most recognisable objects whose
-made place is city-level and whose record has no conflicts.
+The pool is either the fixed set of 10 or at least 30 objects. The fixed set
+plays in file order. From 30 objects on, every game draws its own 10 (unseen
+objects first), and `items:check` proves that the pool splits into
+floor(N / 10) valid decks, so a new player gets every fresh game the pool
+allows. When it cannot, it names the reason first, for example "difficulty-1
+count must be at least 3 x 3 decks" or "Kept city X holds k > decks + spare
+objects". The deck rules live in `src/deck/config.ts`.
+
+A valid deck: 10 different objects; rounds 1-3 are difficulty 1; rounds 4-10
+are difficulty 2 or 3 (difficulty 1 there only when nothing else fits); at
+most 3 difficulty-3 objects; no Kept city twice.
+
+## Difficulty
+
+`difficulty` is 1 (easy), 2 (medium) or 3 (hard). It starts as an editorial
+call, confirmed on the batch contact sheet, and is recalibrated once players'
+points exist. A difficulty-1 object must be recognisable and clear-cut: a
+city-level made place, no record conflict and no contested claim. At least 30%
+of the pool is difficulty 1 and at most 30% is difficulty 3. In the fixed set
+of 10, rounds 1-3 are difficulty 1.
 
 ## Spread
 
-Fairness rules: the 10 rounds use at least 6 holding cities with no more than
-2 items per city, and a player who always guesses the same place or year must
-score under 40% of that question's maximum. `items:check` prints both.
+Fairness rules for the fixed set of 10: at least 6 holding cities with no more
+than 2 items per city. For a pool of N >= 30 objects:
+
+- no Kept city holds more than min(4, floor(N / 10)) objects;
+- at least max(10, ceil(0.3 N)) Kept cities, on at least 4 continents;
+- Made places cover at least min(8, ceil(N / 5)) UN M49 sub-regions;
+- at least ceil(0.15 N) objects end before 500 CE and as many start after
+  1700, and no century (by the midpoint of the date range) holds more than
+  25%;
+- at most half the pool are paintings.
+
+In both cases a player who always guesses the same place or year must score
+under 40% of that question's maximum. `items:check` prints the spread and the
+baselines.
 
 ## Answer edits and saved games
 
@@ -150,16 +185,24 @@ the image from `photo.file_url` when the record moves into a round.
 
 ## Swap
 
-Swap an item in 5 steps:
+Replace a pool item with a reserve record in 5 steps:
 
-1. Pick a reserve record, for example `12`, and the round slot to replace, for
-   example `7`.
-2. Run `npm run items:promote -- 12 7`. It fetches and processes the image,
-   puts record `12` into slot 7, moves the displaced record to the reserve and
-   deletes its image. If any check fails, nothing changes.
+1. Pick a reserve record, for example `12`, and the pool item to replace, for
+   example `07`.
+2. Run `npm run items:swap -- 12 07`. It fetches and processes the image, puts
+   record `12` where `07` was, moves `07` back to the reserve and deletes its
+   image. If any check fails, nothing changes.
 3. Run `npm test`.
 4. Look at the new image and reveal text in `npm run dev`.
 5. Commit `data/` and `images/` together.
+
+To grow the pool, `npm run items:promote -- --ids 12,14` appends reserve
+records and checks the whole new pool once; nothing changes on failure. To
+take an object out for good (for example when its photo's rights are
+withdrawn), `npm run items:retire -- 07 --replace 12 --reason "rights
+withdrawn"` puts `12` in its place and records `07` in `data/retired.json`,
+so the id is never reused. At the pool minimum a replacement is required; keep
+at least two reserve records ready.
 
 ## Check items
 

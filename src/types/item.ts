@@ -32,10 +32,18 @@ export interface ItemsFile {
 }
 export interface Item1 {
   /**
-   * Opaque two-digit id, never derived from the title or place, never reused (DS6, ENG10). The image is images/<id>.jpg.
+   * Opaque two- or three-digit id, never derived from the title or place, never reused, even after the item is retired (DS6, ENG10, V1-12). The image is images/<id>.jpg.
    */
   id: string;
   title: string;
+  /**
+   * 1 easy, 2 medium, 3 hard (V1-08). Editorial at first and confirmed on the batch contact sheet, then recalibrated from per-item points (docs/content.md "Difficulty"). Difficulty 1 needs a city-level made place, no record conflicts and no contested claim.
+   */
+  difficulty: 1 | 2 | 3;
+  /**
+   * What kind of object it is, for the pool's spread rules (V1-12).
+   */
+  object_type: 'painting' | 'print' | 'drawing' | 'sculpture' | 'vessel' | 'textile' | 'architecture' | 'other';
   /**
    * Alt text during the round: material, form, figures, composition; no title, artist, place, culture or date (A1, DS29).
    */

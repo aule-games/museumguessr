@@ -33,7 +33,7 @@ keep it free of private names.
 | `npm run test:e2e` | build and run the browser tests on five viewports | `npx playwright install chromium` once |
 | `npm run verify` | run everything above in CI order and rewrite `docs/verification.md` | prints SKIPPED for rows it cannot run |
 | `npm run release:check` | the release scan of the GitHub repository | `.denylist`, `exiftool`, authenticated `gh` |
-| `npm run items:check` / `items:new` / `items:add-image` / `items:promote` | work on content ([docs/content.md](docs/content.md)) | network for `add-image` |
+| `npm run items:check` / `items:new` / `items:add-image` / `items:promote` / `items:swap` / `items:retire` | work on content ([docs/content.md](docs/content.md)) | network for `add-image` and the reserve photos |
 | `npm run tokens` | regenerate `src/styles/tokens.css` from `src/design/tokens.json` | — |
 | `npm run types` | regenerate the item type from the schema | — |
 | `npm run design:build` / `design:check` | regenerate or check the direction studies | — |
@@ -47,6 +47,7 @@ keep it free of private names.
 | `src/copy.ts` | every user-facing string, by key |
 | `src/map/` | MapLibre map, bundled fallback map, pins |
 | `src/scoring/` | scoring constants (`config.ts`) and rules; README "Scoring" mirrors them |
+| `src/deck/` | deck rules (`config.ts`) and the planner that draws each game's 10 |
 | `src/game/`, `src/state/`, `src/storage/` | the game reducer, saved state and its schema, guarded storage |
 | `src/analytics/` | event catalogue, channels, the PostHog adapter ([docs/analytics.md](docs/analytics.md)) |
 | `src/design/tokens.json` | design tokens, the single source for colours, type, spacing ([DESIGN.md](DESIGN.md)) |

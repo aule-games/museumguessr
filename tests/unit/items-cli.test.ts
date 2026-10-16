@@ -30,6 +30,8 @@ function record(i: number, id = String(i + 1).padStart(2, '0')) {
   return {
     id,
     title: `Object number ${id}`,
+    difficulty: i < 3 ? 1 : 2,
+    object_type: 'sculpture',
     alt_neutral: 'Carved stone panel with two standing figures and a border of leaves',
     caption: 'Carved stone panel: two standing figures in a border of leaves',
     record_url: `https://example.org/objects/${id}`,
@@ -81,6 +83,7 @@ beforeEach(async () => {
   mkdirSync(join(root, 'data'));
   mkdirSync(join(root, 'images'));
   cpSync(join(REPO, 'data/items.schema.json'), join(root, 'data/items.schema.json'));
+  cpSync(join(REPO, 'data/regions.json'), join(root, 'data/regions.json'));
   write('data/items.json', { items: Array.from({ length: 10 }, (_, i) => record(i)) });
   write('data/reserve.json', { items: [record(4, '14')] });
   write('data/sample.json', { items: [record(0, '00')] });
@@ -129,8 +132,9 @@ describe('[E7] [DX5] items:check', () => {
     ['[DS37] caption over 70', (d: any) => (d.items[4].caption = 'x'.repeat(71)), 'item 05 · caption'],
     ['[DS37] missing caption', (d: any) => delete d.items[4].caption, 'item 05 · (record)'],
     ['heritage flag missing', (d: any) => (d.items[4].made.country = 'Italy'), 'item 05 · heritage_image_law'],
-    ['region-level round 2', (d: any) => (d.items[1].made.precision = 'region'), 'item 02 · made.precision'],
-    ['conflict in round 3', (d: any) => (d.items[2].conflicts = ['x']), 'item 03 · conflicts'],
+    ['[V1-08] region-level round 2 (difficulty 1)', (d: any) => (d.items[1].made.precision = 'region'), 'item 02 · difficulty'],
+    ['[V1-08] conflict in round 3 (difficulty 1)', (d: any) => (d.items[2].conflicts = ['x']), 'item 03 · difficulty'],
+    ['[V1-08] a harder object in round 1 of the fixed set', (d: any) => (d.items[0].difficulty = 2), 'item 01 · difficulty'],
     ['radius over the cap', (d: any) => (d.items[6].made.full_marks_km = 5000), 'item 07 · made.full_marks_km'],
     ['duplicate id', (d: any) => (d.items[9].id = '14'), 'reserve 14 · id'],
   ])('rejects %s', async (_name, mutate, where) => {
@@ -203,29 +207,65 @@ describe('[DX6] [ENG26] add-image pipeline', () => {
   });
 });
 
-describe('[DX23] promote', () => {
+const cli = (...args: string[]) => execFileSync(process.execPath, [join(REPO, 'scripts/items.mjs'), ...args, '--root', root], { stdio: 'pipe' });
+const ids = (file: string) => read(file).items.map((r: { id: string }) => r.id);
+
+describe('[DX23] swap', () => {
   it('leaves both files unchanged when the reserve image cannot be fetched', () => {
     const before = [readFileSync(join(root, 'data/items.json'), 'utf8'), readFileSync(join(root, 'data/reserve.json'), 'utf8')];
-    expect(() =>
-      execFileSync(
-        process.execPath,
-        [join(REPO, 'scripts/items.mjs'), 'promote', '14', '5', '--image', join(root, 'does-not-exist.jpg'), '--root', root],
-        { stdio: 'pipe' },
-      ),
-    ).toThrow();
+    expect(() => cli('swap', '14', '05', '--image', join(root, 'does-not-exist.jpg'))).toThrow();
     expect(readFileSync(join(root, 'data/items.json'), 'utf8')).toBe(before[0]);
     expect(readFileSync(join(root, 'data/reserve.json'), 'utf8')).toBe(before[1]);
   });
 
-  it('swaps a reserve record into a slot and moves the displaced record to the reserve', () => {
+  it('puts a reserve record where a pool item was and moves the displaced record to the reserve', () => {
     const src = join(root, 'src14.jpg');
     writeFileSync(src, readFileSync(join(root, 'images/05.jpg')));
-    execFileSync(process.execPath, [join(REPO, 'scripts/items.mjs'), 'promote', '14', '5', '--image', src, '--root', root], {
-      stdio: 'pipe',
-    });
+    cli('swap', '14', '05', '--image', src);
     expect(read('data/items.json').items[4].id).toBe('14');
-    expect(read('data/reserve.json').items.map((r: { id: string }) => r.id)).toEqual(['05']);
+    expect(ids('data/reserve.json')).toEqual(['05']);
     expect(existsSync(join(root, 'images/14.jpg'))).toBe(true);
     expect(existsSync(join(root, 'images/05.jpg'))).toBe(false);
+  });
+});
+
+describe('[V1-12] promote and retire', () => {
+  it('refuses the old slot form and names the replacement commands', () => {
+    let out = '';
+    try {
+      cli('promote', '14', '5');
+    } catch (e) {
+      out = String((e as { stderr: Buffer }).stderr);
+    }
+    expect(out).toMatch(/slot form .* is gone/);
+    expect(out).toMatch(/items:promote -- --ids 14/);
+    expect(out).toMatch(/items:swap -- 14/);
+  });
+
+  it('promote --ids appends a batch only when the whole pool passes, and writes nothing otherwise', () => {
+    const before = readFileSync(join(root, 'data/items.json'), 'utf8');
+    const src = join(root, 'src14.jpg');
+    writeFileSync(src, readFileSync(join(root, 'images/05.jpg')));
+    // 11 objects is neither the fixed 10 nor a drawable 30: refused, nothing written
+    expect(() => cli('promote', '--ids', '14', '--image', src)).toThrow();
+    expect(readFileSync(join(root, 'data/items.json'), 'utf8')).toBe(before);
+    expect(existsSync(join(root, 'images/14.jpg'))).toBe(false);
+  });
+
+  it('retire needs a replacement at the minimum, then records the id so it is never reused', async () => {
+    expect(() => cli('retire', '07', '--reason', 'rights withdrawn')).toThrow();
+    const src = join(root, 'src14.jpg');
+    writeFileSync(src, readFileSync(join(root, 'images/05.jpg')));
+    cli('retire', '07', '--replace', '14', '--reason', 'rights withdrawn', '--image', src);
+    expect(read('data/items.json').items[6].id).toBe('14');
+    expect(ids('data/reserve.json')).toEqual([]);
+    expect(read('data/retired.json').ids).toMatchObject([{ id: '07', reason: 'rights withdrawn' }]);
+    expect(existsSync(join(root, 'images/07.jpg'))).toBe(false);
+    // the retired id can never come back
+    const data = read('data/reserve.json');
+    data.items.push({ ...read('data/items.json').items[0], id: '07' });
+    write('data/reserve.json', data);
+    const ps = await problemsOf();
+    expect(ps.find((p) => p.where === 'reserve 07 · id')?.problem).toMatch(/was retired on/);
   });
 });

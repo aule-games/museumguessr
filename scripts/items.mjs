@@ -4,7 +4,9 @@
 //   node scripts/items.mjs check                 validate data/ and images/
 //   node scripts/items.mjs new <id>              print a complete record skeleton
 //   node scripts/items.mjs add-image <id> <url|file> [--force]
-//   node scripts/items.mjs promote <reserve-id> <slot 1-10>
+//   node scripts/items.mjs promote --ids <id>[,<id>...]
+//   node scripts/items.mjs swap <reserve-id> <item-id>
+//   node scripts/items.mjs retire <id> [--replace <reserve-id>] --reason "<why>"
 //
 // Every command accepts --root <dir> (used by the fixture tests).
 // Errors follow one format: problem, why (with requirement ID), fix, docs anchor.
@@ -17,7 +19,9 @@ import { fileURLToPath } from 'node:url';
 import Ajv2020 from 'ajv/dist/2020.js';
 import addFormats from 'ajv-formats';
 import sharp from 'sharp';
+import { poolRules } from './lib/pool-rules.mjs';
 import { printProblems } from './lib/report.mjs';
+import { DECK } from '../src/deck/config.ts';
 import { CONSTANTS_LOCKED, DISTANCE, SLIDER } from '../src/scoring/config.ts';
 import { distanceKm } from '../src/scoring/geo.ts';
 import { madeFullMarksKm } from '../src/scoring/score.ts';
@@ -45,6 +49,9 @@ function args(argv) {
     else if (a === '--force') out.force = true;
     else if (a === '--image') out.image = argv[++i];
     else if (a === '--crop') out.crop = argv[++i].split(',').map(Number);
+    else if (a === '--ids') out.ids = argv[++i];
+    else if (a === '--replace') out.replace = argv[++i];
+    else if (a === '--reason') out.reason = argv[++i];
     else if (a === '--help' || a === '-h') out.help = true;
     else out._.push(a);
   }
@@ -56,6 +63,8 @@ const paths = (root) => ({
   items: join(root, 'data/items.json'),
   reserve: join(root, 'data/reserve.json'),
   sample: join(root, 'data/sample.json'),
+  regions: join(root, 'data/regions.json'),
+  retired: join(root, 'data/retired.json'),
   images: join(root, 'images'),
   image: (id) => join(root, 'images', `${id}.jpg`),
 });
@@ -258,9 +267,11 @@ export async function check(root, { quiet = false } = {}) {
   reserve.forEach((it, i) => checkRecord(it, i, 'reserve', problems, warnings));
   sample.forEach((it, i) => checkRecord(it, i, 'sample', problems, warnings));
 
-  if (files.items && items.length !== ROUNDS) {
-    problems.push(problem('data/items.json', `has ${items.length} items, not ${ROUNDS}`, 'v0 is exactly 10 rounds', 'ENG27', 'add or promote items until there are 10', 'files'));
-  }
+  const regions = readJson(p.regions, problems, 'data/regions.json');
+  const retired = existsSync(p.retired) ? readJson(p.retired, problems, 'data/retired.json') : null;
+  const pool = poolRules(items, [...reserve.map((it) => ['reserve', it]), ...sample.map((it) => ['sample', it])], regions, retired, problem);
+  problems.push(...pool.problems);
+  warnings.push(...pool.warnings);
   if (files.sample && sample.length !== 1) {
     problems.push(problem('data/sample.json', `has ${sample.length} records, not 1`, 'the start screen shows one sample object', 'DS9', 'keep exactly one record', 'files'));
   }
@@ -276,28 +287,18 @@ export async function check(root, { quiet = false } = {}) {
     for (const it of list) {
       if (!it?.id) continue;
       if (seen.has(it.id)) {
-        problems.push(problem(`${kind} ${it.id} · id`, `is also used by ${seen.get(it.id)}`, 'ids are never reused', 'ENG10', 'give it a new two-digit id', 'ids'));
+        problems.push(problem(`${kind} ${it.id} · id`, `is also used by ${seen.get(it.id)}`, 'ids are never reused', 'ENG10', 'give it a new id', 'ids'));
       } else seen.set(it.id, `${kind} ${it.id}`);
     }
   }
 
-  // rounds 1-3: city-level and uncontested records (E2)
-  items.slice(0, 3).forEach((it, i) => {
-    if (it?.made?.precision && it.made.precision !== 'city') {
-      problems.push(problem(`item ${it.id} · made.precision`, `round ${i + 1} is ${it.made.precision}-level`, 'rounds 1-3 use city-level, uncontested records', 'E2', 'move this item to round 4 or later', 'order'));
-    }
-    if (Array.isArray(it?.conflicts) && it.conflicts.length) {
-      problems.push(problem(`item ${it.id} · conflicts`, `round ${i + 1} has a record conflict`, 'rounds 1-3 use city-level, uncontested records', 'E2', 'move this item to round 4 or later', 'order'));
-    }
-  });
-
-  // V3: holding-city spread
+  // V3: holding-city spread for the fixed set of 10 (a drawable pool uses the V1-12 spread rules)
   const cities = new Map();
   for (const it of items) {
     const c = it?.kept?.city;
     if (c) cities.set(c, (cities.get(c) ?? 0) + 1);
   }
-  if (items.length) {
+  if (items.length === ROUNDS) {
     if (cities.size < 6) {
       problems.push(problem('data/items.json', `uses ${cities.size} holding cities, fewer than 6`, 'a constant "always the same city" guess must not pay', 'V3', 'swap in items held in other cities', 'spread'));
     }
@@ -341,6 +342,7 @@ export async function check(root, { quiet = false } = {}) {
 
   return report(problems, warnings, quiet, [
     `holding cities: ${cities.size} distinct, max ${Math.max(0, ...cities.values())} per city`,
+    ...pool.info,
     ...lines,
   ]);
 }
@@ -397,8 +399,8 @@ async function fetchInput(src) {
 
 async function addImage(root, id, src, force, crop) {
   const p = paths(root);
-  if (!/^[0-9]{2}$/.test(id ?? '') || !src) {
-    printProblems([problem('add-image', 'usage: add-image <id> <url|file> [--force]', 'the id is the two-digit item id', 'DX6', 'pass an id like 07 and an https URL or a file path', 'images')]);
+  if (!ID.test(id ?? '') || !src) {
+    printProblems([problem('add-image', 'usage: add-image <id> <url|file> [--force]', 'the id is the two- or three-digit item id', 'DX6', 'pass an id like 07 and an https URL or a file path', 'images')]);
     return 2;
   }
   if (existsSync(p.image(id)) && !force) {
@@ -420,54 +422,184 @@ async function addImage(root, id, src, force, crop) {
   return 0;
 }
 
-async function promote(root, reserveId, slotArg, imageOverride) {
+const ID = /^[0-9]{2,3}$/;
+
+/**
+ * Validate a content change in a scratch copy, then apply it; nothing changes
+ * on failure (DX23). `images` maps ids to new JPEG buffers; `drop` lists ids
+ * whose images go away.
+ */
+async function applyChange(root, label, { items, reserve, retired = null, images = {}, drop = [] }) {
   const p = paths(root);
-  const slot = Number(slotArg);
-  if (!/^[0-9]{2}$/.test(reserveId ?? '') || !Number.isInteger(slot) || slot < 1 || slot > ROUNDS) {
-    printProblems([problem('promote', 'usage: promote <reserve-id> <slot 1-10>', 'slots are round positions', 'DX23', 'for example: promote 14 7', 'swap')]);
+  const scratch = mkdtempSync(join(tmpdir(), 'mg-items-change-'));
+  try {
+    cpSync(join(root, 'data'), join(scratch, 'data'), { recursive: true });
+    cpSync(p.images, join(scratch, 'images'), { recursive: true });
+    writeFileSync(join(scratch, 'data/items.json'), `${JSON.stringify(items, null, 2)}\n`);
+    writeFileSync(join(scratch, 'data/reserve.json'), `${JSON.stringify(reserve, null, 2)}\n`);
+    if (retired) writeFileSync(join(scratch, 'data/retired.json'), `${JSON.stringify(retired, null, 2)}\n`);
+    for (const [id, buf] of Object.entries(images)) writeFileSync(join(scratch, 'images', `${id}.jpg`), buf);
+    for (const id of drop) rmSync(join(scratch, 'images', `${id}.jpg`), { force: true });
+    const result = await check(scratch, { quiet: true });
+    if (result.problems.length) {
+      printProblems(result.problems);
+      console.error(`${label}: the change would leave ${result.problems.length} error(s); nothing was changed`);
+      return false;
+    }
+  } finally {
+    rmSync(scratch, { recursive: true, force: true });
+  }
+  writeFileSync(p.items, `${JSON.stringify(items, null, 2)}\n`);
+  writeFileSync(p.reserve, `${JSON.stringify(reserve, null, 2)}\n`);
+  if (retired) writeFileSync(p.retired, `${JSON.stringify(retired, null, 2)}\n`);
+  for (const [id, buf] of Object.entries(images)) writeFileSync(p.image(id), buf);
+  for (const id of drop) rmSync(p.image(id), { force: true });
+  return true;
+}
+
+async function fetchReserveImage(rec, imageOverride) {
+  try {
+    return { image: await processImage(await fetchInput(imageOverride ?? rec.photo.file_url)) };
+  } catch (e) {
+    return { error: problem(`reserve ${rec.id} · photo.file_url`, e.message, 'the reserve image must be fetched before the change', 'DX23', 'fix the URL; nothing was changed', 'swap') };
+  }
+}
+
+/** promote --ids 12,14: append reserve records to the pool, checking the whole batch once (V1-12). */
+async function promote(root, a) {
+  const p = paths(root);
+  if (!a.ids) {
+    const legacy = a._.length >= 3;
+    printProblems([
+      problem(
+        'promote',
+        legacy ? 'the slot form promote <id> <slot> is gone' : 'usage: promote --ids <id>[,<id>...]',
+        'promote appends reserve records to the pool; a swap replaces one in place',
+        'V1-12',
+        legacy ? `to add: npm run items:promote -- --ids ${a._[1]}; to replace an item: npm run items:swap -- ${a._[1]} <item-id>` : 'for example: npm run items:promote -- --ids 12,14',
+        'swap',
+      ),
+    ]);
+    return 2;
+  }
+  const ids = a.ids.split(',').map((x) => x.trim()).filter(Boolean);
+  if (!ids.length || ids.some((id) => !ID.test(id)) || new Set(ids).size !== ids.length) {
+    printProblems([problem('promote', `bad id list "${a.ids}"`, 'ids are two or three digits, each once', 'V1-12', 'for example: --ids 12,14', 'ids')]);
+    return 2;
+  }
+  if (a.image && ids.length !== 1) {
+    printProblems([problem('promote', '--image works with one id', 'a local file replaces one reserve photo', 'DX23', 'promote that id on its own', 'swap')]);
+    return 2;
+  }
+  const items = JSON.parse(readFileSync(p.items, 'utf8'));
+  const reserve = JSON.parse(readFileSync(p.reserve, 'utf8'));
+  const recs = [];
+  const images = {};
+  for (const id of ids) {
+    const rec = reserve.items.find((r) => r.id === id);
+    if (!rec) {
+      printProblems([problem(`reserve ${id}`, 'not found in data/reserve.json', 'only reserve records can be promoted', 'DX23', 'check the id', 'swap')]);
+      return 1;
+    }
+    const got = await fetchReserveImage(rec, a.image);
+    if (got.error) {
+      printProblems([got.error]);
+      return 1;
+    }
+    recs.push(rec);
+    images[id] = got.image;
+  }
+  const ok = await applyChange(root, 'promote', {
+    items: { ...items, items: [...items.items, ...recs] },
+    reserve: { ...reserve, items: reserve.items.filter((r) => !ids.includes(r.id)) },
+    images,
+  });
+  if (!ok) return 1;
+  console.log(`promoted ${ids.join(', ')}; the pool now holds ${items.items.length + ids.length} objects`);
+  return 0;
+}
+
+/** swap <reserve-id> <item-id>: replace a pool item in place; the displaced record goes back to the reserve. */
+async function swap(root, reserveId, itemId, imageOverride) {
+  const p = paths(root);
+  if (!ID.test(reserveId ?? '') || !ID.test(itemId ?? '')) {
+    printProblems([problem('swap', 'usage: swap <reserve-id> <item-id>', 'a swap puts a reserve record where a pool item was', 'DX23', 'for example: swap 14 05', 'swap')]);
     return 2;
   }
   const items = JSON.parse(readFileSync(p.items, 'utf8'));
   const reserve = JSON.parse(readFileSync(p.reserve, 'utf8'));
   const rec = reserve.items.find((r) => r.id === reserveId);
-  if (!rec) {
-    printProblems([problem(`reserve ${reserveId}`, 'not found in data/reserve.json', 'only reserve records can be promoted', 'DX23', 'check the id', 'swap')]);
+  const at = items.items.findIndex((it) => it.id === itemId);
+  if (!rec || at < 0) {
+    printProblems([problem(rec ? `item ${itemId}` : `reserve ${reserveId}`, rec ? 'not found in data/items.json' : 'not found in data/reserve.json', 'a swap needs a reserve record and a pool item', 'DX23', 'check the ids', 'swap')]);
     return 1;
   }
-  const displaced = items.items[slot - 1];
-  let image;
-  try {
-    image = await processImage(await fetchInput(imageOverride ?? rec.photo.file_url));
-  } catch (e) {
-    printProblems([problem(`reserve ${reserveId} · photo.file_url`, e.message, 'the reserve image must be fetched before the swap', 'DX23', 'fix the URL; nothing was changed', 'swap')]);
+  const got = await fetchReserveImage(rec, imageOverride);
+  if (got.error) {
+    printProblems([got.error]);
     return 1;
   }
-  const nextItems = { ...items, items: items.items.map((it, i) => (i === slot - 1 ? rec : it)) };
-  const nextReserve = { ...reserve, items: [...reserve.items.filter((r) => r.id !== reserveId), ...(displaced ? [displaced] : [])] };
+  const displaced = items.items[at];
+  const ok = await applyChange(root, 'swap', {
+    items: { ...items, items: items.items.map((it, i) => (i === at ? rec : it)) },
+    reserve: { ...reserve, items: [...reserve.items.filter((r) => r.id !== reserveId), displaced] },
+    images: { [reserveId]: got.image },
+    drop: [displaced.id],
+  });
+  if (!ok) return 1;
+  console.log(`swapped ${reserveId} in for ${displaced.id}; ${displaced.id} moved to data/reserve.json`);
+  return 0;
+}
 
-  // validate in a scratch copy; change nothing on failure
-  const scratch = mkdtempSync(join(tmpdir(), 'mg-promote-'));
-  try {
-    cpSync(join(root, 'data'), join(scratch, 'data'), { recursive: true });
-    cpSync(p.images, join(scratch, 'images'), { recursive: true });
-    writeFileSync(join(scratch, 'data/items.json'), `${JSON.stringify(nextItems, null, 2)}\n`);
-    writeFileSync(join(scratch, 'data/reserve.json'), `${JSON.stringify(nextReserve, null, 2)}\n`);
-    writeFileSync(join(scratch, 'images', `${reserveId}.jpg`), image);
-    if (displaced) rmSync(join(scratch, 'images', `${displaced.id}.jpg`), { force: true });
-    const result = await check(scratch, { quiet: true });
-    if (result.problems.length) {
-      printProblems(result.problems);
-      console.error(`promote: the swap would leave ${result.problems.length} error(s); nothing was changed`);
+/** retire <id> [--replace <reserve-id>] --reason "...": take an object out for good (V1-12). */
+async function retire(root, id, a) {
+  const p = paths(root);
+  if (!ID.test(id ?? '') || !a.reason) {
+    printProblems([problem('retire', 'usage: retire <id> [--replace <reserve-id>] --reason "<why>"', 'a retirement is permanent and records its reason', 'V1-12', 'for example: retire 07 --replace 14 --reason "rights withdrawn"', 'ids')]);
+    return 2;
+  }
+  const items = JSON.parse(readFileSync(p.items, 'utf8'));
+  const reserve = JSON.parse(readFileSync(p.reserve, 'utf8'));
+  const retired = existsSync(p.retired) ? JSON.parse(readFileSync(p.retired, 'utf8')) : { ids: [] };
+  const at = items.items.findIndex((it) => it.id === id);
+  if (at < 0) {
+    printProblems([problem(`item ${id}`, 'not found in data/items.json', 'only pool items can be retired', 'V1-12', 'check the id', 'ids')]);
+    return 1;
+  }
+  const n = items.items.length;
+  const atMinimum = n === ROUNDS || n <= DECK.poolMinimum;
+  if (atMinimum && !a.replace) {
+    printProblems([problem('retire', `the pool has ${n} objects, its minimum`, 'retiring without a replacement would leave a pool the game cannot play', 'V1-12', `name a ready reserve record: retire ${id} --replace <reserve-id> --reason "..."`, 'pool')]);
+    return 1;
+  }
+  let nextItems = items.items.filter((it) => it.id !== id);
+  let nextReserve = reserve.items;
+  const images = {};
+  if (a.replace) {
+    const rec = reserve.items.find((r) => r.id === a.replace);
+    if (!rec) {
+      printProblems([problem(`reserve ${a.replace}`, 'not found in data/reserve.json', 'the replacement must be a ready reserve record', 'V1-12', 'check the id', 'reserve')]);
       return 1;
     }
-  } finally {
-    rmSync(scratch, { recursive: true, force: true });
+    const got = await fetchReserveImage(rec, a.image);
+    if (got.error) {
+      printProblems([got.error]);
+      return 1;
+    }
+    nextItems = items.items.map((it, i) => (i === at ? rec : it));
+    nextReserve = reserve.items.filter((r) => r.id !== a.replace);
+    images[a.replace] = got.image;
   }
-  writeFileSync(p.items, `${JSON.stringify(nextItems, null, 2)}\n`);
-  writeFileSync(p.reserve, `${JSON.stringify(nextReserve, null, 2)}\n`);
-  writeFileSync(p.image(reserveId), image);
-  if (displaced) rmSync(p.image(displaced.id), { force: true });
-  console.log(`promoted ${reserveId} into slot ${slot}${displaced ? `; ${displaced.id} moved to data/reserve.json` : ''}`);
+  const entry = { id, title: items.items[at].title, retired: new Date().toISOString().slice(0, 10), reason: a.reason };
+  const ok = await applyChange(root, 'retire', {
+    items: { ...items, items: nextItems },
+    reserve: { ...reserve, items: nextReserve },
+    retired: { ...retired, ids: [...(retired.ids ?? []), entry] },
+    images,
+    drop: [id],
+  });
+  if (!ok) return 1;
+  console.log(`retired ${id}${a.replace ? `; ${a.replace} took its place` : ''}; recorded in data/retired.json`);
   return 0;
 }
 
@@ -501,9 +633,13 @@ const HELP = `usage: node scripts/items.mjs <command> [--root <dir>]
   add-image <id> <url|file>      fetch, strip metadata, resize to <= 1600 px and <= 250 KB
             [--force]            replace an existing image
             [--crop t,r,b,l]     cut away fractions of each edge first (record it in photo.crop_note)
-  promote <reserve-id> <slot>    move a reserve record into round slot 1-10; the displaced
-          [--image <file>]       record goes to data/reserve.json; nothing changes on failure;
-                                 --image uses a local file instead of photo.file_url
+  promote --ids <id>[,<id>...]   append reserve records to the pool, checking the whole
+          [--image <file>]       batch once; nothing changes on failure (--image: one id,
+                                 a local file instead of photo.file_url)
+  swap <reserve-id> <item-id>    put a reserve record where a pool item was; the displaced
+       [--image <file>]          record goes back to data/reserve.json
+  retire <id> --reason "<why>"   take an object out for good; its id goes to data/retired.json
+         [--replace <reserve-id>] and is never reused; required when the pool is at its minimum
 
 docs: ${DOCS}`;
 
@@ -518,12 +654,14 @@ if (isMain) {
   } else if (cmd === 'check') {
     code = (await check(a.root)).problems.length ? 1 : 0;
   } else if (cmd === 'new') {
-    if (!/^[0-9]{2}$/.test(x ?? '')) {
-      console.error('usage: new <two-digit id>');
+    if (!ID.test(x ?? '')) {
+      console.error('usage: new <two- or three-digit id>');
       code = 2;
     } else console.log(JSON.stringify(skeleton(x), null, 2));
   } else if (cmd === 'add-image') code = await addImage(a.root, x, y, a.force, a.crop);
-  else if (cmd === 'promote') code = await promote(a.root, x, y, a.image);
+  else if (cmd === 'promote') code = await promote(a.root, a);
+  else if (cmd === 'swap') code = await swap(a.root, x, y, a.image);
+  else if (cmd === 'retire') code = await retire(a.root, x, a);
   else {
     console.error(`unknown command: ${cmd}\n\n${HELP}`);
     code = 2;

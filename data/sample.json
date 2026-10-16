@@ -4,6 +4,8 @@
     {
       "id": "00",
       "title": "Human-headed winged lion (lamassu)",
+      "difficulty": 1,
+      "object_type": "sculpture",
       "alt_neutral": "Colossal grey stone gateway figure: a bearded human head in a tall horned cap on a lion's body with wings and five legs; feathered wings fill the slab and lines of incised text run between the legs",
       "caption": "Stone figure with wings, a lion's body and a bearded human head",
       "record_url": "https://www.metmuseum.org/art/collection/search/322609",

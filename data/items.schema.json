@@ -250,6 +250,8 @@
       "required": [
         "id",
         "title",
+        "difficulty",
+        "object_type",
         "alt_neutral",
         "caption",
         "record_url",
@@ -269,14 +271,35 @@
       ],
       "properties": {
         "id": {
-          "description": "Opaque two-digit id, never derived from the title or place, never reused (DS6, ENG10). The image is images/<id>.jpg.",
+          "description": "Opaque two- or three-digit id, never derived from the title or place, never reused, even after the item is retired (DS6, ENG10, V1-12). The image is images/<id>.jpg.",
           "type": "string",
-          "pattern": "^[0-9]{2}$"
+          "pattern": "^[0-9]{2,3}$"
         },
         "title": {
           "type": "string",
           "minLength": 1,
           "maxLength": 70
+        },
+        "difficulty": {
+          "description": "1 easy, 2 medium, 3 hard (V1-08). Editorial at first and confirmed on the batch contact sheet, then recalibrated from per-item points (docs/content.md \"Difficulty\"). Difficulty 1 needs a city-level made place, no record conflicts and no contested claim.",
+          "enum": [
+            1,
+            2,
+            3
+          ]
+        },
+        "object_type": {
+          "description": "What kind of object it is, for the pool's spread rules (V1-12).",
+          "enum": [
+            "painting",
+            "print",
+            "drawing",
+            "sculpture",
+            "vessel",
+            "textile",
+            "architecture",
+            "other"
+          ]
         },
         "alt_neutral": {
           "description": "Alt text during the round: material, form, figures, composition; no title, artist, place, culture or date (A1, DS29).",
