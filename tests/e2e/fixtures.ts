@@ -188,6 +188,14 @@ export async function playRound(page: Page, guess = { kept: [48.86, 2.35], made:
   await expect(page.locator('[data-screen=reveal]')).toBeVisible();
 }
 
+/** The ids of the game in progress, in round order, as the save holds them (random from 30 objects up). */
+export async function deckIds(page: Page): Promise<string[]> {
+  const raw = await page.evaluate(() => localStorage.getItem('museumguessr:v1:save'));
+  const ids = (JSON.parse(raw ?? '{}') as { item_ids?: string[] }).item_ids;
+  if (!ids || ids.length !== 10) throw new Error('no game in progress');
+  return ids;
+}
+
 export async function start(page: Page, query = '') {
   await page.goto(query ? `./${query}` : './');
   const startBtn = page.locator('[data-test=start]');

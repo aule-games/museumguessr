@@ -5,8 +5,9 @@ import { SCORING_VERSION } from '../../src/scoring/config';
 import { confirm, expect, placePin, playRound, start, test } from './fixtures';
 
 const items = JSON.parse(readFileSync(join(import.meta.dirname, '../../data/items.json'), 'utf8')).items as { id: string; title: string }[];
-const IDS = items.map((it) => it.id);
-/** The deck hash of the ten objects in file order (the fixed set's items hash). */
+/** The first ten objects in file order: the v0 fixed set, still a valid deck in a larger pool. */
+const IDS = items.slice(0, 10).map((it) => it.id);
+/** The deck hash of those ten (the fixed set's items hash). */
 const HASH = '35ca1219';
 
 const row = (points: number) => ({ made: { points, km: 120 }, when: { points: 0, yearsOff: 15 }, kept: { points: 0, km: 3 }, points, skipped: false });
@@ -219,6 +220,6 @@ test.describe('[V1-24] [V1-23] credits and the returning visitor', () => {
     await seedFinished(page);
     await expect(page.locator('[data-test=play-another]')).toBeVisible();
     await expect(page.locator('[data-test=review]')).toBeVisible();
-    await expect(page.locator('[data-test=collection]')).toHaveText('You have seen every object');
+    await expect(page.locator('[data-test=collection]')).toHaveText(items.length === 10 ? 'You have seen every object' : `You have seen 10 of ${items.length} objects`);
   });
 });

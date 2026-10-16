@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { CATALOGUE } from '../../src/analytics/events';
-import { confirm, enterYear, expect, placePin, playRound, start, test } from './fixtures';
+import { confirm, deckIds, enterYear, expect, placePin, playRound, start, test } from './fixtures';
 
 const items = JSON.parse(readFileSync(join(import.meta.dirname, '../../data/items.json'), 'utf8')).items as {
   id: string;
@@ -11,6 +11,11 @@ const items = JSON.parse(readFileSync(join(import.meta.dirname, '../../data/item
   made: { lat: number; lng: number; place: string };
   when: { start: number; end: number };
 }[];
+const byId = (id: string | undefined) => {
+  const it = items.find((x) => x.id === id);
+  if (!it) throw new Error(`no item ${id}`);
+  return it;
+};
 
 test.describe('[E6] [DS8] [ENG14] resume', () => {
   test('a reload mid-round 2 lands on the same step with round 1 kept and no duplicate events', async ({ page, recorder }) => {
@@ -62,6 +67,41 @@ test.describe('[E6] [DS8] [ENG14] resume', () => {
 });
 
 test.describe('[DS23] [R1] image and map readiness', () => {
+  test('[V1-11] a game abandoned while its photo loads: the new deck shows its own photo and the old failure is ignored', async ({ page, context }) => {
+    test.skip(items.length < 30, 'random decks start at 30 objects');
+    const photoId = (url: string) => url.match(/\/assets\/(\d{2,3})-[^/]+\.jpg/)?.[1];
+    let release: (() => Promise<void>) | null = null;
+    let held: string | null = null;
+    await context.route(/\/assets\/(?!00-)\d{2,3}-[^/]+\.jpg/, async (route) => {
+      const id = photoId(route.request().url()) ?? '';
+      if (held === null || held === id) {
+        held = id;
+        release = () => route.abort('connectionrefused');
+        return;
+      }
+      await route.continue();
+    });
+    await start(page);
+    const first = await deckIds(page);
+    expect(held).toBe(first[0]);
+    await expect(page.locator('[data-test=photo]')).not.toHaveAttribute('data-state', 'ready');
+
+    await page.locator('[data-test=menu]').first().click();
+    await page.locator('[data-test=menu-new]').click();
+    await page.locator('[data-test=confirm-new]').click();
+    await expect(page.locator('[data-screen=round][data-round="1"]')).toBeVisible();
+    const next = await deckIds(page);
+    expect(next[0]).not.toBe(first[0]);
+    const photo = page.locator('[data-test=photo]');
+    await expect(photo).toHaveAttribute('data-state', 'ready');
+    expect(photoId((await photo.locator('img').first().getAttribute('src')) ?? '')).toBe(next[0]);
+
+    await (release as (() => Promise<void>) | null)?.();
+    await page.waitForTimeout(300);
+    await expect(photo).toHaveAttribute('data-state', 'ready');
+    await expect(page.locator('[data-test=retry-image]')).toHaveCount(0);
+  });
+
   test('[V1-10] the start screen preloads the first photo of the deck that Start then commits', async ({ page }) => {
     const photoId = (url: string) => url.match(/\/assets\/(\d{2,3})-[^/]+\.jpg/)?.[1];
     const requested: string[] = [];
@@ -79,8 +119,8 @@ test.describe('[DS23] [R1] image and map readiness', () => {
   });
 
   test('a blocked photo: Start waits at most 4 s, Confirm stays disabled, retry, then skip after 3 failures', async ({ page, recorder, context }) => {
-    const first = items[0]?.id;
-    await context.route(new RegExp(`/assets/${first}-[^/]+\\.jpg`), (r) => r.abort('connectionrefused'));
+    // every round photo, whichever deck is drawn; 00 is the start screen's sample
+    await context.route(/\/assets\/(?!00-)\d{2,3}-[^/]+\.jpg/, (r) => r.abort('connectionrefused'));
     await page.goto('./');
     const startBtn = page.locator('[data-test=start]');
     await expect(startBtn).toBeEnabled({ timeout: 6000 });
@@ -138,8 +178,7 @@ test.describe('[DS23] [R1] image and map readiness', () => {
 test.describe('[A1] [DS6] no answer before the reveal', () => {
   test('round text and alt attributes carry no title; the reveal does', async ({ page }) => {
     await start(page);
-    const item = items[0];
-    if (!item) throw new Error('no items');
+    const item = byId((await deckIds(page))[0]);
     const titleWords = item.title.split(/\W+/).filter((w) => w.length > 4);
     const roundText = (await page.locator('main').innerText()).toLowerCase();
     const alts = (await page.locator('img').evaluateAll((els) => els.map((e) => (e as HTMLImageElement).alt + ' ' + (e as HTMLImageElement).src))).join(' ').toLowerCase();
@@ -155,14 +194,15 @@ test.describe('[A1] [DS6] no answer before the reveal', () => {
 
   test('[DS37] the photo carries a short caption on every question of the round', async ({ page }) => {
     await start(page);
+    const first = byId((await deckIds(page))[0]);
     const caption = page.locator('[data-test=photo-caption]');
-    await expect(caption).toHaveText(items[0]?.caption ?? '');
+    await expect(caption).toHaveText(first.caption);
     await placePin(page, 41.9, 12.5);
     await confirm(page);
-    await expect(caption).toHaveText(items[0]?.caption ?? '');
+    await expect(caption).toHaveText(first.caption);
     await enterYear(page, 1500);
     await confirm(page);
-    await expect(caption).toHaveText(items[0]?.caption ?? '');
+    await expect(caption).toHaveText(first.caption);
   });
 });
 
@@ -170,9 +210,9 @@ test.describe('[DS15] [V4] [DS7] [DS25] [V1-19] [V1-22] a full game', () => {
   test('ten rounds end on the results screen; Copy link copies the challenge text; replay starts over', async ({ page, context, recorder }) => {
     await context.grantPermissions(['clipboard-read', 'clipboard-write']);
     await start(page);
+    const deck = await deckIds(page);
     for (let r = 0; r < 10; r++) {
-      const it = items[r];
-      if (!it) throw new Error('missing item');
+      const it = byId(deck[r]);
       await playRound(page, { kept: [it.kept.lat, it.kept.lng], made: [it.made.lat, it.made.lng], year: it.when.start });
       await page.locator('[data-test=next]').click();
     }
@@ -186,7 +226,7 @@ test.describe('[DS15] [V4] [DS7] [DS25] [V1-19] [V1-22] a full game', () => {
     expect(at('play-another')).toBeLessThan(at('collection'));
     expect(at('collection')).toBeLessThan(at('recap'));
     expect(at('recap')).toBeLessThan(at('replay'));
-    await expect(page.locator('[data-test=collection]')).toHaveText('You have seen every object');
+    await expect(page.locator('[data-test=collection]')).toHaveText(items.length === 10 ? 'You have seen every object' : `You have seen 10 of ${items.length} objects`);
 
     await page.locator('[data-test=copy-link]').click();
     await expect(page.locator('[data-test=copied]')).toHaveText('Link copied');
@@ -195,7 +235,7 @@ test.describe('[DS15] [V4] [DS7] [DS25] [V1-19] [V1-22] a full game', () => {
     expect(lines[0]).toMatch(/^Can you beat my [\d,]+\/30,000 on MuseumGuessr\?$/);
     for (let r = 1; r <= 10; r++) expect(lines[r]).toMatch(new RegExp(`^R${r} [\\d,]+ · made [\\d,]+ km · [\\d,]+ yrs · kept [\\d,]+ km$`));
     const link = new URL(lines[11] ?? '');
-    expect(link.searchParams.get('d')).toBe(items.map((it) => it.id).join('.'));
+    expect(link.searchParams.get('d')).toBe(deck.join('.'));
     expect(link.searchParams.get('s')).toMatch(/^\d+$/);
     expect(link.searchParams.get('h')).toMatch(/^[0-9a-f]{8}$/);
     expect(link.searchParams.get('utm_source')).toBe('share');
@@ -366,6 +406,7 @@ test.describe('[DS19] [DS1] layout @layout', () => {
 test.describe('[DS36] Back inside a round', () => {
   test('Back reopens the previous question with its answer, and a changed answer is the one scored', async ({ page, recorder }) => {
     await start(page);
+    const deck = await deckIds(page);
     await expect(page.locator('[data-screen=round][data-step=made]')).toBeVisible();
     await expect(page.locator('[data-test=back]')).toHaveCount(0);
     await placePin(page, 41.9, 12.5);
@@ -384,7 +425,7 @@ test.describe('[DS36] Back inside a round', () => {
     await expect(page.locator('[data-test=confirm]')).toBeEnabled();
 
     await confirm(page);
-    await enterYear(page, items[0]?.when.start ?? 1830);
+    await enterYear(page, byId(deck[0]).when.start);
     await confirm(page);
     await placePin(page, 48.86, 2.35);
     await confirm(page);
