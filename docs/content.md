@@ -210,6 +210,16 @@ withdrawn"` puts `12` in its place and records `07` in `data/retired.json`,
 so the id is never reused. At the pool minimum a replacement is required; keep
 at least two reserve records ready.
 
+## Contact sheet
+
+Each new batch goes to the founder as one contact sheet:
+`npm run items:sheet -- --ids 16,17,18 --out sheet.jpg` renders the photo,
+title, made place and date, kept museum and city, difficulty, type and photo
+licence of every listed record (pool and reserve; reserve photos are fetched
+from `photo.file_url`). Without `--ids` it shows the whole pool, then the
+reserve. The founder approves or strikes records in one reply; only approved
+records are promoted.
+
 ## Check items
 
 `npm run items:check` (also part of `npm test` and the pre-commit hook when

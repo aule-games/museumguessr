@@ -269,3 +269,18 @@ describe('[V1-12] promote and retire', () => {
     expect(ps.find((p) => p.where === 'reserve 07 · id')?.problem).toMatch(/was retired on/);
   });
 });
+
+describe('[V1-12] the contact sheet', () => {
+  it('renders one JPEG cell per listed record from the committed photos', async () => {
+    const out = join(root, 'sheet.jpg');
+    cli('sheet', '--ids', '01,02,03', '--out', out);
+    const meta = await sharp(out).metadata();
+    expect(meta.format).toBe('jpeg');
+    expect(meta.width).toBe(3 * 420);
+    expect(meta.height).toBe(450);
+  });
+
+  it('refuses an unknown id', () => {
+    expect(() => cli('sheet', '--ids', '01,98', '--out', join(root, 'x.jpg'))).toThrow();
+  });
+});

@@ -33,7 +33,7 @@ keep it free of private names.
 | `npm run test:e2e` | build and run the browser tests on five viewports | `npx playwright install chromium` once |
 | `npm run verify` | run everything above in CI order and rewrite `docs/verification.md` | prints SKIPPED for rows it cannot run |
 | `npm run release:check` | the release scan of the GitHub repository | `.denylist`, `exiftool`, authenticated `gh` |
-| `npm run items:check` / `items:new` / `items:add-image` / `items:promote` / `items:swap` / `items:retire` | work on content ([docs/content.md](docs/content.md)) | network for `add-image` and the reserve photos |
+| `npm run items:check` / `items:new` / `items:add-image` / `items:promote` / `items:swap` / `items:retire` / `items:sheet` | work on content ([docs/content.md](docs/content.md)) | network for `add-image` and the reserve photos |
 | `npm run tokens` | regenerate `src/styles/tokens.css` from `src/design/tokens.json` | — |
 | `npm run types` | regenerate the item type from the schema | — |
 | `npm run design:build` / `design:check` | regenerate or check the direction studies | — |

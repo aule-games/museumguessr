@@ -20,6 +20,7 @@
     "items:promote": "node scripts/items.mjs promote",
     "items:swap": "node scripts/items.mjs swap",
     "items:retire": "node scripts/items.mjs retire",
+    "items:sheet": "node scripts/items.mjs sheet",
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",

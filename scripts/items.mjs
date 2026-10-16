@@ -7,6 +7,7 @@
 //   node scripts/items.mjs promote --ids <id>[,<id>...]
 //   node scripts/items.mjs swap <reserve-id> <item-id>
 //   node scripts/items.mjs retire <id> [--replace <reserve-id>] --reason "<why>"
+//   node scripts/items.mjs sheet [--ids <id>,...] [--out <file.jpg>]
 //
 // Every command accepts --root <dir> (used by the fixture tests).
 // Errors follow one format: problem, why (with requirement ID), fix, docs anchor.
@@ -52,6 +53,7 @@ function args(argv) {
     else if (a === '--ids') out.ids = argv[++i];
     else if (a === '--replace') out.replace = argv[++i];
     else if (a === '--reason') out.reason = argv[++i];
+    else if (a === '--out') out.out = resolve(argv[++i]);
     else if (a === '--help' || a === '-h') out.help = true;
     else out._.push(a);
   }
@@ -603,6 +605,62 @@ async function retire(root, id, a) {
   return 0;
 }
 
+const esc = (t) => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+const clip = (t, n) => (t.length > n ? `${t.slice(0, n - 1)}…` : t);
+
+/**
+ * sheet [--ids a,b] [--out file.jpg]: the founder's contact sheet (V1-12). One
+ * cell per record, pool first then reserve (or the listed ids): photo,
+ * title, made place and date, kept museum and city, difficulty and type.
+ * Photos come from images/ when committed, otherwise from photo.file_url.
+ */
+async function sheet(root, a) {
+  const p = paths(root);
+  const items = JSON.parse(readFileSync(p.items, 'utf8')).items;
+  const reserve = JSON.parse(readFileSync(p.reserve, 'utf8')).items;
+  const all = [...items.map((it) => ['pool', it]), ...reserve.map((it) => ['reserve', it])];
+  const wanted = a.ids ? a.ids.split(',').map((x) => x.trim()) : null;
+  const list = wanted ? wanted.map((id) => all.find(([, it]) => it.id === id) ?? [null, { id }]) : all;
+  const missing = list.filter(([kind]) => !kind).map(([, it]) => it.id);
+  if (missing.length) {
+    printProblems([problem('sheet', `unknown id(s): ${missing.join(', ')}`, 'the sheet shows pool and reserve records', 'V1-12', 'check the ids', 'swap')]);
+    return 1;
+  }
+  const W = 420;
+  const PH = 300;
+  const H = PH + 150;
+  const cols = Math.min(4, list.length);
+  const rows = Math.ceil(list.length / cols);
+  const cells = [];
+  for (const [i, [kind, it]] of list.entries()) {
+    let photo;
+    try {
+      const src = existsSync(p.image(it.id)) ? readFileSync(p.image(it.id)) : await fetchInput(it.photo.file_url);
+      photo = await sharp(src).rotate().resize({ width: W - 20, height: PH - 20, fit: 'contain', background: '#202a3a' }).jpeg().toBuffer();
+    } catch (e) {
+      photo = await sharp({ create: { width: W - 20, height: PH - 20, channels: 3, background: '#5a2a2a' } }).jpeg().toBuffer();
+      console.error(`sheet: no photo for ${it.id} (${e.message})`);
+    }
+    const lines = [
+      [`${it.id} · ${clip(it.title, 36)}`, 18, 700],
+      [`Made: ${clip(`${it.made.place}${it.made.place === it.made.country ? '' : `, ${it.made.country}`}`, 40)} · ${clip(it.when.label, 22)}`, 15, 400],
+      [`Kept: ${clip(`${it.kept.museum}, ${it.kept.city}`, 50)}`, 15, 400],
+      [`Difficulty ${it.difficulty} · ${it.object_type} · ${kind}${it.contested ? ' · contested' : ''}${it.heritage_image_law ? ' · heritage law' : ''}`, 14, 400],
+      [`Photo: ${clip(`${it.photo.licence}, ${it.photo.author}`, 52)}`, 13, 400],
+    ];
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H - PH}">${lines
+      .map(([t, size, weight], k) => `<text x="12" y="${24 + k * 26}" font-family="Helvetica, Arial, sans-serif" font-size="${size}" font-weight="${weight}" fill="#f2f5f9">${esc(t)}</text>`)
+      .join('')}</svg>`;
+    const x = (i % cols) * W;
+    const y = Math.floor(i / cols) * H;
+    cells.push({ input: photo, left: x + 10, top: y + 10 }, { input: Buffer.from(svg), left: x, top: y + PH });
+  }
+  const out = a.out ?? join(tmpdir(), 'museumguessr-contact-sheet.jpg');
+  await sharp({ create: { width: cols * W, height: rows * H, channels: 3, background: '#132036' } }).composite(cells).jpeg({ quality: 82 }).toFile(out);
+  console.log(`wrote ${out} (${list.length} records)`);
+  return 0;
+}
+
 function skeleton(id) {
   return {
     id,
@@ -640,6 +698,8 @@ const HELP = `usage: node scripts/items.mjs <command> [--root <dir>]
        [--image <file>]          record goes back to data/reserve.json
   retire <id> --reason "<why>"   take an object out for good; its id goes to data/retired.json
          [--replace <reserve-id>] and is never reused; required when the pool is at its minimum
+  sheet [--ids <id>,...]         the founder's contact sheet as one JPEG: photo, title, made,
+        [--out <file.jpg>]       kept, date and difficulty per record (pool then reserve)
 
 docs: ${DOCS}`;
 
@@ -662,6 +722,7 @@ if (isMain) {
   else if (cmd === 'promote') code = await promote(a.root, a);
   else if (cmd === 'swap') code = await swap(a.root, x, y, a.image);
   else if (cmd === 'retire') code = await retire(a.root, x, a);
+  else if (cmd === 'sheet') code = await sheet(a.root, a);
   else {
     console.error(`unknown command: ${cmd}\n\n${HELP}`);
     code = 2;
