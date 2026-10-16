@@ -538,6 +538,7 @@ export class App {
       ready: (!first || this.readyFor === first) && itemsLoaded(),
       webgl: this.webgl,
       collection: mode.kind === 'finished' && collection ? collectionLine(collection) : null,
+      poolSize: ITEM_IDS.length,
       onStart: () => void this.startGame(),
       onContinue: () => (mode.kind === 'challenge' ? this.continueMine() : void this.continueGame()),
       onNew: () => void this.startGame(),

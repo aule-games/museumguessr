@@ -1,7 +1,7 @@
 # MuseumGuessr
 
 Look at a real museum object, then guess where it is kept today, where it was
-made, and when. Ten objects, the same for everyone.
+made, and when. A new ten every game.
 
 **Play:** <https://aule-games.github.io/museumguessr/>
 
@@ -107,8 +107,11 @@ Open the site with `?test=1` to stop sending events from your browser;
 ## Credits
 
 Every photo keeps its own licence, as credited here and on each reveal. The
-museum objects are in the public domain; the photos are CC0, public domain or
-PD-Art (faithful photos of public-domain paintings).
+museum objects are in the public domain. The photos are CC0, public domain,
+PD-Art (faithful photos of public-domain paintings) or Creative Commons
+Attribution licences (CC BY, CC BY-SA), credited to their photographers. For
+the game they are resized, re-encoded and stripped of metadata; the
+CC BY-SA photos stay under CC BY-SA.
 
 <details>
 <summary>Photo credits (this names the museums, so it gives away answers)</summary>
@@ -116,16 +119,36 @@ PD-Art (faithful photos of public-domain paintings).
 | Object | Photo | Licence | Source |
 | --- | --- | --- | --- |
 | A Sunday on La Grande Jatte — 1884 | Art Institute of Chicago | CC0 1.0 | [artic.edu](https://www.artic.edu/artworks/27992) |
+| Along the River During the Qingming Festival | Unknown photographer (scan via Baidu Tieba), via Wikimedia Commons | PD-Art | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Along_the_River_During_the_Qingming_Festival_(detail_of_original).jpg) |
 | Boulevard Montmartre, morning, cloudy weather | National Gallery of Victoria (Google Art Project), via Wikimedia Commons | PD-Art | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Camille_Pissarro_-_Boulevard_Montmartre,_morning,_cloudy_weather_-_Google_Art_Project.jpg) |
+| Clay Figurine ("Dogū") with Goggle-Like Eyes | Tokyo National Museum, via ColBase (resized) | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) | [colbase.nich.go.jp](https://colbase.nich.go.jp/collection_items/tnm/J-38392?locale=en) |
+| Girl with a Pearl Earring | Mauritshuis, The Hague, via Wikimedia Commons | PD-Art | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:1665_Girl_with_a_Pearl_Earring.jpg) |
 | Human-headed winged lion (lamassu) (start screen and share image) | The Metropolitan Museum of Art | CC0 1.0 | [metmuseum.org](https://www.metmuseum.org/art/collection/search/322609) |
 | Jar with scenes of a scholar-official's life | Cleveland Museum of Art | CC0 1.0 | [clevelandart.org](https://www.clevelandart.org/art/1917.13) |
 | Lady with an Ermine | National Museum in Kraków | CC0 1.0 | [zbiory.mnk.pl](https://zbiory.mnk.pl/en/catalog/157417) |
 | Las Meninas | Museo del Prado (Prado in Google Earth), via Wikimedia Commons | PD-Art | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Las_Meninas,_by_Diego_Vel%C3%A1zquez,_from_Prado_in_Google_Earth.jpg) |
 | Mihrab (prayer niche) from the Madrasa Imami | The Metropolitan Museum of Art | CC0 1.0 | [metmuseum.org](https://www.metmuseum.org/art/collection/search/449537) |
+| Mochica portrait bottle of a figure in a turban | Pierre André Leclercq, via Wikimedia Commons | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Moche_portrait_ceramic_in_Museo_Arqueol%C3%B3gico_Rafael_Larco_Herrera_(2011).jpg) |
+| Portable Altar of Countess Gertrude | Cleveland Museum of Art | CC0 1.0 | [clevelandart.org](https://www.clevelandart.org/art/1931.462) |
+| Portrait of a Halberdier (Francesco Guardi?) | J. Paul Getty Museum (Open Content Program) | CC0 1.0 | [getty.edu](https://www.getty.edu/art/collection/object/103QSE) |
 | Red-figure chous (wine jug) | J. Paul Getty Museum | CC0 1.0 | [getty.edu](https://www.getty.edu/art/collection/object/10403M) |
+| Royal Carpet with Silk and Metal Thread | Cleveland Museum of Art | CC0 1.0 | [clevelandart.org](https://clevelandart.org/art/1926.533) |
 | Shiva Nataraja, Lord of the Dance | Rijksmuseum | Public domain | [rijksmuseum.nl](https://www.rijksmuseum.nl/en/collection/object/Shiva-Nataraja--95977e9e42c08b342dd8614230e2c948) |
+| Statuette of a Nike | J. Paul Getty Museum (Open Content Program; photographer not named) | CC0 1.0 | [getty.edu](https://media.getty.edu/iiif/manifest/3/92503040-497c-41ed-b5ab-bb84a3d07ec3) |
+| Sunflowers | The National Gallery, London (online catalogue), via Wikimedia Commons | PD-Art | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Vincent_van_Gogh_-_Sunflowers_(1888,_National_Gallery_London).jpg) |
+| The Assumption of the Virgin | Art Institute of Chicago | CC0 1.0 | [artic.edu](https://www.artic.edu/artworks/87479/the-assumption-of-the-virgin) |
+| The Birth of Venus | Gallerie degli Uffizi (Google Art Project), via Wikimedia Commons | PD-Art | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Sandro_Botticelli_-_La_nascita_di_Venere_-_Google_Art_Project.jpg) |
+| The Code of Hammurabi | Mbzt, via Wikimedia Commons | [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:P1050763_Louvre_code_Hammurabi_face_rwk-gradient.jpg) |
+| The Girls on the Bridge | Nasjonalmuseet / Børre Høstland | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) | [nasjonalmuseet.no](https://www.nasjonalmuseet.no/en/collection/object/NG.M.00844) |
+| The Golden Burial Mask of Tutankhamun | Dawid Wdowczyk, via Wikimedia Commons | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Mask_of_Tutankhamun_in_2025.jpg) |
+| The Kiss (Lovers) | Belvedere, Vienna (Google Art Project), via Wikimedia Commons | PD-Art | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:The_Kiss_-_Gustav_Klimt_-_Google_Cultural_Institute.jpg) |
+| The Night Watch | Rijksmuseum | Public domain | [rijksmuseum.nl](https://www.rijksmuseum.nl/en/collection/SK-C-5) |
+| The Standard of Ur | LeastCommonAncestor, from a photo by BabelStone (Andrew West), via Wikimedia Commons | [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Standard_of_Ur_-_War_side.jpg) |
+| The Starry Night | Google Art Project, via Wikimedia Commons | PD-Art | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg) |
 | The Temple of Dendur | The Metropolitan Museum of Art | CC0 1.0 | [metmuseum.org](https://www.metmuseum.org/art/collection/search/547802) |
+| Tibor chocolatero (Chocolate jar) | Art Institute of Chicago | CC0 1.0 | [artic.edu](https://www.artic.edu/artworks/10703) |
 | Under the Wave off Kanagawa (The Great Wave) | Rijksmuseum | Public domain | [rijksmuseum.nl](https://www.rijksmuseum.nl/en/collection/object/RP-P-1956-733--8bd0ca806fd677ede90d092ed16e0370) |
+| Wanderer above the Sea of Fog | Hamburger Kunsthalle (photo: Elke Walford), via Wikimedia Commons | PD-Art | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Friedrich,_Caspar_David_-_Wanderer_%C3%BCber_dem_Nebelmeer.jpg) |
 
 </details>
 

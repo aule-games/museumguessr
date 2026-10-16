@@ -32,7 +32,7 @@ export const COPY = {
   'start.loading': 'Loading…',
   'start.continue': 'Continue · Round {round} of 10',
   'start.new': 'New game',
-  'start.meta': '10 objects · about 10 min · real photos of real museum objects, credited',
+  'start.meta': 'Ten objects from a collection of {total}, a new set every game · about 10 min · real, credited museum photos',
   'start.privacy': 'No cookies. Anonymous play counts via PostHog (EU).',
   'start.privacyLink': 'About & privacy',
   'start.finished': 'You scored {total} / 30,000',

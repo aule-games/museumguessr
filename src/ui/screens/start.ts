@@ -29,6 +29,8 @@ export interface StartProps {
   webgl: boolean;
   /** "You have seen N of M objects", or null. */
   collection: string | null;
+  /** The live pool size, for the one-line expectation. */
+  poolSize: number;
   onStart(): void;
   onContinue(): void;
   onNew(): void;
@@ -153,7 +155,7 @@ export function startScreen(p: StartProps): HTMLElement {
       ...notes.map((n) => h('p', { class: 'start__note', 'data-test': 'challenge-note' }, n)),
     );
   }
-  const meta = mode.kind === 'challenge' ? mode.meta : t('start.meta');
+  const meta = mode.kind === 'challenge' ? mode.meta : t('start.meta', { total: formatNumber(p.poolSize) });
 
   return h(
     'main',

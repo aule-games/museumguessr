@@ -83,6 +83,9 @@ else {
   if (/posthog/.test(csp.replace(connect, ''))) fail('index.html CSP', 'lists PostHog outside connect-src', 'no PostHog script host is allowed', 'PH1', 'remove it');
   if (!/worker-src 'self'/.test(csp)) fail('index.html CSP', "lacks worker-src 'self'", 'the map worker is self-hosted', 'ENG32', 'add it');
 }
+// Copy truthfulness (V1-14): every game draws its own 10, so the page never says they are the same for everyone.
+const sameForEveryone = new RegExp(['same', '(10 objects )?', 'for everyone'].join(' ?'), 'i');
+if (sameForEveryone.test(html)) fail('index.html', 'says the objects are the same for everyone', 'every game draws its own 10 objects', 'V1-14', 'say "a new ten every game"');
 const buildMeta = html.match(/<meta name="build-id" content="([^"]+)"/)?.[1];
 const buildTxt = existsSync(join(DIST, 'build.txt')) ? readFileSync(join(DIST, 'build.txt'), 'utf8').trim() : null;
 if (!buildMeta || buildMeta !== buildTxt) fail('index.html / build.txt', `build ids differ (${buildMeta} vs ${buildTxt})`, 'DEP1 compares the live build id with the published commit', 'DX8', 'check VITE_BUILD_ID');

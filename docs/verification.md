@@ -11,7 +11,7 @@ Last run: 2026-10-16.
 | type check | passed (2 s) |
 | generated files are current | passed (0 s) |
 | item check | passed (0 s) |
-| unit tests | passed (11 s) |
+| unit tests | passed (13 s) |
 | design checks | passed (1 s) |
 | lint | passed (2 s) |
 | build | passed (1 s) |
@@ -21,7 +21,7 @@ Last run: 2026-10-16.
 
 ## Automated checks
 
-361 tests, 361 passed, 107 requirement IDs.
+385 tests, 385 passed, 109 requirement IDs.
 
 | ID | Rule | Test file | Result |
 | --- | --- | --- | --- |
@@ -100,6 +100,7 @@ Last run: 2026-10-16.
 | DS22 | reveal map emphasis › marks one country as both when the object was made and is kept in the same country | `tests/unit/map.test.ts` | passed |
 | DS22 | reveal map emphasis › leaves out a point at sea instead of guessing a country | `tests/unit/map.test.ts` | passed |
 | DS22 | image and map readiness › the reveal draws its faded map, country tints and lines (phone) | `tests/e2e/game.spec.ts` | passed |
+| DS23 | image and map readiness › a game abandoned while its photo loads: the new deck shows its own photo and the old failure is ignored (phone) | `tests/e2e/game.spec.ts` | passed |
 | DS23 | image and map readiness › the start screen preloads the first photo of the deck that Start then commits (phone) | `tests/e2e/game.spec.ts` | passed |
 | DS23 | image and map readiness › a blocked photo: Start waits at most 4 s, Confirm stays disabled, retry, then skip after 3 failures (phone) | `tests/e2e/game.spec.ts` | passed |
 | DS23 | image and map readiness › no WebGL: the start screen says so and one client_error is sent (phone) | `tests/e2e/game.spec.ts` | passed |
@@ -360,6 +361,26 @@ Last run: 2026-10-16.
 | ENG19 | README credits and privacy › credits the photo of Jar with scenes of a scholar-official's life | `tests/unit/readme.test.ts` | passed |
 | ENG19 | README credits and privacy › credits the photo of Shiva Nataraja, Lord of the Dance | `tests/unit/readme.test.ts` | passed |
 | ENG19 | README credits and privacy › credits the photo of Boulevard Montmartre, morning, cloudy weather | `tests/unit/readme.test.ts` | passed |
+| ENG19 | README credits and privacy › credits the photo of The Night Watch | `tests/unit/readme.test.ts` | passed |
+| ENG19 | README credits and privacy › credits the photo of Statuette of a Nike | `tests/unit/readme.test.ts` | passed |
+| ENG19 | README credits and privacy › credits the photo of Royal Carpet with Silk and Metal Thread | `tests/unit/readme.test.ts` | passed |
+| ENG19 | README credits and privacy › credits the photo of Tibor chocolatero (Chocolate jar) | `tests/unit/readme.test.ts` | passed |
+| ENG19 | README credits and privacy › credits the photo of Sunflowers | `tests/unit/readme.test.ts` | passed |
+| ENG19 | README credits and privacy › credits the photo of Girl with a Pearl Earring | `tests/unit/readme.test.ts` | passed |
+| ENG19 | README credits and privacy › credits the photo of The Kiss (Lovers) | `tests/unit/readme.test.ts` | passed |
+| ENG19 | README credits and privacy › credits the photo of The Girls on the Bridge | `tests/unit/readme.test.ts` | passed |
+| ENG19 | README credits and privacy › credits the photo of The Birth of Venus | `tests/unit/readme.test.ts` | passed |
+| ENG19 | README credits and privacy › credits the photo of The Starry Night | `tests/unit/readme.test.ts` | passed |
+| ENG19 | README credits and privacy › credits the photo of Wanderer above the Sea of Fog | `tests/unit/readme.test.ts` | passed |
+| ENG19 | README credits and privacy › credits the photo of The Assumption of the Virgin | `tests/unit/readme.test.ts` | passed |
+| ENG19 | README credits and privacy › credits the photo of The Golden Burial Mask of Tutankhamun | `tests/unit/readme.test.ts` | passed |
+| ENG19 | README credits and privacy › credits the photo of The Standard of Ur | `tests/unit/readme.test.ts` | passed |
+| ENG19 | README credits and privacy › credits the photo of Clay Figurine ("Dogū") with Goggle-Like Eyes | `tests/unit/readme.test.ts` | passed |
+| ENG19 | README credits and privacy › credits the photo of Mochica portrait bottle of a figure in a turban | `tests/unit/readme.test.ts` | passed |
+| ENG19 | README credits and privacy › credits the photo of Along the River During the Qingming Festival | `tests/unit/readme.test.ts` | passed |
+| ENG19 | README credits and privacy › credits the photo of Portable Altar of Countess Gertrude | `tests/unit/readme.test.ts` | passed |
+| ENG19 | README credits and privacy › credits the photo of Portrait of a Halberdier (Francesco Guardi?) | `tests/unit/readme.test.ts` | passed |
+| ENG19 | README credits and privacy › credits the photo of The Code of Hammurabi | `tests/unit/readme.test.ts` | passed |
 | ENG19 | README credits and privacy › credits the photo of Human-headed winged lion (lamassu) | `tests/unit/readme.test.ts` | passed |
 | ENG19 | README credits and privacy › names every code library with the licence its package declares | `tests/unit/readme.test.ts` | passed |
 | ENG19 | README credits and privacy › says every image keeps its own licence | `tests/unit/readme.test.ts` | passed |
@@ -468,6 +489,26 @@ Last run: 2026-10-16.
 | LIC1 | README credits and privacy › credits the photo of Jar with scenes of a scholar-official's life | `tests/unit/readme.test.ts` | passed |
 | LIC1 | README credits and privacy › credits the photo of Shiva Nataraja, Lord of the Dance | `tests/unit/readme.test.ts` | passed |
 | LIC1 | README credits and privacy › credits the photo of Boulevard Montmartre, morning, cloudy weather | `tests/unit/readme.test.ts` | passed |
+| LIC1 | README credits and privacy › credits the photo of The Night Watch | `tests/unit/readme.test.ts` | passed |
+| LIC1 | README credits and privacy › credits the photo of Statuette of a Nike | `tests/unit/readme.test.ts` | passed |
+| LIC1 | README credits and privacy › credits the photo of Royal Carpet with Silk and Metal Thread | `tests/unit/readme.test.ts` | passed |
+| LIC1 | README credits and privacy › credits the photo of Tibor chocolatero (Chocolate jar) | `tests/unit/readme.test.ts` | passed |
+| LIC1 | README credits and privacy › credits the photo of Sunflowers | `tests/unit/readme.test.ts` | passed |
+| LIC1 | README credits and privacy › credits the photo of Girl with a Pearl Earring | `tests/unit/readme.test.ts` | passed |
+| LIC1 | README credits and privacy › credits the photo of The Kiss (Lovers) | `tests/unit/readme.test.ts` | passed |
+| LIC1 | README credits and privacy › credits the photo of The Girls on the Bridge | `tests/unit/readme.test.ts` | passed |
+| LIC1 | README credits and privacy › credits the photo of The Birth of Venus | `tests/unit/readme.test.ts` | passed |
+| LIC1 | README credits and privacy › credits the photo of The Starry Night | `tests/unit/readme.test.ts` | passed |
+| LIC1 | README credits and privacy › credits the photo of Wanderer above the Sea of Fog | `tests/unit/readme.test.ts` | passed |
+| LIC1 | README credits and privacy › credits the photo of The Assumption of the Virgin | `tests/unit/readme.test.ts` | passed |
+| LIC1 | README credits and privacy › credits the photo of The Golden Burial Mask of Tutankhamun | `tests/unit/readme.test.ts` | passed |
+| LIC1 | README credits and privacy › credits the photo of The Standard of Ur | `tests/unit/readme.test.ts` | passed |
+| LIC1 | README credits and privacy › credits the photo of Clay Figurine ("Dogū") with Goggle-Like Eyes | `tests/unit/readme.test.ts` | passed |
+| LIC1 | README credits and privacy › credits the photo of Mochica portrait bottle of a figure in a turban | `tests/unit/readme.test.ts` | passed |
+| LIC1 | README credits and privacy › credits the photo of Along the River During the Qingming Festival | `tests/unit/readme.test.ts` | passed |
+| LIC1 | README credits and privacy › credits the photo of Portable Altar of Countess Gertrude | `tests/unit/readme.test.ts` | passed |
+| LIC1 | README credits and privacy › credits the photo of Portrait of a Halberdier (Francesco Guardi?) | `tests/unit/readme.test.ts` | passed |
+| LIC1 | README credits and privacy › credits the photo of The Code of Hammurabi | `tests/unit/readme.test.ts` | passed |
 | LIC1 | README credits and privacy › credits the photo of Human-headed winged lion (lamassu) | `tests/unit/readme.test.ts` | passed |
 | LIC1 | README credits and privacy › names every code library with the licence its package declares | `tests/unit/readme.test.ts` | passed |
 | LIC1 | README credits and privacy › says every image keeps its own licence | `tests/unit/readme.test.ts` | passed |
@@ -509,6 +550,7 @@ Last run: 2026-10-16.
 | PH6 | events reach PostHog with the right properties › a hostile utm_source becomes other; no utm becomes none (phone) | `tests/e2e/analytics.spec.ts` | passed |
 | PH9 | events reach PostHog with the right properties › three rounds send the KPI funnel events with project_id and src (phone) | `tests/e2e/analytics.spec.ts` | passed |
 | PH9 | events reach PostHog with the right properties › a hostile utm_source becomes other; no utm becomes none (phone) | `tests/e2e/analytics.spec.ts` | passed |
+| R1 | image and map readiness › a game abandoned while its photo loads: the new deck shows its own photo and the old failure is ignored (phone) | `tests/e2e/game.spec.ts` | passed |
 | R1 | image and map readiness › the start screen preloads the first photo of the deck that Start then commits (phone) | `tests/e2e/game.spec.ts` | passed |
 | R1 | image and map readiness › a blocked photo: Start waits at most 4 s, Confirm stays disabled, retry, then skip after 3 failures (phone) | `tests/e2e/game.spec.ts` | passed |
 | R1 | image and map readiness › no WebGL: the start screen says so and one client_error is sent (phone) | `tests/e2e/game.spec.ts` | passed |
@@ -528,10 +570,11 @@ Last run: 2026-10-16.
 | V1-02 | the main bundle size budget › passes a main bundle within its gzip budget | `tests/unit/build-checks.test.ts` | passed |
 | V1-02 | the main bundle size budget › fails once the gzipped main bundle grows past the budget | `tests/unit/build-checks.test.ts` | passed |
 | V1-02 | the main bundle size budget › fails when the main bundle is missing or doubled | `tests/unit/build-checks.test.ts` | passed |
+| V1-02 | the main bundle size budget › keeps the item records in their own lazy chunk, out of the main bundle | `tests/unit/build-checks.test.ts` | passed |
 | V1-03 | skipped rounds score 0 everywhere › a round answered in part and then skipped scores 0, and scoreGame matches the game total | `tests/unit/deck-state.test.ts` | passed |
 | V1-03 | skipped rounds score 0 everywhere › refuses answers, skips and keys of different lengths | `tests/unit/deck-state.test.ts` | passed |
 | V1-04 | a round is scored against its own item › a deck in a different order than the pool scores every round against the item shown | `tests/unit/deck-state.test.ts` | passed |
-| V1-04 | a round is scored against its own item › start refuses a deck with an unknown or repeated id | `tests/unit/deck-state.test.ts` | passed |
+| V1-04 | a round is scored against its own item › start refuses a deck with an unknown or repeated id, or not ten objects | `tests/unit/deck-state.test.ts` | passed |
 | V1-04 | source lint rules › rejects indexing the whole item pool by round in the app and the screens | `tests/unit/lint.test.ts` | passed |
 | V1-05 | saved games hold their own deck › a version 2 save of the v0 set migrates as a random, not-fresh deck | `tests/unit/deck-state.test.ts` | passed |
 | V1-05 | saved games hold their own deck › a version 2 save made against other answers is dropped | `tests/unit/deck-state.test.ts` | passed |
@@ -570,6 +613,7 @@ Last run: 2026-10-16.
 | V1-09 | the deck planner › never fails, even on a pool that breaks every rule | `tests/unit/planner.test.ts` | passed |
 | V1-09 | the deck planner › draws quickly enough for a slow phone (under 12 ms here, so under 50 ms at 4x slowdown) | `tests/unit/planner.test.ts` | passed |
 | V1-10 | image and map readiness › the start screen preloads the first photo of the deck that Start then commits (phone) | `tests/e2e/game.spec.ts` | passed |
+| V1-11 | image and map readiness › a game abandoned while its photo loads: the new deck shows its own photo and the old failure is ignored (phone) | `tests/e2e/game.spec.ts` | passed |
 | V1-12 | item-check errors link to real content-guide sections › every docs anchor used by the items CLI and its pool rules is a heading in docs/content.md | `tests/unit/docs.test.ts` | passed |
 | V1-12 | promote and retire › refuses the old slot form and names the replacement commands | `tests/unit/items-cli.test.ts` | passed |
 | V1-12 | promote and retire › promote --ids appends a batch only when the whole pool passes, and writes nothing otherwise | `tests/unit/items-cli.test.ts` | passed |
@@ -584,6 +628,8 @@ Last run: 2026-10-16.
 | V1-12 | the pool rules in items:check › needs 30% difficulty-1 objects and names the culprit when the pool cannot split into decks | `tests/unit/pool-rules.test.ts` | passed |
 | V1-12 | ids and regions › never reuses a retired id | `tests/unit/pool-rules.test.ts` | passed |
 | V1-12 | ids and regions › needs every country in the region table | `tests/unit/pool-rules.test.ts` | passed |
+| V1-14 | copy says every game draws its own 10 › neither the copy deck, the README nor the page head says the objects are the same for everyone | `tests/unit/copy-truth.test.ts` | passed |
+| V1-14 | copy says every game draws its own 10 › the start line names the live pool size, and README and the page head carry no number | `tests/unit/copy-truth.test.ts` | passed |
 | V1-16 | challenge links › reads ten known ids, a score, a name and a deck hash | `tests/unit/share-challenge.test.ts` | passed |
 | V1-16 | challenge links › a link without d is no challenge; bad d is a broken link | `tests/unit/share-challenge.test.ts` | passed |
 | V1-16 | challenge links › ignores a bad score, name or hash but keeps the deck | `tests/unit/share-challenge.test.ts` | passed |
@@ -649,6 +695,26 @@ Last run: 2026-10-16.
 | V2 | README credits and privacy › credits the photo of Jar with scenes of a scholar-official's life | `tests/unit/readme.test.ts` | passed |
 | V2 | README credits and privacy › credits the photo of Shiva Nataraja, Lord of the Dance | `tests/unit/readme.test.ts` | passed |
 | V2 | README credits and privacy › credits the photo of Boulevard Montmartre, morning, cloudy weather | `tests/unit/readme.test.ts` | passed |
+| V2 | README credits and privacy › credits the photo of The Night Watch | `tests/unit/readme.test.ts` | passed |
+| V2 | README credits and privacy › credits the photo of Statuette of a Nike | `tests/unit/readme.test.ts` | passed |
+| V2 | README credits and privacy › credits the photo of Royal Carpet with Silk and Metal Thread | `tests/unit/readme.test.ts` | passed |
+| V2 | README credits and privacy › credits the photo of Tibor chocolatero (Chocolate jar) | `tests/unit/readme.test.ts` | passed |
+| V2 | README credits and privacy › credits the photo of Sunflowers | `tests/unit/readme.test.ts` | passed |
+| V2 | README credits and privacy › credits the photo of Girl with a Pearl Earring | `tests/unit/readme.test.ts` | passed |
+| V2 | README credits and privacy › credits the photo of The Kiss (Lovers) | `tests/unit/readme.test.ts` | passed |
+| V2 | README credits and privacy › credits the photo of The Girls on the Bridge | `tests/unit/readme.test.ts` | passed |
+| V2 | README credits and privacy › credits the photo of The Birth of Venus | `tests/unit/readme.test.ts` | passed |
+| V2 | README credits and privacy › credits the photo of The Starry Night | `tests/unit/readme.test.ts` | passed |
+| V2 | README credits and privacy › credits the photo of Wanderer above the Sea of Fog | `tests/unit/readme.test.ts` | passed |
+| V2 | README credits and privacy › credits the photo of The Assumption of the Virgin | `tests/unit/readme.test.ts` | passed |
+| V2 | README credits and privacy › credits the photo of The Golden Burial Mask of Tutankhamun | `tests/unit/readme.test.ts` | passed |
+| V2 | README credits and privacy › credits the photo of The Standard of Ur | `tests/unit/readme.test.ts` | passed |
+| V2 | README credits and privacy › credits the photo of Clay Figurine ("Dogū") with Goggle-Like Eyes | `tests/unit/readme.test.ts` | passed |
+| V2 | README credits and privacy › credits the photo of Mochica portrait bottle of a figure in a turban | `tests/unit/readme.test.ts` | passed |
+| V2 | README credits and privacy › credits the photo of Along the River During the Qingming Festival | `tests/unit/readme.test.ts` | passed |
+| V2 | README credits and privacy › credits the photo of Portable Altar of Countess Gertrude | `tests/unit/readme.test.ts` | passed |
+| V2 | README credits and privacy › credits the photo of Portrait of a Halberdier (Francesco Guardi?) | `tests/unit/readme.test.ts` | passed |
+| V2 | README credits and privacy › credits the photo of The Code of Hammurabi | `tests/unit/readme.test.ts` | passed |
 | V2 | README credits and privacy › credits the photo of Human-headed winged lion (lamassu) | `tests/unit/readme.test.ts` | passed |
 | V2 | README credits and privacy › names every code library with the licence its package declares | `tests/unit/readme.test.ts` | passed |
 | V2 | README credits and privacy › says every image keeps its own licence | `tests/unit/readme.test.ts` | passed |
