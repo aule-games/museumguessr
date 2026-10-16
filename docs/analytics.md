@@ -125,7 +125,8 @@ answered rounds.**
 - **The answers are in the page bundle.** The game is not competitive; nothing
   stops a determined player from reading them.
 - **The shared origin:** other sites served from the same Pages domain can read
-  this game's local storage. It holds only the saved game, no secrets.
+  this game's local storage. It holds the saved game and the lists of objects
+  this device has seen; no secrets.
 - **Hosting budget:** a full game downloads about 4 MB; GitHub Pages' 100 GB
   monthly soft limit is about 25,000 full games.
 

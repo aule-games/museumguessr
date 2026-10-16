@@ -31,6 +31,10 @@ export const KEYS = {
   chunkReload: 'museumguessr:v1:chunk-reload',
   /** The first-visit tour ran (done or skipped); it starts again only from the menu. */
   tour: 'museumguessr:v1:tour',
+  /** Every object this device has been shown; never restarts (V1-07). */
+  everSeen: 'museumguessr:v1:ever-seen',
+  /** The objects shown since the last restart, with the planner's seed (V1-07). */
+  seen: 'museumguessr:v1:seen',
 } as const;
 
 export type Phase = 'answering' | 'reveal';

@@ -3,6 +3,7 @@
 
 import itemsFile from '../../data/items.json';
 import sampleFile from '../../data/sample.json';
+import type { DeckItem } from '../deck/planner.ts';
 import { answerKey, type AnswerKey } from '../scoring/game.ts';
 import type { Pool } from '../state/schema.ts';
 import type { Item } from '../types/item.ts';
@@ -54,3 +55,6 @@ export function poolOf(items: readonly Item[]): Pool {
 }
 
 export const POOL: Pool = poolOf(ITEMS);
+
+/** The pool as the deck planner sees it: difficulty and Kept city per object (V1-08). */
+export const DECK_ITEMS: readonly DeckItem[] = ITEMS.map((it) => ({ id: it.id, difficulty: it.difficulty, kept: it.kept.city }));

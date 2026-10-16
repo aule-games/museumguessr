@@ -1,8 +1,8 @@
 // Guarded storage adapters (ENG31). Any read, write or remove failure
 // (storage unavailable, quota full, security error) switches that store to
 // memory for the rest of the page load and never reaches the error boundary.
-// Limits in memory mode: no resume, no cross-tab coordination, per-load
-// de-duplication only.
+// Successful reads are kept in memory too. Limits in memory mode: no resume,
+// no cross-tab coordination, per-load de-duplication only.
 
 export interface KV {
   get(key: string): string | null;
@@ -29,7 +29,12 @@ export function guarded(open: () => Storage | null | undefined): KV {
     get(key) {
       if (store) {
         try {
-          return store.getItem(key);
+          const value = store.getItem(key);
+          // Keep a copy, so a store that fails later in this page load still
+          // answers with what it held (V1-07).
+          if (value === null) memory.delete(key);
+          else memory.set(key, value);
+          return value;
         } catch {
           fallBack();
         }

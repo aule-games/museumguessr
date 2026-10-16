@@ -61,6 +61,22 @@ test.describe('[E6] [DS8] [ENG14] resume', () => {
 });
 
 test.describe('[DS23] [R1] image and map readiness', () => {
+  test('[V1-10] the start screen preloads the first photo of the deck that Start then commits', async ({ page }) => {
+    const photoId = (url: string) => url.match(/\/assets\/(\d{2,3})-[^/]+\.jpg/)?.[1];
+    const requested: string[] = [];
+    page.on('request', (r) => {
+      const id = photoId(r.url());
+      if (id && id !== '00') requested.push(id); // 00 is the start screen's sample
+    });
+    await page.goto('./');
+    await expect(page.locator('[data-test=start]')).toBeEnabled({ timeout: 10000 });
+    expect(requested).toHaveLength(1);
+    await page.locator('[data-test=start]').click();
+    await expect(page.locator('[data-test=photo]')).toHaveAttribute('data-state', 'ready');
+    const src = (await page.locator('[data-test=photo] img').first().getAttribute('src')) ?? '';
+    expect(photoId(src)).toBe(requested[0]);
+  });
+
   test('a blocked photo: Start waits at most 4 s, Confirm stays disabled, retry, then skip after 3 failures', async ({ page, recorder, context }) => {
     const first = items[0]?.id;
     await context.route(new RegExp(`/assets/${first}-[^/]+\\.jpg`), (r) => r.abort('connectionrefused'));

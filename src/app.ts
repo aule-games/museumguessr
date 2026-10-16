@@ -4,10 +4,12 @@
 
 import type { Analytics } from './analytics/core.ts';
 import { EVENTS, STEPS, type FeedbackQ } from './analytics/events.ts';
-import { ANSWER_KEYS, ITEMS_VERSION, ITEM_IDS, POOL, SAMPLE, deckItems, imageUrl, itemById } from './content/items.ts';
+import { ANSWER_KEYS, DECK_ITEMS, ITEMS_VERSION, ITEM_IDS, POOL, SAMPLE, deckItems, imageUrl, itemById } from './content/items.ts';
+import { drawDeck, seededRng } from './deck/planner.ts';
 import { stripMessage, takeErrorBudget, toReport, type ErrorReport } from './errors/boundary.ts';
 import { newGameId } from './game/ids.ts';
 import type { WriterLock } from './game/lock.ts';
+import { SeenLists } from './game/seen.ts';
 import type { TabSession } from './game/session.ts';
 import { GameMap, hasWebGL2, prefetchMap, type MapState } from './map/map.ts';
 import type { LatLng } from './scoring/geo.ts';
@@ -36,6 +38,12 @@ export interface AppDeps {
 
 const START_IMAGE_WAIT_MS = 4000;
 
+/** A drawn deck, and whether committing it restarts the seen list (it had to reuse seen objects). */
+type PendingDeck = Deck & { restart: boolean };
+
+/** The ids a game has shown so far: every round up to the current one. */
+const shownIds = (s: GameState) => s.item_ids.slice(0, s.finished ? s.item_ids.length : s.round + 1);
+
 export class App {
   state: GameState | null = null;
   snapshot: ParsedSnapshot | null = null;
@@ -51,9 +59,13 @@ export class App {
   private errorReport: ErrorReport | null = null;
   private badge: HTMLElement | null = null;
   private tourOpen = false;
+  private readonly seenLists: SeenLists;
+  /** The deck the start screen preloads and Start commits (V1-10); cleared whenever the seen lists change. */
+  private pending: PendingDeck | null = null;
 
   constructor(private d: AppDeps) {
     this.webgl = hasWebGL2();
+    this.seenLists = new SeenLists(d.local, new Set(ITEM_IDS), () => crypto.getRandomValues(new Uint32Array(1))[0] as number);
     d.lock.onLost(() => this.guard(() => this.show('frozen')));
   }
 
@@ -62,6 +74,9 @@ export class App {
     this.state = parseSave(this.d.local.get(KEYS.save), POOL);
     if (this.state?.finished) this.state = null;
     this.snapshot = parseSnapshot(this.d.local.get(KEYS.last), POOL);
+    // Repair the seen lists from the save, the commit point (V1-07).
+    if (this.state) this.seenLists.add(shownIds(this.state));
+    if (this.snapshot) this.seenLists.add(this.snapshot.snapshot.item_ids);
     const resume = !!this.state && !this.d.tab.landing;
     if (this.d.analytics.testMode) this.badge = testBadge(() => this.d.analytics.inspect());
     if (!this.webgl) this.telemetry({ name: 'webgl_unavailable', message: '', frame: '' });
@@ -106,13 +121,24 @@ export class App {
   }
 
   /**
-   * The deck the start screen offers and Start commits. Until the pool
-   * reaches the planner's minimum it is the whole pool in its fixed order.
+   * The next random deck, drawn from the pool and the seen lists (V1-09).
+   * The same lists always give the same deck, so the deck the start screen
+   * preloads is the deck Start commits.
    */
-  private pendingDeck(): Deck {
-    const ids = [...ITEM_IDS];
-    const seen = new Set(this.snapshot?.snapshot.item_ids ?? []);
-    return { ids, kind: 'random', hash: POOL.deckHash(ids) ?? ITEMS_VERSION, firstSeen: ids.map((id) => !seen.has(id)), challenge: null };
+  private pendingDeck(): PendingDeck {
+    if (this.pending) return this.pending;
+    const s = this.seenLists.seen();
+    const ever = this.seenLists.ever();
+    const draw = drawDeck(DECK_ITEMS, new Set(s.ids), seededRng((s.seed + Math.imul(s.epoch, 0x9e3779b1)) >>> 0));
+    this.pending = {
+      ids: draw.ids,
+      kind: 'random',
+      hash: POOL.deckHash(draw.ids) ?? ITEMS_VERSION,
+      firstSeen: draw.ids.map((id) => !ever.has(id)),
+      challenge: null,
+      restart: !draw.fresh,
+    };
+    return this.pending;
   }
 
   dispatch(action: Action) {
@@ -143,6 +169,8 @@ export class App {
           }
         }
         this.d.local.set(KEYS.save, serialize(next));
+        this.seenLists.add(shownIds(next));
+        this.pending = null;
       } else if (e.type === 'snapshot') {
         this.d.local.set(KEYS.last, serialize(e.snapshot));
         this.snapshot = { snapshot: e.snapshot, current: true };
@@ -177,7 +205,17 @@ export class App {
 
   async startGame() {
     if (!(await this.d.lock.acquire(true))) return;
-    this.dispatch({ type: 'start', gameId: this.id(), src: this.d.tab.src, itemsVersion: ITEMS_VERSION, deck: this.pendingDeck() });
+    this.guard(() => {
+      // Re-draw under the lock: another tab may have shown some of the offered objects (V1-10).
+      const offered = this.pending;
+      this.pending = null;
+      const deck = this.pendingDeck();
+      const first = itemById(deck.ids[0] ?? '');
+      if (first && offered?.ids[0] !== deck.ids[0]) new Image().src = imageUrl(first.id);
+      if (deck.restart) this.seenLists.restart(deck.ids);
+      const committed: Deck = { ids: deck.ids, kind: deck.kind, hash: deck.hash, firstSeen: deck.firstSeen, challenge: deck.challenge };
+      this.dispatch({ type: 'start', gameId: this.id(), src: this.d.tab.src, itemsVersion: ITEMS_VERSION, deck: committed });
+    });
   }
 
   async continueGame() {
