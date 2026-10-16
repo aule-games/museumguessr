@@ -80,7 +80,12 @@ export const MIN_RESULT_PX = 11;
  *  fits; only if it still does not fit may it wrap, so nothing is ever cut off. */
 function fitOneLine(el: HTMLElement) {
   if (typeof ResizeObserver === 'undefined') return;
+  let width = -1;
   const fit = () => {
+    // Refit only when the width changes. Wrapping changes the height, and
+    // refitting on that would undo the wrap and loop every frame.
+    if (el.clientWidth === width) return;
+    width = el.clientWidth;
     el.style.removeProperty('font-size');
     el.style.removeProperty('white-space');
     let size = parseFloat(getComputedStyle(el).fontSize);

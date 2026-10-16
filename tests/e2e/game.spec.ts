@@ -372,6 +372,25 @@ test.describe('[DS19] [DS1] layout @layout', () => {
     }
   });
 
+  test('[DS21] a result line too long for one line wraps once and the score rows stay still', async ({ page }) => {
+    // 21 is made in Saint-Rémy-de-Provence, the longest place name in the pool
+    test.skip(!items.some((it) => it.id === '21'), 'needs item 21');
+    const ids = ['21', ...items.map((it) => it.id).filter((id) => id !== '21').slice(0, 9)];
+    await page.goto(`./?d=${ids.join('.')}`);
+    await expect(page.locator('[data-test=play-challenge]')).toBeEnabled({ timeout: 10000 });
+    await page.locator('[data-test=play-challenge]').click();
+    await playRound(page);
+    const row = page.locator('[data-test=row-when]');
+    const boxes: (number | undefined)[] = [];
+    for (let i = 0; i < 5; i++) {
+      boxes.push((await row.boundingBox())?.y);
+      await page.waitForTimeout(200);
+    }
+    expect(new Set(boxes).size, `When row positions over 1 s: ${boxes.join(', ')}`).toBe(1);
+    await row.click();
+    await expect(row).toHaveAttribute('aria-expanded', 'true');
+  });
+
   test('[DS21] the reveal puts scores after the wall label and keeps Next on screen', async ({ page }) => {
     await start(page);
     await playRound(page);
