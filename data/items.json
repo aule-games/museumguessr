@@ -1495,7 +1495,7 @@
         "source_url": "https://www.britishmuseum.org/collection/object/W_1928-1010-3"
       },
       "made": {
-        "place": "Southern Mesopotamia (Sumer)",
+        "place": "Sumer",
         "country": "Iraq",
         "precision": "region",
         "wikidata_url": "https://www.wikidata.org/wiki/Q35355",
@@ -1562,7 +1562,7 @@
         "source_url": "https://www.tnm.jp/modules/r_collection/index.php?controller=dtl&colid=J38392&lang=en"
       },
       "made": {
-        "place": "Tōhoku region",
+        "place": "Tōhoku",
         "country": "Japan",
         "precision": "region",
         "wikidata_url": "https://www.wikidata.org/wiki/Q129465",
@@ -1627,7 +1627,7 @@
         "source_url": "https://coleccion.museolarco.org/detail/174/"
       },
       "made": {
-        "place": "North coast of Peru",
+        "place": "northern coastal Peru",
         "country": "Peru",
         "precision": "region",
         "wikidata_url": "https://www.wikidata.org/wiki/Q14204197",
