@@ -6,6 +6,7 @@
 
 import { FEEDBACK, type Step } from '../../analytics/events.ts';
 import { formatNumber, t, type CopyKey } from '../../copy.ts';
+import tokens from '../../design/tokens.json';
 import { howText, rowResult } from '../../game/text.ts';
 import type { GameMap } from '../../map/map.ts';
 import { MAX_POINTS } from '../../scoring/config.ts';
@@ -76,26 +77,53 @@ function resultLine({ text, value }: { text: string; value: string | null }): HT
 
 export const MIN_RESULT_PX = 11;
 
-/** Keep a result on one line: step its font down (not below MIN_RESULT_PX) until it
- *  fits; only if it still does not fit may it wrap, so nothing is ever cut off. */
+/** Fit within the padded content area, preserving at least 80% of the CSS font
+ *  size (and MIN_RESULT_PX); wrap if the text still does not fit at that floor. */
 function fitOneLine(el: HTMLElement) {
   if (typeof ResizeObserver === 'undefined') return;
   let width = -1;
-  const fit = () => {
+  let watchingFonts = false;
+  const fit = (force = false) => {
+    if (!el.isConnected || el.clientWidth === 0) return;
+    const screen = el.closest<HTMLElement>('.reveal');
+    const enlarged = !!screen && parseFloat(getComputedStyle(screen).fontSize) > parseFloat(tokens.text.md);
+    screen?.classList.toggle('reveal--reflow', enlarged);
+    // Reading-size changes need reflow even when the result width is unchanged.
+    // Do not shrink enlarged text back towards its normal reading size.
+    if (enlarged) {
+      el.style.removeProperty('font-size');
+      el.style.whiteSpace = 'normal';
+      width = -1;
+      return;
+    }
     // Refit only when the width changes. Wrapping changes the height, and
-    // refitting on that would undo the wrap and loop every frame.
-    if (el.clientWidth === width) return;
+    // refitting on that would undo the wrap and loop every frame. Font loading
+    // gets one explicit refit, since it can change text width without resizing.
+    if (!force && el.clientWidth === width) return;
     width = el.clientWidth;
     el.style.removeProperty('font-size');
     el.style.removeProperty('white-space');
-    let size = parseFloat(getComputedStyle(el).fontSize);
-    while (el.scrollWidth > el.clientWidth + 1 && size > MIN_RESULT_PX) {
-      size = Math.max(MIN_RESULT_PX, size - 0.5);
+    const css = getComputedStyle(el);
+    let size = parseFloat(css.fontSize);
+    const floor = Math.max(MIN_RESULT_PX, 0.8 * size);
+    const available = el.clientWidth - parseFloat(css.paddingLeft) - parseFloat(css.paddingRight);
+    const text = document.createRange();
+    text.selectNodeContents(el);
+    const overflows = () => text.getBoundingClientRect().width > available;
+    while (overflows() && size > floor) {
+      size = Math.max(floor, size - 0.5);
       el.style.fontSize = `${size}px`;
     }
-    if (el.scrollWidth > el.clientWidth + 1) el.style.whiteSpace = 'normal';
+    if (overflows()) el.style.whiteSpace = 'normal';
   };
-  new ResizeObserver(fit).observe(el);
+  new ResizeObserver(() => {
+    fit();
+    // Subscribe after the first layout has requested the line's fonts.
+    if (!watchingFonts && el.isConnected && document.fonts) {
+      watchingFonts = true;
+      void document.fonts.ready.then(() => fit(true));
+    }
+  }).observe(el);
 }
 
 function scoreRow(step: Step, points: number, result: { text: string; value: string | null }, how: string, extra?: Node | null): HTMLElement {
@@ -141,7 +169,12 @@ export function revealScreen(p: RevealProps): RevealView {
     scoreRow('made', r.made.points, rowResult('made', item, r), howText('made', item, r), madeNote),
     scoreRow('when', r.when.points, rowResult('when', item, r), howText('when', item, r), whenExtra(item, p.answers.when)),
     scoreRow('kept', r.kept.points, rowResult('kept', item, r), howText('kept', item, r)),
-    h('li', { class: 'scores__total reveal__total' }, h('span', { class: 'scores__total-label' }, t('reveal.scoreLabel')), score),
+    h(
+      'li',
+      { class: 'scores__summary' },
+      h('div', { class: 'scores__total reveal__total' }, h('span', { class: 'scores__total-label' }, t('reveal.scoreLabel')), score),
+      p.toBeat != null ? h('p', { class: 'reveal__tobeat', 'data-test': 'to-beat' }, t('reveal.toBeat', { score: formatNumber(p.toBeat) })) : null,
+    ),
   );
 
   const mapHost = h('div', { class: 'reveal__map', 'data-test': 'reveal-map' });
@@ -199,7 +232,6 @@ export function revealScreen(p: RevealProps): RevealView {
         h('p', { class: 'label__line' }, wallLabel(item)),
       ),
       rows,
-      p.toBeat != null ? h('p', { class: 'reveal__tobeat', 'data-test': 'to-beat' }, t('reveal.toBeat', { score: formatNumber(p.toBeat) })) : null,
       h('div', { class: 'reveal__media' }, mapHost, legend),
       journey && h('p', { class: 'reveal__journey', 'data-test': 'journey' }, journey.text, ' ', ext(journey.source_url, t('reveal.source'))),
       item.contested && item.claimant_source

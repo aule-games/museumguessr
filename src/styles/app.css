@@ -302,6 +302,7 @@ p {
 }
 
 .topbar__menu {
+  flex: none;
   width: var(--layout-tap);
   height: var(--layout-tap);
   margin-right: calc(-1 * var(--space-3));
@@ -527,6 +528,11 @@ p {
   display: grid;
   grid-template-rows: var(--layout-topbar) minmax(var(--layout-photo-min), 2fr) var(--layout-prompt) minmax(var(--layout-map-min), 3fr) calc(var(--layout-actionbar) + env(safe-area-inset-bottom));
   grid-template-areas: 'top' 'photo' 'prompt' 'answer' 'action';
+}
+
+.round__body,
+.round__footer {
+  display: contents;
 }
 
 .prompt {
@@ -967,9 +973,9 @@ p {
   position: absolute;
   left: 50%;
   top: 100%;
-  transform: translate(-50%, var(--space-1));
+  transform: translate(calc(-50% + var(--pin-label-x, 0px)), calc(var(--space-1) + var(--pin-label-y, 0px)));
   width: max-content;
-  max-width: calc(var(--space-8) * 3);
+  max-width: min(var(--map-label-max-width, calc(var(--space-8) * 3)), var(--map-label-width, 100vw));
   text-align: center;
   overflow-wrap: anywhere;
   font-size: var(--text-xs);
@@ -978,6 +984,12 @@ p {
   background: var(--map-land);
   border: 1.5px solid currentcolor;
   border-radius: var(--radius-pill);
+
+  /* Never animated: the reveal measures and places labels (map.ts
+     fitAnswerLabels), and the reduced-motion rule would otherwise give every
+     change a 0.01 ms transition, so a label measured right after a move would
+     still read its old position. */
+  transition: none;
 }
 
 .pin__label:empty {
@@ -1199,11 +1211,13 @@ p {
 .reveal {
   height: var(--app-height, 100dvh);
   display: grid;
-  grid-template-rows: var(--layout-topbar) minmax(0, 1fr) auto;
+  grid-template-rows: minmax(var(--layout-topbar), auto) minmax(0, 1fr) auto;
   grid-template-areas: 'top' 'body' 'action';
 }
 
 .reveal__scroll {
+  min-width: 0;
+  grid-template-columns: minmax(0, 1fr);
   grid-area: body;
   min-height: 0;
   overflow-y: auto;
@@ -1214,6 +1228,8 @@ p {
 }
 
 .reveal__scroll > * {
+  min-width: 0;
+  overflow-wrap: anywhere;
   margin-inline: var(--space-4);
 }
 
@@ -1276,7 +1292,9 @@ p {
 }
 
 .reveal__tobeat {
-  padding-inline: var(--space-4);
+  padding: var(--space-3);
+  background: var(--color-surface);
+  color: var(--color-ink);
   font-family: var(--font-display);
   font-size: var(--text-md);
   font-weight: 800;
@@ -1463,6 +1481,7 @@ p {
   color: var(--color-ink-muted);
   font-size: var(--text-sm);
   white-space: nowrap;
+  overflow-wrap: anywhere;
 }
 
 .score__value {
@@ -1634,6 +1653,7 @@ p {
 
 /* the final score uses the reveal total's raised panel, so a game reads as one system */
 .end__head {
+  overflow-wrap: anywhere;
   padding: var(--space-5);
   border-radius: var(--radius-lg);
   background: var(--color-accent);
@@ -1710,6 +1730,10 @@ p {
   border-radius: var(--radius-sm);
 }
 
+.recap__text {
+  overflow-wrap: anywhere;
+}
+
 .recap__title {
   font-size: var(--text-sm);
   font-weight: var(--font-weight-bold);
@@ -1742,6 +1766,8 @@ p {
 .end__layout,
 .end__summary,
 .end__recap {
+  min-width: 0;
+  grid-template-columns: minmax(0, 1fr);
   display: grid;
   gap: var(--space-4);
   align-content: start;
@@ -1749,15 +1775,16 @@ p {
 
 .end__versus {
   margin-top: var(--space-3);
+  font-family: var(--font-body);
   font-weight: var(--font-weight-bold);
   font-variant-numeric: tabular-nums;
   color: var(--color-accent-ink);
 }
 
 .end__result {
-  font-family: var(--font-display);
+  font-family: var(--font-body);
   font-size: var(--text-lg);
-  font-weight: 800;
+  font-weight: var(--font-weight-bold);
   line-height: var(--leading-tight);
   color: var(--color-accent-ink);
 }
@@ -1770,9 +1797,17 @@ p {
   font-size: var(--text-sm);
 }
 
+.end__waiting bdi,
+.share__name .field__input {
+  font-family: var(--font-body);
+  font-weight: var(--font-weight-bold);
+}
+
 /* ---------- share block (V1-19, V1-20) ---------- */
 
 .share {
+  min-width: 0;
+  grid-template-columns: minmax(0, 1fr);
   display: grid;
   gap: var(--space-2);
 }
@@ -1789,6 +1824,8 @@ p {
 }
 
 .share__btn {
+  min-width: 0;
+  overflow-wrap: anywhere;
   display: inline-flex;
   flex: 1 1 auto;
   align-items: center;
@@ -1845,6 +1882,8 @@ p {
 }
 
 .field__input {
+  min-width: 0;
+  width: 100%;
   min-height: var(--layout-tap);
   padding: 0 var(--space-4);
   border: 1.5px solid var(--color-line);
@@ -2106,6 +2145,7 @@ p {
 }
 
 .dialog__close {
+  flex: none;
   width: var(--layout-tap);
   height: var(--layout-tap);
   border: 0;
@@ -2513,8 +2553,11 @@ p {
     font-size: var(--text-lg);
   }
 
-  .scores__total {
+  .scores__summary {
     order: -1;
+  }
+
+  .scores__total {
     padding: var(--space-2) var(--space-3);
     border-top: 0;
     border-bottom: var(--focus-width) solid var(--color-accent);
@@ -2530,6 +2573,101 @@ p {
 @media (height <= 700px) and (width <= 899px) and (orientation: portrait) {
   .round--when .year__readout {
     font-size: var(--text-2xl);
+  }
+}
+
+/* Enlarged reading text needs its own scrolling middle region. Keep the
+   normal grid unchanged; the map keeps its usable minimum and Confirm stays
+   outside the scroll region on every viewport. */
+.round.round--reflow {
+  grid-template:
+    'top' minmax(var(--layout-topbar), auto)
+    'body' minmax(0, 1fr)
+    'action' minmax(calc(var(--layout-actionbar) + env(safe-area-inset-bottom)), auto)
+    / minmax(0, 1fr);
+}
+
+.round--reflow .round__body {
+  grid-area: body;
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  grid-template:
+    'photo' minmax(var(--layout-photo-min), 2fr)
+    'prompt' minmax(var(--layout-prompt), max-content)
+    'answer' minmax(var(--layout-map-min), 3fr)
+    / minmax(0, 1fr);
+  overflow-y: auto;
+}
+
+.round--reflow .round__footer {
+  grid-area: action;
+  display: grid;
+  min-width: 0;
+}
+
+.round--reflow .actionbar {
+  grid-area: auto;
+  min-width: 0;
+}
+
+.round--reflow .actionbar .btn {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* Measure the 2:3 split from the image itself, with its top gutter outside
+   the tracks. The map minimum must give the photo the same minimum share. */
+@media (width < 900px) and (orientation: portrait) {
+  .round--reflow .round__body {
+    padding-top: var(--space-2);
+    grid-template-rows:
+      minmax(max(var(--layout-photo-min), calc(var(--layout-map-min) * 2 / 3)), 2fr)
+      minmax(var(--layout-prompt), max-content)
+      minmax(var(--layout-map-min), 3fr);
+  }
+
+  .round--reflow .round__photo {
+    margin-top: 0;
+  }
+}
+
+/* Enlarged scores keep whole point totals and let the result use as many
+   full-width lines as it needs in the scrolling panel. */
+.reveal--reflow .score__row {
+  grid-template-columns: minmax(0, 1fr) max-content;
+}
+
+.reveal--reflow .score__points {
+  white-space: nowrap;
+  overflow-wrap: normal;
+}
+
+.reveal--reflow .score__result {
+  white-space: normal;
+}
+
+@media (orientation: landscape) and (height <= 500px) {
+  .reveal--reflow .reveal__legend {
+    padding-block: var(--space-1);
+    line-height: var(--leading-tight);
+  }
+}
+
+@media (width >= 900px), (orientation: landscape) and (height <= 500px) {
+  .round--reflow .round__body {
+    grid-template:
+      'photo prompt' auto
+      'photo answer' minmax(var(--layout-map-min), 1fr)
+      / minmax(0, 55fr) minmax(0, 45fr);
+  }
+
+  .round--reflow .round__footer {
+    grid-template-columns: minmax(0, 55fr) minmax(0, 45fr);
+  }
+
+  .round--reflow .actionbar {
+    grid-column: 2;
   }
 }
 

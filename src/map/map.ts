@@ -170,6 +170,11 @@ export class GameMap {
   private places: Place[] = [];
   private countries: GeoJSON.FeatureCollection | null = null;
   private markers: ML.Marker[] = [];
+  private answerLabelResize: ResizeObserver | null = null;
+  private answerMarkerMove: MutationObserver | null = null;
+  /** Until when the answer labels are re-fitted every frame (see settleLabels). */
+  private settleUntil = 0;
+  private settling = false;
   private pin: ML.Marker | null = null;
   private fallbackLabels: ML.Marker[] = [];
   private revealData: { answer: GeoJSON.Feature; guesses: GeoJSON.Feature[]; area: GeoJSON.Feature | null; countries: GeoJSON.Feature[] } | null = null;
@@ -298,6 +303,7 @@ export class GameMap {
     map.on('zoomend', () => this.updateFallbackLabels());
     map.on('moveend', () => this.updateFallbackLabels());
     map.on('resize', () => this.revealFit?.());
+    map.on('render', () => this.settleLabels());
     map.on('movestart', (e: { originalEvent?: Event }) => {
       if (e.originalEvent) this.revealFit = null;
     });
@@ -439,10 +445,100 @@ export class GameMap {
   }
 
   private clearMarkers() {
+    this.answerLabelResize?.disconnect();
+    this.answerMarkerMove?.disconnect();
+    this.answerLabelResize = null;
+    this.answerMarkerMove = null;
     for (const m of this.markers) m.remove();
     this.markers = [];
     this.pin?.remove();
     this.pin = null;
+  }
+
+  /**
+   * Re-fit the answer labels on every frame for a short while after anything
+   * on the reveal map moved. Markers can settle a frame or more after the
+   * event that moved them, and a fit that ran before that would leave a label
+   * outside the map. The fit is cheap and gives the same answer for the same
+   * layout, so repeating it never makes a label jump.
+   */
+  private settleLabels(ms = 1500) {
+    this.settleUntil = performance.now() + ms;
+    if (this.settling) return;
+    this.settling = true;
+    const step = () => {
+      if (this.mode !== 'reveal' || performance.now() > this.settleUntil) {
+        this.settling = false;
+        return;
+      }
+      this.fitAnswerLabels();
+      requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }
+
+  /**
+   * Keep every answer label inside the reveal map (DS22, V1-26). Labels wrap to
+   * the frame instead of shrinking, then each one takes the nearest of a few
+   * spots next to its pin that clears the map controls, the credits and the
+   * labels already placed. Bounded (a few dozen spots per label) and
+   * idempotent: the label sizes and the map height never change here, so the
+   * observers that call it settle after one pass.
+   */
+  private fitAnswerLabels() {
+    if (this.mode !== 'reveal') return;
+    const frame = this.canvasHost.getBoundingClientRect();
+    if (!frame.width || !frame.height) return;
+    const gap = parseFloat(tokens.space['2']);
+    const controls = this.element.querySelector('.map__controls')?.getBoundingClientRect();
+    const compactEnlarged = frame.height < parseFloat(tokens.layout['map-min']) &&
+      parseFloat(getComputedStyle(this.element).fontSize) > parseFloat(tokens.text.md);
+    // A tall, narrow origin label cannot clear the credits in a short map.
+    // Use the strip beside World to trade wrapping height for available width.
+    if (compactEnlarged) {
+      this.element.style.setProperty('--map-label-max-width', `${Math.max(0, frame.width - (controls?.width ?? 0) - 3 * gap)}px`);
+    } else {
+      this.element.style.removeProperty('--map-label-max-width');
+    }
+    this.element.style.setProperty('--map-label-width', `${Math.max(0, frame.width - 2 * gap)}px`);
+    const labels = [...this.element.querySelectorAll<HTMLElement>('.pin:not(.pin--guess) .pin__label:not(:empty)')];
+    for (const label of labels) {
+      label.style.removeProperty('--pin-label-x');
+      label.style.removeProperty('--pin-label-y');
+    }
+    const boxes = (selector: string): Box[] => [...this.element.querySelectorAll(selector)]
+      .map((el) => el.getBoundingClientRect()).filter((r) => r.width && r.height);
+    const fixed = boxes('.map__controls, .maplibregl-ctrl-attrib');
+    const pins = boxes('.pin svg');
+    const inner = { left: frame.left + gap, top: frame.top + gap, right: frame.right - gap, bottom: frame.bottom - gap };
+    const placed: Box[] = [];
+    for (const label of labels) {
+      const r = label.getBoundingClientRect();
+      const clampX = (x: number) => Math.max(inner.left, Math.min(x, inner.right - r.width));
+      const clampY = (y: number) => Math.max(inner.top, Math.min(y, inner.bottom - r.height));
+      const hard = [...fixed, ...placed];
+      const xs = [clampX(r.left), ...hard.flatMap((b) => [clampX(b.left - gap - r.width), clampX(b.right + gap)])];
+      const ys = [clampY(r.top), inner.top, clampY(inner.bottom - r.height),
+        ...hard.flatMap((b) => [clampY(b.top - gap - r.height), clampY(b.bottom + gap)])];
+      let best: Box = { left: xs[0] as number, top: ys[0] as number, right: (xs[0] as number) + r.width, bottom: (ys[0] as number) + r.height };
+      let bestCost = Infinity;
+      for (const left of xs) {
+        for (const top of ys) {
+          const b = { left, top, right: left + r.width, bottom: top + r.height };
+          // Text never covers a control, the credits or another label; it
+          // covers a pin only when nothing else fits; then the nearest spot wins.
+          const cost = hard.filter((o) => overlaps(b, o, gap)).length * 1e6 +
+            pins.filter((o) => overlaps(b, o, 0)).length * 1e3 + Math.hypot(left - r.left, top - r.top);
+          if (cost < bestCost) {
+            best = b;
+            bestCost = cost;
+          }
+        }
+      }
+      label.style.setProperty('--pin-label-x', `${best.left - r.left}px`);
+      label.style.setProperty('--pin-label-y', `${best.top - r.top}px`);
+      placed.push(best);
+    }
   }
 
   reveal(o: RevealOptions) {
@@ -455,6 +551,16 @@ export class GameMap {
     this.label.textContent = '';
     const animate = o.animate && !reducedMotion();
 
+    // Marker transforms can change on idle, AFTER the last map render. Observe
+    // the markers themselves (not label styles) so the final DOM positions are
+    // fitted before paint, without a self-triggering mutation loop. Resizing a
+    // label also catches text-size changes that do not render the WebGL map.
+    this.answerMarkerMove = new MutationObserver(() => this.settleLabels());
+    this.answerLabelResize = new ResizeObserver(() => this.settleLabels());
+    for (const el of this.element.querySelectorAll('.map__canvas, .map__controls, .maplibregl-ctrl-attrib')) {
+      this.answerLabelResize.observe(el);
+    }
+
     // Unwrap longitudes so everything sits on one side of the antimeridian (ENG25).
     const unwrap = (p: LatLng): LatLng => unwrapAround(p, o.made.lng);
     const made = unwrap(o.made);
@@ -465,6 +571,8 @@ export class GameMap {
       const el = pinElement(kind, label, `${cls}${animate ? ' pin--drop' : ''}`);
       el.append(h('span', { class: 'pin__label' }, label));
       this.markers.push(new lib.Marker({ element: el, anchor: 'bottom' }).setLngLat([p.lng, p.lat]).addTo(map));
+      this.answerMarkerMove?.observe(el, { attributes: true, attributeFilter: ['style'] });
+      if (label) this.answerLabelResize?.observe(el.querySelector('.pin__label')!);
     };
     const guesses: GeoJSON.Feature[] = [];
     if (o.guessKept) {
@@ -522,6 +630,7 @@ export class GameMap {
         ],
         { padding, maxZoom: REVEAL_MAX_ZOOM, animate: false },
       );
+      this.settleLabels();
     };
     // The reveal host is mounted after this call: fit now, then again on each
     // resize until the player moves the map.

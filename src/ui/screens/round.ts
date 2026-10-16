@@ -4,6 +4,7 @@
 import { STEPS, type Step } from '../../analytics/events.ts';
 import { HINT, QUESTION, formatNumber, t } from '../../copy.ts';
 import { imageUrl } from '../../content/items.ts';
+import tokens from '../../design/tokens.json';
 import type { GameMap } from '../../map/map.ts';
 import type { LatLng } from '../../scoring/geo.ts';
 import type { Item } from '../../types/item.ts';
@@ -182,11 +183,23 @@ export function roundScreen(p: RoundProps): RoundView {
     'main',
     { class: `screen round round--${p.step}`, 'data-screen': 'round', 'data-step': p.step, 'data-round': p.round + 1 },
     topBar(p.round, p.total, p.onMenu),
-    p.photo.element,
-    prompt,
-    answer,
-    h('div', { class: `actionbar${back ? ' actionbar--back' : ''}` }, back, confirm),
+    h('div', { class: 'round__body' }, p.photo.element, prompt, answer),
+    h('div', { class: 'round__footer' }, h('div', { class: `actionbar${back ? ' actionbar--back' : ''}` }, back, confirm)),
   );
+
+  // Use the rendered reading size, not a test flag. The two wrappers are
+  // display:contents at normal size, preserving the existing gallery grid.
+  if (typeof ResizeObserver !== 'undefined') {
+    const observer = new ResizeObserver(() => {
+      if (!element.isConnected) {
+        observer.disconnect();
+        return;
+      }
+      element.classList.toggle('round--reflow', parseFloat(getComputedStyle(element).fontSize) > parseFloat(tokens.text.md));
+    });
+    observer.observe(question);
+    observer.observe(hint);
+  }
 
   if (p.map && p.step !== 'when') {
     p.map.attach(answer);
