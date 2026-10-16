@@ -143,10 +143,9 @@ country tints, start-screen mini map and place names come from
 [Natural Earth](https://www.naturalearthdata.com/) (public domain).
 
 **Fonts:** Bricolage Grotesque (© 2022 The Bricolage Grotesque Project
-Authors) and Instrument Sans (© 2022 The Instrument Sans Project Authors) in
-the game; Barlow Condensed (© 2017 The Barlow Project Authors), IBM Plex Sans
-and IBM Plex Mono (© IBM Corp.) in the share image. All under the SIL Open
-Font License 1.1, self-hosted from the Fontsource packages.
+Authors) and Instrument Sans (© 2022 The Instrument Sans Project Authors), in
+the game and its share image, under the SIL Open Font License 1.1,
+self-hosted from the Fontsource packages.
 
 **Name filter:** a name in a challenge link is checked against the [List of
 Dirty, Naughty, Obscene, and Otherwise Bad Words](https://github.com/LDNOOBW/List-of-Dirty-Naughty-Obscene-and-Otherwise-Bad-Words)

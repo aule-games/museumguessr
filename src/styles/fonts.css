@@ -1,4 +1,4 @@
-/* Gallery redesign fonts, self-hosted: Latin, normal, WOFF2 only (DESIGN.md "Type and licences").
+/* Gallery redesign fonts, self-hosted: Latin (plus Latin Extended for names), normal, WOFF2 only (DESIGN.md "Type and licences").
    Both families are SIL Open Font License 1.1; credits are in README.md. */
 
 @font-face {
@@ -55,4 +55,25 @@
   font-weight: 700;
   font-display: swap;
   src: url('../../node_modules/@fontsource/instrument-sans/files/instrument-sans-latin-700-normal.woff2') format('woff2');
+}
+
+/* Latin Extended for player names (V1-25): Turkish ş, ğ and İ, and other
+   accented names, in the body face instead of a system fallback. Loaded only
+   when a name needs one of these characters. */
+@font-face {
+  font-family: 'Instrument Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../../node_modules/@fontsource/instrument-sans/files/instrument-sans-latin-ext-400-normal.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: 'Instrument Sans';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('../../node_modules/@fontsource/instrument-sans/files/instrument-sans-latin-ext-500-normal.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
 }

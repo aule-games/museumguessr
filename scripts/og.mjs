@@ -51,7 +51,7 @@ export function fontFiles() {
   const cache = new URL('node_modules/.cache/share-fonts/', root);
   mkdirSync(cache, { recursive: true });
   return [
-    ['barlow-condensed', 700], ['ibm-plex-sans', 400], ['ibm-plex-sans', 500], ['ibm-plex-mono', 400],
+    ['bricolage-grotesque', 800], ['instrument-sans', 400], ['instrument-sans', 600],
   ].map(([family, weight]) => {
     const name = `${family}-latin-${weight}-normal`;
     const source = new URL(`node_modules/@fontsource/${family}/files/${name}.woff`, root);

@@ -13,7 +13,7 @@ const dimensions = (png) => {
 test('share image renders a 1200×630 PNG with the credited whole sample photo', () => {
   const svg = ogSvg();
   const sample = JSON.parse(read('data/sample.json')).items.find((item) => item.id === '00');
-  for (const text of ['MuseumGuessr', 'Made here.', 'Kept there.', sample.title, `Photo: ${sample.photo.author}, ${sample.photo.licence}`, 'Nimrud', 'New York']) assert.ok(svg.includes(text), text);
+  for (const text of ['Museum', 'Guessr', 'Made here.', 'Kept there.', 'Guess both.', sample.title, `Photo: ${sample.photo.author}, ${sample.photo.licence}`, 'Nimrud', 'New York']) assert.ok(svg.includes(text), text);
   assert.match(read('src/assets/og/share.svg').toString(), /preserveAspectRatio="xMidYMid meet"/);
   assert.ok(!svg.includes('slice'), 'optimised SVG keeps the default meet behaviour');
   assert.ok(svg.includes(read('images/00.jpg').toString('base64')));
@@ -22,7 +22,7 @@ test('share image renders a 1200×630 PNG with the credited whole sample photo',
 });
 test('all share fonts render actual glyphs without any system fonts', () => {
   const files = fontFiles();
-  for (const [family, weight] of [['Barlow Condensed', 700], ['IBM Plex Sans', 400], ['IBM Plex Sans', 500], ['IBM Plex Mono', 400]]) {
+  for (const [family, weight] of [['Bricolage Grotesque', 800], ['Instrument Sans', 400], ['Instrument Sans', 600]]) {
     const renderer = new Resvg(`<svg xmlns="http://www.w3.org/2000/svg" width="500" height="80"><text x="0" y="60" font-family="${family}" font-size="40" font-weight="${weight}">Made here. Kept there.</text></svg>`, { font: { loadSystemFonts: false, fontFiles: files } });
     assert.ok(renderer.innerBBox()?.width > 100, `${family} ${weight}: text must not silently disappear`);
   }
