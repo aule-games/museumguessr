@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { Page } from '@playwright/test';
 import { SCORING_VERSION } from '../../src/scoring/config';
-import { confirm, expect, placePin, playRound, start, test } from './fixtures';
+import { confirm, expect, largeText, placePin, playRound, start, test } from './fixtures';
 
 const items = JSON.parse(readFileSync(join(import.meta.dirname, '../../data/items.json'), 'utf8')).items as { id: string; title: string }[];
 /** The first ten objects in file order: the v0 fixed set, still a valid deck in a larger pool. */
@@ -221,5 +221,65 @@ test.describe('[V1-24] [V1-23] credits and the returning visitor', () => {
     await expect(page.locator('[data-test=play-another]')).toBeVisible();
     await expect(page.locator('[data-test=review]')).toBeVisible();
     await expect(page.locator('[data-test=collection]')).toHaveText(items.length === 10 ? 'You have seen every object' : `You have seen 10 of ${items.length} objects`);
+  });
+});
+
+/** Press Tab until `selector` has focus (at most 40 times). */
+async function tabTo(page: Page, selector: string) {
+  for (let i = 0; i < 40; i++) {
+    if (await page.locator(selector).evaluate((el) => el === document.activeElement).catch(() => false)) return;
+    await page.keyboard.press('Tab');
+  }
+  throw new Error(`Tab never reached ${selector}`);
+}
+
+test.describe('[V1-26] keyboard and enlarged text', () => {
+  test('a challenge link plays with the keyboard alone', async ({ page }) => {
+    await page.goto(link({ d: IDS.join('.'), s: '18240', n: 'Ali', h: HASH }));
+    await expect(page.locator('[data-test=play-challenge]')).toBeEnabled({ timeout: 10000 });
+    await tabTo(page, '[data-test=play-challenge]');
+    await page.keyboard.press('Enter');
+    await expect(page.locator('[data-screen=round][data-round="1"]')).toBeVisible();
+  });
+
+  test('Share opens the chooser with the keyboard, keeps focus inside it, and Escape returns focus to Share', async ({ page }) => {
+    await shareSheet(page, 'absent');
+    await seedFinished(page);
+    await tabTo(page, '[data-test=review]');
+    await page.keyboard.press('Enter');
+    await tabTo(page, '[data-test=share]');
+    await page.keyboard.press('Enter');
+    const dialog = page.locator('dialog[open]');
+    await expect(page.locator('[data-test=share-whatsapp]')).toBeVisible();
+    // A modal dialog: Tab cycles through its controls and the browser's own UI
+    // (body, in a headless browser), never the page behind it.
+    const reached = new Set<string>();
+    for (let i = 0; i < 8; i++) {
+      await page.keyboard.press('Tab');
+      const where = await dialog.evaluate((d) => (d.contains(document.activeElement) ? 'dialog' : document.activeElement === document.body ? 'browser' : 'page'));
+      reached.add(where);
+    }
+    expect(reached.has('page')).toBe(false);
+    expect(reached.has('dialog')).toBe(true);
+    await page.keyboard.press('Escape');
+    await expect(page.locator('[data-test=share]')).toBeFocused();
+    await page.locator('[data-test=copy-link]').focus();
+    await expect(page.locator('[data-test=copied]')).toHaveAttribute('aria-live', 'polite');
+  });
+
+  test('at 200% text, Share and Play another 10 stay reachable and nothing scrolls sideways', async ({ page, context }) => {
+    await largeText(context);
+    await seedFinished(page, { kind: 'challenge', challenge: { score: 17000, name: 'İpek' } });
+    // the enlargement really applies: the small text token is twice its size
+    expect(await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--text-sm').trim())).toBe('28px');
+    expect(await page.locator('.end__collection, [data-test=collection]').first().evaluate((el) => parseFloat(getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(28);
+    await page.locator('[data-test=review]').click();
+    for (const target of ['share', 'play-another']) {
+      const el = page.locator(`[data-test=${target}]`);
+      await el.scrollIntoViewIfNeeded();
+      await expect(el).toBeInViewport();
+      await el.click({ trial: true });
+    }
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
   });
 });

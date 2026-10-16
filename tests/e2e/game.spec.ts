@@ -380,6 +380,10 @@ test.describe('[DS19] [DS1] layout @layout', () => {
     await expect(page.locator('[data-test=play-challenge]')).toBeEnabled({ timeout: 10000 });
     await page.locator('[data-test=play-challenge]').click();
     await playRound(page);
+    // One refit once the fonts have loaded is expected, and the reveal moves
+    // focus to the round score after 1.2 s (app.ts); after that nothing may move.
+    await page.evaluate(() => document.fonts.ready.then(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)))));
+    await page.waitForTimeout(1500);
     const row = page.locator('[data-test=row-when]');
     const boxes: (number | undefined)[] = [];
     for (let i = 0; i < 5; i++) {

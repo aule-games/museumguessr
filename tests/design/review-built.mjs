@@ -3,13 +3,14 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { chromium, expect } from '@playwright/test';
 import { preview } from 'vite';
-import { placePin, enterYear, confirm } from '../e2e/fixtures.ts';
+import { placePin, enterYear, confirm, largeText } from '../e2e/fixtures.ts';
 import { flowGeometryIssues, measureFlow } from './flow-geometry.mjs';
 import { phoneGeometryIssues } from './phone-geometry.mjs';
 import { creditFixtures } from './map-credit-fixtures.mjs';
 const out = new URL('../../test-results/visual/', import.meta.url);
 mkdirSync(out, { recursive: true });
-const browser = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
+// REVIEW_CHROMIUM_PATH runs the matrix in another Chrome for Testing build.
+const browser = await chromium.launch({ executablePath: process.env.REVIEW_CHROMIUM_PATH || undefined, args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
 let server;
 const records = [];
 try {
@@ -244,6 +245,68 @@ try {
     await expect(page.locator('[data-screen=error]')).toBeVisible();
     await capture('error-saved');
     await context.close();
+
+    // 200% text (V1-26, V1-31): the new v1 states with every text token doubled.
+    const large = await browser.newContext({ viewport: { width, height }, reducedMotion: 'reduce' });
+    await large.route('**/*', (route) => new URL(route.request().url()).origin === new URL(url).origin ? route.continue() : route.abort());
+    await largeText(large);
+    await large.addInitScript(() => localStorage.setItem('museumguessr:v1:tour', 'done'));
+    page = await large.newPage();
+    await page.goto(url);
+    await expect(page.locator('[data-test=start]')).toBeEnabled();
+    await capture('start-new-text200');
+    await page.goto(`${url}?d=${[...last.item_ids].reverse().join('.')}&s=18240&n=Barış`);
+    await expect(page.locator('[data-test=challenge-line]')).toContainText('Barış');
+    await capture('challenge-text200');
+    await page.locator('[data-test=play-challenge]').click();
+    await expect(page.locator('[data-screen=round][data-step=made]')).toBeVisible();
+    await capture('round-made-text200');
+    try {
+      await placePin(page, 41.9, 12.5);
+      await confirm(page);
+      await enterYear(page, 1500);
+      await confirm(page);
+      await placePin(page, 48.86, 2.35);
+      await confirm(page);
+      await expect(page.locator('.map')).toHaveAttribute('data-reveal', 'drawn', { timeout: 8000 });
+      await capture('reveal-to-beat-text200');
+    } catch (err) {
+      // Record the failure as a finding rather than stopping the matrix.
+      records.push({ width, height, state: 'reveal-to-beat-text200', image: null, issues: [`[V1-26] a round cannot be played at 200% text: ${String(err.message).split('\n')[0]}`] });
+    }
+    await page.goto(`${url}?d=01.02`);
+    await expect(page.locator('[data-test=challenge-line]')).toBeVisible();
+    await capture('challenge-broken-text200');
+    // A finished game on this device, and no challenge link left in the tab.
+    const finish = (snap) => page.evaluate((s) => {
+      sessionStorage.removeItem('museumguessr:v1:challenge');
+      localStorage.removeItem('museumguessr:v1:save');
+      localStorage.setItem('museumguessr:v1:last', JSON.stringify(s));
+    }, snap);
+    await finish(last);
+    await page.goto(`${url}?d=${last.item_ids.join('.')}&s=19000&n=Bea&h=${last.deck_hash}`);
+    await expect(page.locator('[data-test=challenge-line]')).toContainText('Bea');
+    await capture('challenge-reply-text200');
+    await finish(last);
+    await page.goto(url);
+    await page.locator('[data-test=review]').click();
+    await capture('end-text200');
+    await page.locator('[data-test=add-name]').click();
+    await page.locator('[data-test=name-input]').fill('x');
+    await page.locator('[data-test=share]').click();
+    await capture('end-name-error-text200');
+    await page.locator('[data-test=name-input]').fill('Barış');
+    await page.evaluate(() => Object.defineProperty(navigator, 'share', { value: undefined, configurable: true }));
+    await page.locator('[data-test=share]').click();
+    await expect(page.locator('[data-test=share-whatsapp]')).toBeVisible();
+    await capture('share-chooser-text200');
+    await page.keyboard.press('Escape');
+    await finish({ ...last, deck_kind: 'challenge', challenge: { score: 17000, name: 'İpek' } });
+    await page.goto(url);
+    await page.locator('[data-test=review]').click();
+    await expect(page.locator('[data-test=share]')).toHaveText('Send your score back');
+    await capture('end-send-back-text200');
+    await large.close();
   }
 } finally {
   writeFileSync(new URL('report.json', out), JSON.stringify({ browser: browser.version(), records }, null, 2) + '\n');

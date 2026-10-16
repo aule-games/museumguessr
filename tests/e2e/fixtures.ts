@@ -6,8 +6,10 @@
 // - navigator.webdriver false and a non-headless user agent, so posthog-js's
 //   bot filter does not drop events
 
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { gunzipSync } from 'node:zlib';
-import { test as base, expect, type Page, type Request } from '@playwright/test';
+import { test as base, expect, type BrowserContext, type Page, type Request } from '@playwright/test';
 
 export interface Captured {
   event: string;
@@ -64,6 +66,32 @@ export function decodeBody(req: Request): Captured[] {
 }
 
 const LOCAL_HOST = 'aule-games.github.io';
+
+const TEXT_TOKENS = (JSON.parse(readFileSync(join(import.meta.dirname, '../../src/design/tokens.json'), 'utf8')) as { text: Record<string, string> }).text;
+
+/**
+ * 200% text (V1-26): every text token doubled, as a reader's text-size
+ * setting enlarges it. Set through the CSSOM on <html> before the page's
+ * first layout (the site's CSP refuses inline <style>), so fitted lines
+ * measure the enlarged text.
+ */
+export const LARGE_TEXT: Record<string, string> = Object.fromEntries(
+  Object.entries(TEXT_TOKENS).map(([k, v]) => [`--text-${k}`, `${parseFloat(v) * 2}px`]),
+);
+
+/** Apply LARGE_TEXT to every page of a context, before any script runs. */
+export async function largeText(context: BrowserContext) {
+  await context.addInitScript((vars) => {
+    const apply = () => {
+      const root = document.documentElement;
+      if (!root) return false;
+      for (const [k, v] of Object.entries(vars)) root.style.setProperty(k, v, 'important');
+      root.dataset.largeText = 'on';
+      return true;
+    };
+    if (!apply()) document.addEventListener('readystatechange', apply, { once: true });
+  }, LARGE_TEXT);
+}
 
 export const test = base.extend<{ recorder: Recorder; blockImages: boolean; freshVisitor: boolean; tourFlag: void }>({
   blockImages: [false, { option: true }],

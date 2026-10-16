@@ -11,31 +11,36 @@ Last run: 2026-10-16.
 | type check | passed (2 s) |
 | generated files are current | passed (0 s) |
 | item check | passed (0 s) |
-| unit tests | passed (13 s) |
+| unit tests | passed (10 s) |
 | design checks | passed (1 s) |
 | lint | passed (2 s) |
 | build | passed (1 s) |
 | build checks | passed (0 s) |
-| browser tests (5 viewports) | passed (101 s) |
-| release scan (publish candidate) | passed (5 s) |
+| browser tests (5 viewports) | passed (100 s) |
+| release scan (publish candidate) | passed (6 s) |
 
 ## Automated checks
 
-385 tests, 385 passed, 109 requirement IDs.
+393 tests, 393 passed, 110 requirement IDs.
 
 | ID | Rule | Test file | Result |
 | --- | --- | --- | --- |
 | A1 | no answer before the reveal › round text and alt attributes carry no title; the reveal does (phone) | `tests/e2e/game.spec.ts` | passed |
 | A1 | no answer before the reveal › the photo carries a short caption on every question of the round (phone) | `tests/e2e/game.spec.ts` | passed |
 | DS1 | layout › the round screen never scrolls and Confirm stays on screen (phone) | `tests/e2e/game.spec.ts` | passed |
+| DS1 | layout › a result line too long for one line wraps once and the score rows stay still (phone) | `tests/e2e/game.spec.ts` | passed |
 | DS1 | layout › the reveal puts scores after the wall label and keeps Next on screen (phone) | `tests/e2e/game.spec.ts` | passed |
 | DS1 | layout › the round screen never scrolls and Confirm stays on screen (phone-landscape) | `tests/e2e/game.spec.ts` | passed |
+| DS1 | layout › a result line too long for one line wraps once and the score rows stay still (phone-landscape) | `tests/e2e/game.spec.ts` | passed |
 | DS1 | layout › the reveal puts scores after the wall label and keeps Next on screen (phone-landscape) | `tests/e2e/game.spec.ts` | passed |
 | DS1 | layout › the round screen never scrolls and Confirm stays on screen (desktop) | `tests/e2e/game.spec.ts` | passed |
+| DS1 | layout › a result line too long for one line wraps once and the score rows stay still (desktop) | `tests/e2e/game.spec.ts` | passed |
 | DS1 | layout › the reveal puts scores after the wall label and keeps Next on screen (desktop) | `tests/e2e/game.spec.ts` | passed |
 | DS1 | layout › the round screen never scrolls and Confirm stays on screen (phone-small) | `tests/e2e/game.spec.ts` | passed |
+| DS1 | layout › a result line too long for one line wraps once and the score rows stay still (phone-small) | `tests/e2e/game.spec.ts` | passed |
 | DS1 | layout › the reveal puts scores after the wall label and keeps Next on screen (phone-small) | `tests/e2e/game.spec.ts` | passed |
 | DS1 | layout › the round screen never scrolls and Confirm stays on screen (phone-inapp) | `tests/e2e/game.spec.ts` | passed |
+| DS1 | layout › a result line too long for one line wraps once and the score rows stay still (phone-inapp) | `tests/e2e/game.spec.ts` | passed |
 | DS1 | layout › the reveal puts scores after the wall label and keeps Next on screen (phone-inapp) | `tests/e2e/game.spec.ts` | passed |
 | DS2 | the screen spec names real copy keys › every `key` in docs/screen-spec.md exists in src/copy.ts (a trailing .* matches a prefix) | `tests/unit/docs.test.ts` | passed |
 | DS4 | fallback label density › admits only rank-zero cities at world zoom and adds ranks as the map zooms in | `tests/unit/map-layout.test.ts` | passed |
@@ -71,20 +76,30 @@ Last run: 2026-10-16.
 | DS17 | reveal details › the difficulty row shows after round 3 only; Next works at once and stays visible (phone) | `tests/e2e/game.spec.ts` | passed |
 | DS17 | reveal details › the reveal shows the journey fact, three score rows and a credit line (phone) | `tests/e2e/game.spec.ts` | passed |
 | DS19 | layout › the round screen never scrolls and Confirm stays on screen (phone) | `tests/e2e/game.spec.ts` | passed |
+| DS19 | layout › a result line too long for one line wraps once and the score rows stay still (phone) | `tests/e2e/game.spec.ts` | passed |
 | DS19 | layout › the reveal puts scores after the wall label and keeps Next on screen (phone) | `tests/e2e/game.spec.ts` | passed |
 | DS19 | layout › the round screen never scrolls and Confirm stays on screen (phone-landscape) | `tests/e2e/game.spec.ts` | passed |
+| DS19 | layout › a result line too long for one line wraps once and the score rows stay still (phone-landscape) | `tests/e2e/game.spec.ts` | passed |
 | DS19 | layout › the reveal puts scores after the wall label and keeps Next on screen (phone-landscape) | `tests/e2e/game.spec.ts` | passed |
 | DS19 | layout › the round screen never scrolls and Confirm stays on screen (desktop) | `tests/e2e/game.spec.ts` | passed |
+| DS19 | layout › a result line too long for one line wraps once and the score rows stay still (desktop) | `tests/e2e/game.spec.ts` | passed |
 | DS19 | layout › the reveal puts scores after the wall label and keeps Next on screen (desktop) | `tests/e2e/game.spec.ts` | passed |
 | DS19 | layout › the round screen never scrolls and Confirm stays on screen (phone-small) | `tests/e2e/game.spec.ts` | passed |
+| DS19 | layout › a result line too long for one line wraps once and the score rows stay still (phone-small) | `tests/e2e/game.spec.ts` | passed |
 | DS19 | layout › the reveal puts scores after the wall label and keeps Next on screen (phone-small) | `tests/e2e/game.spec.ts` | passed |
 | DS19 | layout › the round screen never scrolls and Confirm stays on screen (phone-inapp) | `tests/e2e/game.spec.ts` | passed |
+| DS19 | layout › a result line too long for one line wraps once and the score rows stay still (phone-inapp) | `tests/e2e/game.spec.ts` | passed |
 | DS19 | layout › the reveal puts scores after the wall label and keeps Next on screen (phone-inapp) | `tests/e2e/game.spec.ts` | passed |
 | DS21 | the reveal score table › puts the score table directly after the wall label, before the map and journey fact | `tests/unit/reveal.test.ts` | passed |
+| DS21 | layout › a result line too long for one line wraps once and the score rows stay still (phone) | `tests/e2e/game.spec.ts` | passed |
 | DS21 | layout › the reveal puts scores after the wall label and keeps Next on screen (phone) | `tests/e2e/game.spec.ts` | passed |
+| DS21 | layout › a result line too long for one line wraps once and the score rows stay still (phone-landscape) | `tests/e2e/game.spec.ts` | passed |
 | DS21 | layout › the reveal puts scores after the wall label and keeps Next on screen (phone-landscape) | `tests/e2e/game.spec.ts` | passed |
+| DS21 | layout › a result line too long for one line wraps once and the score rows stay still (desktop) | `tests/e2e/game.spec.ts` | passed |
 | DS21 | layout › the reveal puts scores after the wall label and keeps Next on screen (desktop) | `tests/e2e/game.spec.ts` | passed |
+| DS21 | layout › a result line too long for one line wraps once and the score rows stay still (phone-small) | `tests/e2e/game.spec.ts` | passed |
 | DS21 | layout › the reveal puts scores after the wall label and keeps Next on screen (phone-small) | `tests/e2e/game.spec.ts` | passed |
+| DS21 | layout › a result line too long for one line wraps once and the score rows stay still (phone-inapp) | `tests/e2e/game.spec.ts` | passed |
 | DS21 | layout › the reveal puts scores after the wall label and keeps Next on screen (phone-inapp) | `tests/e2e/game.spec.ts` | passed |
 | DS22 | reveal fit clearance › keeps the landscape World button and attribution below every fitted pin label | `tests/unit/map-layout.test.ts` | passed |
 | DS22 | reveal fit clearance › keeps the landscape World button and attribution below every fitted pin label | `tests/unit/map-layout.test.ts` | passed |
@@ -678,6 +693,9 @@ Last run: 2026-10-16.
 | V1-23 | credits and the returning visitor › a returning visitor sees Play another 10, Review your 10 and the collection line (phone) | `tests/e2e/challenge.spec.ts` | passed |
 | V1-24 | credits and the returning visitor › during a game Credits lists only revealed rounds and the sample (phone) | `tests/e2e/challenge.spec.ts` | passed |
 | V1-24 | credits and the returning visitor › a returning visitor sees Play another 10, Review your 10 and the collection line (phone) | `tests/e2e/challenge.spec.ts` | passed |
+| V1-26 | keyboard and enlarged text › a challenge link plays with the keyboard alone (phone) | `tests/e2e/challenge.spec.ts` | passed |
+| V1-26 | keyboard and enlarged text › Share opens the chooser with the keyboard, keeps focus inside it, and Escape returns focus to Share (phone) | `tests/e2e/challenge.spec.ts` | passed |
+| V1-26 | keyboard and enlarged text › at 200% text, Share and Play another 10 stay reachable and nothing scrolls sideways (phone) | `tests/e2e/challenge.spec.ts` | passed |
 | V1-27 | share and challenge events from the reducer › every share is sent, and first_in_game marks only the first of a game | `tests/unit/deck-state.test.ts` | passed |
 | V1-27 | share and challenge events from the reducer › a challenge game ends with challenge_completed: beat true, false, or null without a score | `tests/unit/deck-state.test.ts` | passed |
 | V1-27 | round and game events carry the object and the deck › round events name the item; round_completed splits the points and says whether the object was new to the device | `tests/unit/deck-state.test.ts` | passed |
