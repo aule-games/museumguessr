@@ -210,3 +210,31 @@ describe('[DS36] Back reopens an earlier answer of the same round', () => {
     expect(stale.state.step).toBe('when');
   });
 });
+
+describe('[V1-32] test mode: jump to the end', () => {
+  it('test guesses are always valid answers, and a game answered with them finishes with all ten rounds scored', async () => {
+    const { testGuess } = await import('../../src/game/testplay');
+    let seed = 7;
+    const rng = () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
+    let state = reduce(null, { type: 'start', gameId: 'g', src: 'other', itemsVersion: V, deck: DECK }, KEYS).state as GameState;
+    for (let i = 0; i < 100 && !state.finished; i++) {
+      const key = KEYS.find((k) => k.id === state.item_ids[state.round]) as AnswerKey;
+      const action: Action =
+        state.phase === 'reveal' ? { type: 'next', round: state.round } : { type: 'confirm', round: state.round, step: state.step, value: testGuess(state.step, key, rng(), rng) };
+      const next = reduce(state, action, KEYS).state as GameState;
+      expect(next.rev, `${action.type} was refused`).toBeGreaterThan(state.rev);
+      state = next;
+    }
+    expect(state.finished).toBe(true);
+    expect(answeredCount(state)).toBe(10);
+  });
+
+  it('a skill of 0 guesses the right place and the middle of the date range', async () => {
+    const { testGuess } = await import('../../src/game/testplay');
+    const key = KEYS[0] as AnswerKey;
+    const made = testGuess('made', key, 0, () => 0.9) as { lat: number; lng: number };
+    expect(made.lat).toBeCloseTo(key.made.lat, 9);
+    expect(made.lng).toBeCloseTo(key.made.lng, 9);
+    expect(testGuess('when', key, 0, () => 0.9)).toBe(Math.round((key.start + key.end) / 2));
+  });
+});

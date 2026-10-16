@@ -13,13 +13,14 @@ import { stripMessage, takeErrorBudget, toReport, type ErrorReport } from './err
 import { newGameId } from './game/ids.ts';
 import type { WriterLock } from './game/lock.ts';
 import { isListed, nameList } from './game/names.ts';
-import { shareTexts } from './game/text.ts';
+import { shareText } from './game/text.ts';
 import { SeenLists } from './game/seen.ts';
 import type { TabSession } from './game/session.ts';
+import { testGuess } from './game/testplay.ts';
 import { GameMap, hasWebGL2, prefetchMap, type MapState } from './map/map.ts';
 import type { LatLng } from './scoring/geo.ts';
 import { ledgerKey, reduce, seenBucket, totalPoints, type Action, type Deck, type Effect, type ShareMethod, type StartContext } from './state/reducer.ts';
-import { KEYS, parseSave, parseSnapshot, serialize, type GameState, type ParsedSnapshot, type RoundResult } from './state/schema.ts';
+import { KEYS, parseSave, parseSnapshot, serialize, type GameState, type ParsedSnapshot } from './state/schema.ts';
 import type { KV } from './storage/guarded.ts';
 import { clear, focus } from './ui/dom.ts';
 import { endScreen, resultLine, collectionLine } from './ui/screens/end.ts';
@@ -129,7 +130,7 @@ export class App {
     for (const c of [this.challenge?.kind === 'ok' ? this.challenge.link : null, this.waiting]) if (c?.name) this.checkName(c.name);
     // A challenge link just opened shows its screen, even over a game this tab could resume.
     const resume = !!this.state && !this.d.tab.landing && linked.kind === 'none';
-    if (this.d.analytics.testMode) this.badge = testBadge(() => this.d.analytics.inspect());
+    if (this.d.analytics.testMode) this.badge = testBadge(() => this.d.analytics.inspect(), () => void this.finishForTest());
     if (!this.webgl) this.telemetry({ name: 'webgl_unavailable', message: '', frame: '' });
     if (resume && this.d.lock.held) this.show('play');
     else if (resume) this.show('frozen');
@@ -226,14 +227,14 @@ export class App {
   }
 
   /** The share block for a finished deck; shares go through `onShared`. */
-  private shareSetup(game: { item_ids: string[]; deck_hash: string; results: readonly (RoundResult | null)[]; total: number; replay: boolean; kind: ShareKind }, onShared: (method: ShareMethod) => void): ShareSetup {
+  private shareSetup(game: { item_ids: string[]; deck_hash: string; total: number; replay: boolean; kind: ShareKind }, onShared: (method: ShareMethod) => void): ShareSetup {
     return {
       kind: game.kind,
       storedName: this.d.local.get(KEYS.name),
       onName: (name) => (name ? this.d.local.set(KEYS.name, name) : this.d.local.remove(KEYS.name)),
-      texts: (medium, name) => {
+      link: (medium, name) => {
         const url = challengeUrl(SITE_URL, { ids: game.item_ids, score: game.total, name, hash: game.deck_hash }, medium, game.kind);
-        return { ...shareTexts({ results: game.results, total: game.total, url, replay: game.replay, kind: game.kind }), url };
+        return { url, text: shareText({ total: game.total, url, replay: game.replay, kind: game.kind }) };
       },
       onShared,
     };
@@ -327,6 +328,28 @@ export class App {
     this.guard(() => {
       this.state = parseSave(this.d.local.get(KEYS.save), POOL);
       this.show(this.state && !this.state.finished ? 'play' : 'start');
+    });
+  }
+
+  /** Test mode only: finish the game in progress, or a new one, with random answers and show the end screen. */
+  async finishForTest() {
+    if (!this.state || this.state.finished) await this.startGame();
+    this.guard(() => {
+      const skills = new Map<number, number>();
+      for (let i = 0; i < 100 && this.state && !this.state.finished; i++) {
+        const s = this.state;
+        const key = ANSWER_KEYS.find((k) => k.id === s.item_ids[s.round]);
+        if (!key) return;
+        if (!skills.has(s.round)) skills.set(s.round, Math.random());
+        const action: Action =
+          s.phase === 'reveal'
+            ? { type: 'next', round: s.round }
+            : { type: 'confirm', round: s.round, step: s.step, value: testGuess(s.step, key, skills.get(s.round) ?? 1, Math.random) };
+        const { state, effects } = reduce(s, action, ANSWER_KEYS);
+        if (!this.persist(s, state, effects, false)) return;
+        this.state = state;
+      }
+      if (this.state?.finished) this.show('play');
     });
   }
 

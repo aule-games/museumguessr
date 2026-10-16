@@ -8,20 +8,20 @@ Last run: 2026-10-16.
 
 | Step | Result |
 | --- | --- |
-| type check | passed (3 s) |
+| type check | passed (2 s) |
 | generated files are current | passed (0 s) |
 | item check | passed (0 s) |
-| unit tests | passed (12 s) |
+| unit tests | passed (10 s) |
 | design checks | passed (1 s) |
 | lint | passed (2 s) |
 | build | passed (1 s) |
 | build checks | passed (0 s) |
-| browser tests (5 viewports) | passed (136 s) |
+| browser tests (5 viewports) | passed (95 s) |
 | release scan (publish candidate) | passed (6 s) |
 
 ## Automated checks
 
-393 tests, 393 passed, 110 requirement IDs.
+394 tests, 394 passed, 111 requirement IDs.
 
 | ID | Rule | Test file | Result |
 | --- | --- | --- | --- |
@@ -56,7 +56,7 @@ Last run: 2026-10-16.
 | DS6 | no answer before the reveal › the photo carries a short caption on every question of the round (phone) | `tests/e2e/game.spec.ts` | passed |
 | DS7 | tiers › maps totals to tier names | `tests/unit/scoring.test.ts` | passed |
 | DS7 | tiers › each tier starts exactly at its lower bound (inclusive) | `tests/unit/scoring.test.ts` | passed |
-| DS7 | a full game › ten rounds end on the results screen; Copy link copies the challenge text; replay starts over (phone) | `tests/e2e/game.spec.ts` | passed |
+| DS7 | a full game › ten rounds end on the results screen; Copy link copies the challenge link; replay starts over (phone) | `tests/e2e/game.spec.ts` | passed |
 | DS8 | resume › a reload mid-round 2 lands on the same step with round 1 kept and no duplicate events (phone) | `tests/e2e/game.spec.ts` | passed |
 | DS8 | resume › a later visit sees Continue on the start screen; New game starts over (phone) | `tests/e2e/game.spec.ts` | passed |
 | DS8 | resume › a corrupt save starts a new game and keeps the test flag (phone) | `tests/e2e/game.spec.ts` | passed |
@@ -72,7 +72,7 @@ Last run: 2026-10-16.
 | DS13 | overlays and history › Back closes the photo lightbox and keeps the round (phone) | `tests/e2e/game.spec.ts` | passed |
 | DS13 | overlays and history › the menu opens How to play, Credits (the sample before any reveal, V1-24) and About & privacy (phone) | `tests/e2e/game.spec.ts` | passed |
 | DS13 | overlays and history › New game from the menu asks first (phone) | `tests/e2e/game.spec.ts` | passed |
-| DS15 | a full game › ten rounds end on the results screen; Copy link copies the challenge text; replay starts over (phone) | `tests/e2e/game.spec.ts` | passed |
+| DS15 | a full game › ten rounds end on the results screen; Copy link copies the challenge link; replay starts over (phone) | `tests/e2e/game.spec.ts` | passed |
 | DS17 | reveal details › the difficulty row shows after round 3 only; Next works at once and stays visible (phone) | `tests/e2e/game.spec.ts` | passed |
 | DS17 | reveal details › the reveal shows the journey fact, three score rows and a credit line (phone) | `tests/e2e/game.spec.ts` | passed |
 | DS19 | layout › the round screen never scrolls and Confirm stays on screen (phone) | `tests/e2e/game.spec.ts` | passed |
@@ -123,7 +123,7 @@ Last run: 2026-10-16.
 | DS23 | image and map readiness › the reveal draws its faded map, country tints and lines (phone) | `tests/e2e/game.spec.ts` | passed |
 | DS23 | image and map readiness › map error reports carry no web addresses (phone) | `tests/e2e/game.spec.ts` | passed |
 | DS24 | resume › a later visit sees Continue on the start screen; New game starts over (phone) | `tests/e2e/game.spec.ts` | passed |
-| DS25 | a full game › ten rounds end on the results screen; Copy link copies the challenge text; replay starts over (phone) | `tests/e2e/game.spec.ts` | passed |
+| DS25 | a full game › ten rounds end on the results screen; Copy link copies the challenge link; replay starts over (phone) | `tests/e2e/game.spec.ts` | passed |
 | DS27 | overlays and history › Back closes the photo lightbox and keeps the round (phone) | `tests/e2e/game.spec.ts` | passed |
 | DS27 | overlays and history › the menu opens How to play, Credits (the sample before any reveal, V1-24) and About & privacy (phone) | `tests/e2e/game.spec.ts` | passed |
 | DS27 | overlays and history › New game from the menu asks first (phone) | `tests/e2e/game.spec.ts` | passed |
@@ -182,6 +182,7 @@ Last run: 2026-10-16.
 | DX3 | off-reasons, one console line each › ?test=1 persists the flag and ?test=0 clears it | `tests/unit/analytics.test.ts` | passed |
 | DX3 | off-reasons, one console line each › never loads the provider in test mode | `tests/unit/analytics.test.ts` | passed |
 | DX3 | test mode › ?test=1 sends nothing, shows the badge and lists the payloads (phone) | `tests/e2e/analytics.spec.ts` | passed |
+| DX3 | test mode › in test mode, Jump to the end finishes a game with random answers and opens the end screen, sending nothing (phone) | `tests/e2e/analytics.spec.ts` | passed |
 | DX3 | test mode › the flag persists in this browser and ?test=0 clears it (phone) | `tests/e2e/analytics.spec.ts` | passed |
 | DX4 | historical years have no year 0 › yearsBetween(-1, 1) is 1 | `tests/unit/scoring.test.ts` | passed |
 | DX4 | historical years have no year 0 › counts across the BCE/CE boundary | `tests/unit/scoring.test.ts` | passed |
@@ -258,6 +259,7 @@ Last run: 2026-10-16.
 | DX24 | the screen spec names real copy keys › every `key` in docs/screen-spec.md exists in src/copy.ts (a trailing .* matches a prefix) | `tests/unit/docs.test.ts` | passed |
 | DX29 | test-mode inspector › lists sanitised payloads while sending nothing | `tests/unit/analytics.test.ts` | passed |
 | DX29 | test mode › ?test=1 sends nothing, shows the badge and lists the payloads (phone) | `tests/e2e/analytics.spec.ts` | passed |
+| DX29 | test mode › in test mode, Jump to the end finishes a game with random answers and opens the end screen, sending nothing (phone) | `tests/e2e/analytics.spec.ts` | passed |
 | DX29 | test mode › the flag persists in this browser and ?test=0 clears it (phone) | `tests/e2e/analytics.spec.ts` | passed |
 | DX30 | source lint rules › rejects innerHTML in src | `tests/unit/lint.test.ts` | passed |
 | DX30 | source lint rules › rejects event-name literals outside events.ts | `tests/unit/lint.test.ts` | passed |
@@ -490,9 +492,11 @@ Last run: 2026-10-16.
 | ENG36 | tracked-path allowlist › rejects notes.txt | `tests/unit/paths.test.ts` | passed |
 | ENG38 | test flag set in another tab › stops capture and discards the queue | `tests/unit/analytics.test.ts` | passed |
 | ENG38 | test mode › ?test=1 sends nothing, shows the badge and lists the payloads (phone) | `tests/e2e/analytics.spec.ts` | passed |
+| ENG38 | test mode › in test mode, Jump to the end finishes a game with random answers and opens the end screen, sending nothing (phone) | `tests/e2e/analytics.spec.ts` | passed |
 | ENG38 | test mode › the flag persists in this browser and ?test=0 clears it (phone) | `tests/e2e/analytics.spec.ts` | passed |
 | ENG39 | pinned PostHog init options › pins every capture-related option | `tests/unit/posthog-config.test.ts` | passed |
 | G1 | test mode › ?test=1 sends nothing, shows the badge and lists the payloads (phone) | `tests/e2e/analytics.spec.ts` | passed |
+| G1 | test mode › in test mode, Jump to the end finishes a game with random answers and opens the end screen, sending nothing (phone) | `tests/e2e/analytics.spec.ts` | passed |
 | G1 | test mode › the flag persists in this browser and ?test=0 clears it (phone) | `tests/e2e/analytics.spec.ts` | passed |
 | LIC1 | README credits and privacy › credits the photo of Under the Wave off Kanagawa (The Great Wave) | `tests/unit/readme.test.ts` | passed |
 | LIC1 | README credits and privacy › credits the photo of Las Meninas | `tests/unit/readme.test.ts` | passed |
@@ -663,14 +667,12 @@ Last run: 2026-10-16.
 | V1-17 | challenge links › a listed name shows as "A friend" (phone) | `tests/e2e/challenge.spec.ts` | passed |
 | V1-17 | challenge links › with a game in progress, Continue my game keeps the challenge for later (phone) | `tests/e2e/challenge.spec.ts` | passed |
 | V1-18 | replies › a reply to this device's own deck shows the result; a challenge game sends its score back (phone) | `tests/e2e/challenge.spec.ts` | passed |
-| V1-19 | share texts › puts the rounds in question order, made, when, kept, without place names | `tests/unit/share-challenge.test.ts` | passed |
-| V1-19 | share texts › the long text is the hook, ten lines and the link; the sheet text leaves the link out | `tests/unit/share-challenge.test.ts` | passed |
-| V1-19 | share texts › the X text fits 280 characters with the link counted as 23 | `tests/unit/share-challenge.test.ts` | passed |
-| V1-19 | share texts › a reply answers the friend | `tests/unit/share-challenge.test.ts` | passed |
-| V1-19 | Share › without a share sheet, Share opens a chooser with WhatsApp, X and Copy link that returns focus to Share (phone) | `tests/e2e/challenge.spec.ts` | passed |
-| V1-19 | Share › a share sheet that resolves sends result_shared; a cancelled one sends nothing (phone) | `tests/e2e/challenge.spec.ts` | passed |
-| V1-19 | Share › a refused share sheet falls back to the chooser (phone) | `tests/e2e/challenge.spec.ts` | passed |
-| V1-19 | a full game › ten rounds end on the results screen; Copy link copies the challenge text; replay starts over (phone) | `tests/e2e/game.spec.ts` | passed |
+| V1-19 | share text › the share text is the hook and the link only, with no round-by-round answers | `tests/unit/share-challenge.test.ts` | passed |
+| V1-19 | share text › the share text fits 280 characters on X with the link counted as 23 | `tests/unit/share-challenge.test.ts` | passed |
+| V1-19 | share text › a reply answers the friend | `tests/unit/share-challenge.test.ts` | passed |
+| V1-19 | Share › Share opens a chooser with WhatsApp, X and Copy link, never the system share sheet, and returns focus to Share (phone) | `tests/e2e/challenge.spec.ts` | passed |
+| V1-19 | Share › Copy link in the chooser copies the link alone and sends result_shared (phone) | `tests/e2e/challenge.spec.ts` | passed |
+| V1-19 | a full game › ten rounds end on the results screen; Copy link copies the challenge link; replay starts over (phone) | `tests/e2e/game.spec.ts` | passed |
 | V1-20 | player names › keeps "Ali" as "Ali" | `tests/unit/share-challenge.test.ts` | passed |
 | V1-20 | player names › keeps " Barış Can " as "Barış Can" | `tests/unit/share-challenge.test.ts` | passed |
 | V1-20 | player names › keeps "İpek" as "İpek" | `tests/unit/share-challenge.test.ts` | passed |
@@ -688,7 +690,7 @@ Last run: 2026-10-16.
 | V1-20 | player names › matches listed words as whole tokens only, so ordinary names that contain one are kept | `tests/unit/share-challenge.test.ts` | passed |
 | V1-20 | the name in a shared link › an invalid name keeps Share closed and offers to share without it; a valid name goes into the link (phone) | `tests/e2e/challenge.spec.ts` | passed |
 | V1-21 | replies › a reply to this device's own deck shows the result; a challenge game sends its score back (phone) | `tests/e2e/challenge.spec.ts` | passed |
-| V1-22 | a full game › ten rounds end on the results screen; Copy link copies the challenge text; replay starts over (phone) | `tests/e2e/game.spec.ts` | passed |
+| V1-22 | a full game › ten rounds end on the results screen; Copy link copies the challenge link; replay starts over (phone) | `tests/e2e/game.spec.ts` | passed |
 | V1-23 | credits and the returning visitor › during a game Credits lists only revealed rounds and the sample (phone) | `tests/e2e/challenge.spec.ts` | passed |
 | V1-23 | credits and the returning visitor › a returning visitor sees Play another 10, Review your 10 and the collection line (phone) | `tests/e2e/challenge.spec.ts` | passed |
 | V1-24 | credits and the returning visitor › during a game Credits lists only revealed rounds and the sample (phone) | `tests/e2e/challenge.spec.ts` | passed |
@@ -703,6 +705,9 @@ Last run: 2026-10-16.
 | V1-27 | round and game events carry the object and the deck › seen_before buckets: 30+ means a fourth game or later | `tests/unit/deck-state.test.ts` | passed |
 | V1-28 | checked-in analytics queries › has the smoke, KPI, cross-check, spike, errors-by-build, cap, difficulty and return queries | `tests/unit/analytics-queries.test.ts` | passed |
 | V1-28 | checked-in analytics queries › the difficulty query counts first encounters of answered rounds only, per object | `tests/unit/analytics-queries.test.ts` | passed |
+| V1-32 | test mode: jump to the end › test guesses are always valid answers, and a game answered with them finishes with all ten rounds scored | `tests/unit/reducer.test.ts` | passed |
+| V1-32 | test mode: jump to the end › a skill of 0 guesses the right place and the middle of the date range | `tests/unit/reducer.test.ts` | passed |
+| V1-32 | test mode › in test mode, Jump to the end finishes a game with random answers and opens the end screen, sending nothing (phone) | `tests/e2e/analytics.spec.ts` | passed |
 | V2 | README credits and privacy › credits the photo of Under the Wave off Kanagawa (The Great Wave) | `tests/unit/readme.test.ts` | passed |
 | V2 | README credits and privacy › credits the photo of Las Meninas | `tests/unit/readme.test.ts` | passed |
 | V2 | README credits and privacy › credits the photo of Lady with an Ermine | `tests/unit/readme.test.ts` | passed |
@@ -741,7 +746,7 @@ Last run: 2026-10-16.
 | V2 | feedback once per game and question › sends one event per question even when answered twice, also after the game finished | `tests/unit/reducer.test.ts` | passed |
 | V2 | reveal details › the difficulty row shows after round 3 only; Next works at once and stays visible (phone) | `tests/e2e/game.spec.ts` | passed |
 | V2 | reveal details › the reveal shows the journey fact, three score rows and a credit line (phone) | `tests/e2e/game.spec.ts` | passed |
-| V4 | a full game › ten rounds end on the results screen; Copy link copies the challenge text; replay starts over (phone) | `tests/e2e/game.spec.ts` | passed |
+| V4 | a full game › ten rounds end on the results screen; Copy link copies the challenge link; replay starts over (phone) | `tests/e2e/game.spec.ts` | passed |
 | V12 | channels › webgames is approved | `tests/unit/analytics.test.ts` | passed |
 | V12 | channels › geoguessr is approved | `tests/unit/analytics.test.ts` | passed |
 | V12 | channels › reply is approved | `tests/unit/analytics.test.ts` | passed |

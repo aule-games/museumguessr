@@ -2,8 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { challengeUrl, parseChallenge } from '../../src/challenge/link';
 import { cleanedUrl } from '../../src/game/session';
 import { cleanName, isListed } from '../../src/game/names';
-import { X_LIMIT, shareRoundLines, shareTexts, xLength } from '../../src/game/text';
-import type { RoundResult } from '../../src/state/schema';
+import { X_LIMIT, shareText, xLength } from '../../src/game/text';
 import list from '../../data/name-list.json';
 
 const IDS = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10'];
@@ -83,31 +82,23 @@ describe('[V1-16] challenge links', () => {
   });
 });
 
-describe('[V1-19] share texts', () => {
-  const row = (points: number): RoundResult => ({ made: { points, km: 120 }, when: { points: 0, yearsOff: 15 }, kept: { points: 0, km: 3 }, points, skipped: false });
-  const results = [row(2840), { ...row(0), skipped: true }, ...Array.from({ length: 8 }, () => row(1000))];
+describe('[V1-19] share text', () => {
   const url = 'https://aule-games.github.io/museumguessr/?d=01.02.03.04.05.06.07.08.09.10&s=10840&n=Ali&h=35ca1219&utm_source=share&utm_medium=x&utm_campaign=challenge';
 
-  it('puts the rounds in question order, made, when, kept, without place names', () => {
-    expect(shareRoundLines(results)[0]).toBe('R1 2,840 · made 120 km · 15 yrs · kept 3 km');
-    expect(shareRoundLines(results)[1]).toBe('R2 skipped');
+  it('the share text is the hook and the link only, with no round-by-round answers', () => {
+    const text = shareText({ total: 10840, url, replay: false, kind: 'challenge' });
+    expect(text).toBe(`Can you beat my 10,840/30,000 on MuseumGuessr? ${url}`);
+    expect(text.split('\n')).toHaveLength(1);
+    expect(text).not.toMatch(/\bkm\b|\byrs\b|R1 /);
   });
 
-  it('the long text is the hook, ten lines and the link; the sheet text leaves the link out', () => {
-    const t = shareTexts({ results, total: 10840, url, replay: false, kind: 'challenge' });
-    expect(t.long.split('\n')).toHaveLength(12);
-    expect(t.long.startsWith('Can you beat my 10,840/30,000 on MuseumGuessr?')).toBe(true);
-    expect(t.long.endsWith(url)).toBe(true);
-    expect(t.sheet).not.toContain('https://');
-  });
-
-  it('the X text fits 280 characters with the link counted as 23', () => {
-    const t = shareTexts({ results, total: 30000, url: `${url}&pad=${'x'.repeat(400)}`, replay: true, kind: 'challenge' });
-    expect(xLength(t.short)).toBeLessThanOrEqual(X_LIMIT);
-    expect(t.short).toContain('(replay)');
+  it('the share text fits 280 characters on X with the link counted as 23', () => {
+    const text = shareText({ total: 30000, url: `${url}&pad=${'x'.repeat(400)}`, replay: true, kind: 'challenge' });
+    expect(xLength(text)).toBeLessThanOrEqual(X_LIMIT);
+    expect(text).toContain('(replay)');
   });
 
   it('a reply answers the friend', () => {
-    expect(shareTexts({ results, total: 10840, url, replay: false, kind: 'reply' }).short).toMatch(/^I scored 10,840\/30,000 on your 10/);
+    expect(shareText({ total: 10840, url, replay: false, kind: 'reply' })).toMatch(/^I scored 10,840\/30,000 on your 10/);
   });
 });

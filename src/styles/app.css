@@ -2283,6 +2283,10 @@ p {
   font-size: var(--text-xs);
 }
 
+.badge__panel > .btn {
+  margin-bottom: var(--space-2);
+}
+
 /* ---------- desktop and landscape: photo left, controls right (DS1) ---------- */
 
 @media (width >= 900px), (orientation: landscape) and (height <= 500px) {

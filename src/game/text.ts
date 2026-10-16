@@ -66,36 +66,13 @@ export function xLength(text: string): number {
   return [...text.replace(/https:\/\/\S+/g, 'x'.repeat(X_LINK_LENGTH))].length;
 }
 
-/** One compact, spoiler-free line per round, in question order: made, when, kept (V1-19). */
-export function shareRoundLines(results: readonly (RoundResult | null)[]): string[] {
-  return results.flatMap((r, i) => {
-    if (!r) return [];
-    if (r.skipped) return [t('share.skipped', { round: i + 1 })];
-    return [
-      t('share.round', {
-        round: i + 1,
-        points: formatNumber(r.points),
-        madeKm: formatNumber(r.made.km),
-        years: formatNumber(r.when.yearsOff),
-        keptKm: formatNumber(r.kept.km),
-      }),
-    ];
-  });
-}
-
-export interface ShareTexts {
-  /** For the phone's share sheet: the text without the link, which goes in its own field. */
-  sheet: string;
-  /** For WhatsApp and Copy: the hook, the round lines, then the link. */
-  long: string;
-  /** For X: the hook and the link, at most 280 characters as X counts them. */
-  short: string;
-}
-
-/** The share texts for a finished game (V1-19). A replay marks its total "(replay)"; a reply answers a friend's challenge. */
-export function shareTexts(p: { results: readonly (RoundResult | null)[]; total: number; url: string; replay: boolean; kind: 'challenge' | 'reply' }): ShareTexts {
+/**
+ * The share message for a finished game (V1-19): the hook and the challenge
+ * link, nothing about the answers, so a friend plays the same 10 unspoiled.
+ * A replay marks its total "(replay)"; a reply answers a friend's challenge.
+ */
+export function shareText(p: { total: number; url: string; replay: boolean; kind: 'challenge' | 'reply' }): string {
   const total = formatNumber(p.total);
   const hook = p.kind === 'reply' ? t('share.hookReply', { total }) : t(p.replay ? 'share.hookReplay' : 'share.hook', { total });
-  const sheet = [hook, ...shareRoundLines(p.results)].join('\n');
-  return { sheet, long: `${sheet}\n${p.url}`, short: `${hook} ${p.url}` };
+  return `${hook} ${p.url}`;
 }

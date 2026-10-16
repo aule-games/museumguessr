@@ -207,7 +207,7 @@ test.describe('[A1] [DS6] no answer before the reveal', () => {
 });
 
 test.describe('[DS15] [V4] [DS7] [DS25] [V1-19] [V1-22] a full game', () => {
-  test('ten rounds end on the results screen; Copy link copies the challenge text; replay starts over', async ({ page, context, recorder }) => {
+  test('ten rounds end on the results screen; Copy link copies the challenge link; replay starts over', async ({ page, context, recorder }) => {
     await context.grantPermissions(['clipboard-read', 'clipboard-write']);
     await start(page);
     const deck = await deckIds(page);
@@ -230,11 +230,8 @@ test.describe('[DS15] [V4] [DS7] [DS25] [V1-19] [V1-22] a full game', () => {
 
     await page.locator('[data-test=copy-link]').click();
     await expect(page.locator('[data-test=copied]')).toHaveText('Link copied');
-    const text = await page.evaluate(() => navigator.clipboard.readText());
-    const lines = text.split('\n');
-    expect(lines[0]).toMatch(/^Can you beat my [\d,]+\/30,000 on MuseumGuessr\?$/);
-    for (let r = 1; r <= 10; r++) expect(lines[r]).toMatch(new RegExp(`^R${r} [\\d,]+ · made [\\d,]+ km · [\\d,]+ yrs · kept [\\d,]+ km$`));
-    const link = new URL(lines[11] ?? '');
+    // Copy link copies the challenge link alone
+    const link = new URL(await page.evaluate(() => navigator.clipboard.readText()));
     expect(link.searchParams.get('d')).toBe(deck.join('.'));
     expect(link.searchParams.get('s')).toMatch(/^\d+$/);
     expect(link.searchParams.get('h')).toMatch(/^[0-9a-f]{8}$/);

@@ -225,7 +225,7 @@ and Share are above the fold; at 390×844 Play another 10 is too.
 | Region | Content | Copy keys | Overflow |
 | --- | --- | --- | --- |
 | Summary | total out of 30,000 and tier name, navy on a lime rounded panel like the reveal round total; a challenge game with a score adds "You 18,240 · Ali 19,000" and the result | `end.total`, `challenge.both`, `challenge.youWin`, `challenge.theyWin`, `challenge.tie` | one line on a phone |
-| Share block | "Add a name" disclosure (opens the name field: label, helper, inline rule, Share without a name), the one lime primary Share with a share glyph (a challenge game: Send your score back), Copy link as a text link beside it, the polite status line, the manual-copy textarea when the clipboard fails | `name.*`, `share.button`, `sendBack.button`, `share.copyLink`, `share.copied`, `share.copyManual` | Share fills the row |
+| Share block | "Add a name" disclosure (opens the name field: label, helper, inline rule, Share without a name), the one lime primary Share with a share glyph (a challenge game: Send your score back), Copy link as a text link beside it, the polite status line, the manual-copy field with the link when the clipboard fails | `name.*`, `share.button`, `sendBack.button`, `share.copyLink`, `share.copied`, `share.copyManual` | Share fills the row |
 | Play another 10 | full-width secondary | `end.another` | — |
 | Waiting challenge | after "Continue my game": a link to the friend's challenge and Not now | `end.waiting`, `end.waitingFriend`, `end.waitingDismiss` | wraps |
 | Collection line | how many objects this device has seen; hidden when storage is off | `end.collection`, `end.collectionAll` | wraps |
@@ -233,13 +233,12 @@ and Share are above the fold; at 390×844 Play another 10 is too.
 | Recap | thumbnail, title, made → now in, points (or Skipped) per round | `end.recapRow`, `end.points`, `reveal.skipped` | title wraps |
 | Replay | text link: the same 10 again (a replay, marked in its share text) | `end.replay` | — |
 
-Share opens the phone's share sheet when the browser can share the text and
-link (the link only in its own field); otherwise, or when the sheet fails
-with anything but a cancel, the Share your score chooser opens (WhatsApp, X,
-Copy link) and returns focus to Share when closed. "Link copied" is announced
-only after the clipboard write succeeds. The long text (sheet, WhatsApp,
-Copy) is the hook, ten compact lines in Made, When, Kept order and the link;
-the X text is the hook and the link within 280 characters (V1-19).
+Share opens the Share your score chooser (WhatsApp, X, Copy link), which
+returns focus to Share when closed. The browser's own share sheet is off for
+now: on a Mac it opened the system share menu. WhatsApp and X get the hook and
+the link, within 280 characters as X counts them, and no round-by-round
+answers; Copy link copies the link alone. "Link copied" is announced only
+after the clipboard write succeeds (V1-19).
 
 A finished game saved under other answers shows the total and
 `end.versionChanged` instead of the recap and the share block.
@@ -257,7 +256,7 @@ A finished game saved under other answers shows the total and
 | Start over? | body; Keep playing / Start over | `confirmNew.*` |
 | Share your score | WhatsApp, X and Copy link as full-width buttons; closing returns focus to Share | `share.chooser`, `share.whatsapp`, `share.x`, `share.copyLink` |
 | Photo lightbox | the full photo, pinch and zoom | `overlay.close` |
-| Test badge (`?test=1` only) | "Test mode · analytics off"; expands to the events that would have been sent | `test.*` |
+| Test badge (`?test=1` only) | "Test mode · analytics off"; expands to "Jump to the end (random answers)", which finishes the game in progress (or a new one) with random answers and opens the end screen, and the events that would have been sent | `test.*` |
 
 ## State reference
 
@@ -272,7 +271,7 @@ A finished game saved under other answers shows the total and
 | Made and held in one area | — | — | — | combined glyph, "Made and held in the same area: …" | — |
 | Region origin | — | — | — | pin + full-marks area + words | — |
 | Difficulty row | — | row shown after round 3 | — | "Thanks", chips removed | — |
-| Share | — | no name: Share without one | invalid name: inline rule, Share stays closed; clipboard fails: selectable text | sheet or chooser; "Link copied" | cancelled sheet: nothing sent |
+| Share | — | no name: Share without one | invalid name: inline rule, Share stays closed; clipboard fails: the link, selected | chooser; "Link copied" | chooser closed: nothing sent |
 | Challenge link | h1 empty while the name is checked | no score: "Play the same 10 your friend played" | broken link screen | challenge line | answers changed: no score to beat |
 | Resume | — | start screen | unreadable save: discarded, start screen | "Continue · Round 4 of 10" | a game left on a reveal resumes on that reveal |
 | Error screen | — | — | "Something broke" + Reload + New game; adds "Your progress is saved" when a save exists | — | — |

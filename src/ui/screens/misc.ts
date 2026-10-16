@@ -102,16 +102,34 @@ export function openMenu(opener: HTMLElement, a: MenuActions) {
 }
 
 /** "Test mode · analytics off" badge; expands to the payloads that would have been sent (DX29). */
-export function testBadge(inspect: () => Inspection): HTMLElement {
+export function testBadge(inspect: () => Inspection, onFinish: () => void): HTMLElement {
   const list = h('div', { class: 'badge__panel', hidden: true, 'data-test': 'badge-panel' });
   const btn = h('button', { type: 'button', class: 'badge', 'aria-expanded': 'false', 'data-test': 'test-badge' }, t('test.badge'));
+  const close = () => {
+    btn.setAttribute('aria-expanded', 'false');
+    list.hidden = true;
+  };
   btn.addEventListener('click', () => {
     const open = btn.getAttribute('aria-expanded') !== 'true';
     btn.setAttribute('aria-expanded', String(open));
     list.hidden = !open;
     if (!open) return;
     const info = inspect();
+    const finish = h(
+      'button',
+      {
+        type: 'button',
+        class: 'btn btn--secondary',
+        'data-test': 'test-finish',
+        onclick: () => {
+          close();
+          onFinish();
+        },
+      },
+      t('test.finish'),
+    );
     list.replaceChildren(
+      finish,
       h('p', {}, t('test.payloads')),
       h('p', { class: 'badge__counts' }, t('test.counts', info.counts)),
       info.payloads.length

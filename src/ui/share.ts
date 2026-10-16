@@ -1,23 +1,22 @@
 // The share block (V1-19, V1-20): an "Add a name" disclosure, one Share
-// button and a "Copy link" text link. Share opens the phone's share sheet
-// when the browser can share this text and link; otherwise, or when the
-// sheet fails, a chooser with WhatsApp, X and Copy link that returns focus
-// to Share. A cancelled sheet sends nothing. "Link copied" is announced only
-// after the clipboard write succeeded; when it fails the text is shown,
-// selected, to copy by hand.
+// button and a "Copy link" text link. Share opens a chooser with WhatsApp, X
+// and Copy link that returns focus to Share; the phone's share sheet is off
+// for now (on a Mac it opened the system share menu). WhatsApp and X get the
+// hook and the link through their public share addresses; Copy link copies
+// the link alone. "Link copied" is announced only after the clipboard write
+// succeeded; when it fails the link is shown, selected, to copy by hand.
 
 import type { ShareKind, ShareMedium } from '../challenge/link.ts';
 import { t, type CopyKey } from '../copy.ts';
 import { cleanName } from '../game/names.ts';
-import type { ShareTexts } from '../game/text.ts';
 import type { ShareMethod } from '../state/reducer.ts';
 import { h, s } from './dom.ts';
 import { closeDialog, openDialog } from './overlay.ts';
 
 export interface ShareSetup {
   kind: ShareKind;
-  /** The texts and link for a channel and the name to carry (null for none). */
-  texts(medium: ShareMedium, name: string | null): ShareTexts & { url: string };
+  /** The challenge link for a channel and the name to carry (null for none), and the message around it. */
+  link(medium: ShareMedium, name: string | null): { url: string; text: string };
   /** The name stored on this device, or null. */
   storedName: string | null;
   onName(name: string | null): void;
@@ -96,17 +95,17 @@ export function shareBlock(p: ShareSetup, label: CopyKey = 'share.button'): HTML
 
   const shareBtn = h('button', { type: 'button', class: 'btn btn--primary share__btn', 'data-test': 'share' }, shareGlyph(), h('span', {}, t(label)));
 
-  const copy = async (text: string) => {
+  const copy = async (url: string) => {
     try {
-      await navigator.clipboard.writeText(text);
+      await navigator.clipboard.writeText(url);
       manual.hidden = true;
       status.textContent = '';
       // a fresh node, so a second copy is announced again
       requestAnimationFrame(() => (status.textContent = t('share.copied')));
       p.onShared('copy');
     } catch {
-      const area = h('textarea', { class: 'share__text', readonly: true, rows: 8, 'aria-label': t('share.copyManual') });
-      area.value = text;
+      const area = h('textarea', { class: 'share__text', readonly: true, rows: 3, 'aria-label': t('share.copyManual') });
+      area.value = url;
       manual.replaceChildren(h('p', {}, t('share.copyManual')), area);
       manual.hidden = false;
       area.focus();
@@ -134,31 +133,19 @@ export function shareBlock(p: ShareSetup, label: CopyKey = 'share.button'): HTML
         h(
           'div',
           { class: 'share__targets' },
-          link('whatsapp', `https://wa.me/?text=${encodeURIComponent(p.texts('whatsapp', name).long)}`, 'share.whatsapp'),
-          link('x', `https://x.com/intent/post?text=${encodeURIComponent(p.texts('x', name).short)}`, 'share.x'),
+          link('whatsapp', `https://wa.me/?text=${encodeURIComponent(p.link('whatsapp', name).text)}`, 'share.whatsapp'),
+          link('x', `https://x.com/intent/post?text=${encodeURIComponent(p.link('x', name).text)}`, 'share.x'),
           copyBtn,
         ),
       ],
       shareBtn,
       'dialog--share',
     );
-    copyBtn.addEventListener('click', () => closeDialog(dlg, () => void copy(p.texts('copy', name).long)));
+    copyBtn.addEventListener('click', () => closeDialog(dlg, () => void copy(p.link('copy', name).url)));
   };
 
-  const share = async (name: string | null) => {
+  const share = (name: string | null) => {
     p.onName(name);
-    const native = p.texts('native', name);
-    const data = { text: native.sheet, url: native.url };
-    if (typeof navigator.share === 'function' && navigator.canShare?.(data)) {
-      try {
-        await navigator.share(data);
-        p.onShared('native');
-        return;
-      } catch (err) {
-        if ((err as DOMException | null)?.name === 'AbortError') return;
-        // any other refusal (NotAllowedError, a missing target) falls back to the chooser
-      }
-    }
     chooser(name);
   };
 
@@ -170,7 +157,7 @@ export function shareBlock(p: ShareSetup, label: CopyKey = 'share.button'): HTML
       return;
     }
     setError(false);
-    void share(name);
+    share(name);
   };
   shareBtn.addEventListener('click', () => go(true));
   without.addEventListener('click', () => go(false));
@@ -187,7 +174,7 @@ export function shareBlock(p: ShareSetup, label: CopyKey = 'share.button'): HTML
       return;
     }
     p.onName(name);
-    void copy(p.texts('copy', name).long);
+    void copy(p.link('copy', name).url);
   });
 
   return h(

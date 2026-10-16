@@ -22,6 +22,7 @@ export const COPY = {
   'test.badge': 'Test mode · analytics off',
   'test.payloads': 'Events that would have been sent',
   'test.none': 'No events yet.',
+  'test.finish': 'Jump to the end (random answers)',
   'test.counts': 'queued {queued} · dropped {dropped} · handed to provider {handed}',
 
   // start
@@ -136,7 +137,7 @@ export const COPY = {
   'share.button': 'Share',
   'share.copyLink': 'Copy link',
   'share.copied': 'Link copied',
-  'share.copyManual': 'Copy this text:',
+  'share.copyManual': 'Copy this link:',
   'share.chooser': 'Share your score',
   'share.whatsapp': 'WhatsApp',
   'share.x': 'X',
@@ -172,8 +173,6 @@ export const COPY = {
   'share.hook': 'Can you beat my {total}/30,000 on MuseumGuessr?',
   'share.hookReplay': 'Can you beat my {total}/30,000 (replay) on MuseumGuessr?',
   'share.hookReply': 'I scored {total}/30,000 on your 10 on MuseumGuessr. Your move.',
-  'share.round': 'R{round} {points} · made {madeKm} km · {years} yrs · kept {keptKm} km',
-  'share.skipped': 'R{round} skipped',
 
   // menu overlays
   'how.title': 'How to play',

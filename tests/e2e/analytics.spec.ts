@@ -62,6 +62,19 @@ test.describe('[G1] [DX3] [DX29] [ENG38] test mode', () => {
     expect(recorder.requests).toBe(0);
   });
 
+  test('[V1-32] in test mode, Jump to the end finishes a game with random answers and opens the end screen, sending nothing', async ({ page, recorder }) => {
+    await page.goto('./?test=1');
+    await expect(page.locator('[data-test=start]')).toBeEnabled({ timeout: 10000 });
+    await page.locator('[data-test=test-badge]').click();
+    await page.locator('[data-test=test-finish]').click();
+    await expect(page.locator('[data-screen=end]')).toBeVisible();
+    await expect(page.locator('[data-test=recap] li')).toHaveCount(10);
+    await expect(page.locator('[data-test=end-total]')).toContainText('/ 30,000');
+    await expect(page.locator('[data-test=share]')).toBeVisible();
+    await recorder.idle(page, 1000);
+    expect(recorder.requests).toBe(0);
+  });
+
   test('the flag persists in this browser and ?test=0 clears it', async ({ page, recorder }) => {
     await page.goto('./?test=1');
     await page.goto('./');

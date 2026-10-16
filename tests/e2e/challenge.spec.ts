@@ -40,72 +40,59 @@ async function seedFinished(page: Page, opts: { total?: number; kind?: 'random' 
 
 const link = (q: Record<string, string>) => `./?${new URLSearchParams(q).toString()}`;
 
-/** Replace the browser's share sheet: resolve, cancel, refuse, or be absent. */
-async function shareSheet(page: Page, mode: 'resolve' | 'abort' | 'refuse' | 'absent') {
-  await page.addInitScript((m) => {
+/** A browser share sheet that records its calls; Share must never open it (it is off for now). */
+async function recordShareSheet(page: Page) {
+  await page.addInitScript(() => {
     const calls: unknown[] = [];
     (window as unknown as { __shares: unknown[] }).__shares = calls;
-    if (m === 'absent') {
-      Object.defineProperty(navigator, 'share', { value: undefined, configurable: true });
-      return;
-    }
     Object.defineProperty(navigator, 'canShare', { value: () => true, configurable: true });
     Object.defineProperty(navigator, 'share', {
       configurable: true,
       value: (data: unknown) => {
         calls.push(data);
-        if (m === 'resolve') return Promise.resolve();
-        return Promise.reject(new DOMException('no', m === 'abort' ? 'AbortError' : 'NotAllowedError'));
+        return Promise.resolve();
       },
     });
-  }, mode);
+  });
 }
 
 test.describe('[V1-19] Share', () => {
-  test('without a share sheet, Share opens a chooser with WhatsApp, X and Copy link that returns focus to Share', async ({ page }) => {
-    await shareSheet(page, 'absent');
+  test('Share opens a chooser with WhatsApp, X and Copy link, never the system share sheet, and returns focus to Share', async ({ page }) => {
+    await recordShareSheet(page);
     await seedFinished(page);
     await page.locator('[data-test=review]').click();
     const share = page.locator('[data-test=share]');
     await share.click();
     const wa = page.locator('[data-test=share-whatsapp]');
     await expect(wa).toBeVisible();
+    expect(await page.evaluate(() => (window as unknown as { __shares: unknown[] }).__shares)).toHaveLength(0);
     const waText = decodeURIComponent(new URL((await wa.getAttribute('href')) ?? '').searchParams.get('text') ?? '');
-    expect(waText.split('\n')[0]).toBe('Can you beat my 18,240/30,000 on MuseumGuessr?');
-    expect(waText).toContain('utm_medium=whatsapp');
+    expect(waText).toMatch(/^Can you beat my 18,240\/30,000 on MuseumGuessr\? https:\/\/\S+utm_medium=whatsapp\S*$/);
     const xText = decodeURIComponent(new URL((await page.locator('[data-test=share-x]').getAttribute('href')) ?? '').searchParams.get('text') ?? '');
-    expect(xText).toMatch(/^Can you beat my 18,240\/30,000 on MuseumGuessr\? https:\/\/\S+utm_medium=x/);
+    expect(xText).toMatch(/^Can you beat my 18,240\/30,000 on MuseumGuessr\? https:\/\/\S+utm_medium=x\S*$/);
     await page.keyboard.press('Escape');
     await expect(wa).toBeHidden();
     await expect(share).toBeFocused();
   });
 
-  test('a share sheet that resolves sends result_shared; a cancelled one sends nothing', async ({ page, recorder }) => {
-    await shareSheet(page, 'resolve');
+  test('Copy link in the chooser copies the link alone and sends result_shared', async ({ page, context, recorder }) => {
+    await context.grantPermissions(['clipboard-read', 'clipboard-write']);
     await seedFinished(page);
     await page.locator('[data-test=review]').click();
     await page.locator('[data-test=share]').click();
-    const calls = await page.evaluate(() => (window as unknown as { __shares: { text: string; url: string }[] }).__shares);
-    expect(calls).toHaveLength(1);
-    expect(calls[0]?.text).not.toContain('https://');
-    expect(new URL(calls[0]?.url ?? '').searchParams.get('utm_medium')).toBe('native');
+    await page.locator('[data-test=share-copy]').click();
+    await expect(page.locator('[data-test=copied]')).toHaveText('Link copied');
+    const text = await page.evaluate(() => navigator.clipboard.readText());
+    expect(text).toMatch(/^https:\/\/\S+$/);
+    expect(new URL(text).searchParams.get('utm_medium')).toBe('copy');
     await recorder.idle(page);
-    expect(recorder.of('result_shared').map((e) => e.properties.method)).toEqual(['native']);
-  });
-
-  test('a refused share sheet falls back to the chooser', async ({ page }) => {
-    await shareSheet(page, 'refuse');
-    await seedFinished(page);
-    await page.locator('[data-test=review]').click();
-    await page.locator('[data-test=share]').click();
-    await expect(page.locator('[data-test=share-whatsapp]')).toBeVisible();
+    expect(recorder.of('result_shared').map((e) => e.properties.method)).toEqual(['copy']);
   });
 });
 
 test.describe('[V1-20] the name in a shared link', () => {
   test('an invalid name keeps Share closed and offers to share without it; a valid name goes into the link', async ({ page, context }) => {
     await context.grantPermissions(['clipboard-read', 'clipboard-write']);
-    await shareSheet(page, 'absent');
     await seedFinished(page);
     await page.locator('[data-test=review]').click();
     await page.locator('[data-test=add-name]').click();
@@ -121,7 +108,7 @@ test.describe('[V1-20] the name in a shared link', () => {
     await page.locator('[data-test=copy-link]').click();
     await expect(page.locator('[data-test=copied]')).toHaveText('Link copied');
     const text = await page.evaluate(() => navigator.clipboard.readText());
-    expect(new URL(text.split('\n').at(-1) ?? '').searchParams.get('n')).toBe('Barış');
+    expect(new URL(text).searchParams.get('n')).toBe('Barış');
     expect(await page.evaluate(() => localStorage.getItem('museumguessr:v1:name'))).toBe('Barış');
   });
 });
@@ -196,9 +183,10 @@ test.describe('[V1-18] [V1-21] replies', () => {
     await expect(page.locator('[data-test=end-result]')).toHaveText('You win by 1,240');
     await expect(page.locator('[data-test=share]')).toHaveText('Send your score back');
     await page.locator('[data-test=copy-link]').click();
-    const text = await page.evaluate(() => navigator.clipboard.readText());
-    expect(text.split('\n')[0]).toBe('I scored 18,240/30,000 on your 10 on MuseumGuessr. Your move.');
-    expect(new URL(text.split('\n').at(-1) ?? '').searchParams.get('utm_campaign')).toBe('reply');
+    expect(new URL(await page.evaluate(() => navigator.clipboard.readText())).searchParams.get('utm_campaign')).toBe('reply');
+    await page.locator('[data-test=share]').click();
+    const waText = decodeURIComponent(new URL((await page.locator('[data-test=share-whatsapp]').getAttribute('href')) ?? '').searchParams.get('text') ?? '');
+    expect(waText).toMatch(/^I scored 18,240\/30,000 on your 10 on MuseumGuessr\. Your move\. https:\/\/\S+utm_campaign=reply/);
   });
 });
 
@@ -243,7 +231,6 @@ test.describe('[V1-26] keyboard and enlarged text', () => {
   });
 
   test('Share opens the chooser with the keyboard, keeps focus inside it, and Escape returns focus to Share', async ({ page }) => {
-    await shareSheet(page, 'absent');
     await seedFinished(page);
     await tabTo(page, '[data-test=review]');
     await page.keyboard.press('Enter');
