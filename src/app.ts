@@ -4,7 +4,7 @@
 
 import type { Analytics } from './analytics/core.ts';
 import { EVENTS, STEPS, type FeedbackQ } from './analytics/events.ts';
-import { ANSWER_KEYS, DECK_ITEMS, ITEMS_VERSION, ITEM_IDS, POOL, SAMPLE, deckItems, imageUrl, itemById } from './content/items.ts';
+import { ANSWER_KEYS, DECK_ITEMS, ITEMS_VERSION, ITEM_IDS, POOL, SAMPLE, deckItems, hasItem, imageUrl, itemsLoaded, loadItems } from './content/items.ts';
 import { challengeUrl, parseChallenge, type ChallengeLink, type ParsedChallenge, type ShareKind } from './challenge/link.ts';
 import { SITE_URL } from './config.ts';
 import { formatNumber, t } from './copy.ts';
@@ -59,7 +59,7 @@ function readChallenge(kv: KV, key: string): ParsedChallenge | null {
   try {
     const v = JSON.parse(kv.get(key) ?? 'null') as ParsedChallenge | null;
     if (v?.kind === 'broken') return v;
-    if (v?.kind === 'ok' && Array.isArray(v.link?.ids) && v.link.ids.every((id) => !!itemById(id))) return v;
+    if (v?.kind === 'ok' && Array.isArray(v.link?.ids) && v.link.ids.every(hasItem)) return v;
   } catch {
     // a damaged entry is no challenge
   }
@@ -97,6 +97,20 @@ export class App {
     this.webgl = hasWebGL2();
     this.seenLists = new SeenLists(d.local, new Set(ITEM_IDS), () => crypto.getRandomValues(new Uint32Array(1))[0] as number);
     d.lock.onLost(() => this.guard(() => this.show('frozen')));
+    // The full item records load while the start screen shows; Start waits for them (V1-02).
+    this.records();
+  }
+
+  /** Load the item records; the waiting screen re-renders once they arrive, and a failed load shows the error screen. */
+  private records(then?: () => void) {
+    void loadItems().then(
+      () =>
+        this.guard(() => {
+          if (then) then();
+          else if (this.view === 'start') this.show('start');
+        }),
+      (err: unknown) => this.fail(err),
+    );
   }
 
   /** Decide the first screen (DS8, DS24): same-tab reload resumes silently; a later visit sees Continue. */
@@ -107,7 +121,7 @@ export class App {
     // Repair the seen lists from the save, the commit point (V1-07).
     if (this.state) this.seenLists.add(shownIds(this.state));
     if (this.snapshot) this.seenLists.add(this.snapshot.snapshot.item_ids);
-    const linked = this.d.params ? parseChallenge(this.d.params, (id) => !!itemById(id)) : { kind: 'none' as const };
+    const linked = this.d.params ? parseChallenge(this.d.params, hasItem) : { kind: 'none' as const };
     if (linked.kind !== 'none') this.d.session.set(KEYS.challenge, JSON.stringify(linked));
     this.challenge = readChallenge(this.d.session, KEYS.challenge);
     const waiting = readChallenge(this.d.session, KEYS.waiting);
@@ -300,8 +314,8 @@ export class App {
       const offered = this.pending;
       this.pending = null;
       const deck = this.pendingDeck();
-      const first = itemById(deck.ids[0] ?? '');
-      if (first && offered?.ids[0] !== deck.ids[0]) new Image().src = imageUrl(first.id);
+      const first = deck.ids[0];
+      if (first && offered?.ids[0] !== first) new Image().src = imageUrl(first);
       if (deck.restart) this.seenLists.restart(deck.ids);
       const committed: Deck = { ids: deck.ids, kind: deck.kind, hash: deck.hash, firstSeen: deck.firstSeen, challenge: deck.challenge };
       this.begin(committed);
@@ -400,6 +414,13 @@ export class App {
 
   show(view: View) {
     this.view = view;
+    // Rounds, reveals and the end screen show the item records, a lazy chunk (V1-02).
+    if ((view === 'play' || view === 'review') && !itemsLoaded()) {
+      this.records(() => {
+        if (this.view === view) this.show(view);
+      });
+      return;
+    }
     const root = this.d.root;
     clear(root);
     this.roundView = null;
@@ -494,10 +515,10 @@ export class App {
     if (!firstId && mode.kind !== 'continue' && mode.kind !== 'reply') firstId = this.pendingDeck().ids[0] ?? '';
 
     if (this.webgl) prefetchMap();
-    const first = itemById(firstId);
-    if (first && this.readyFor !== first.id && this.preloading !== first.id) {
+    const first = hasItem(firstId) ? firstId : '';
+    if (first && this.readyFor !== first && this.preloading !== first) {
       // Preload the offered deck's round-1 photo; Start waits for it at most 4 s (DS9, DS23, V1-10).
-      const id = first.id;
+      const id = first;
       this.preloading = id;
       const img = new Image();
       const ready = () => {
@@ -514,7 +535,7 @@ export class App {
     return startScreen({
       sample: SAMPLE,
       mode,
-      ready: !first || this.readyFor === first.id,
+      ready: (!first || this.readyFor === first) && itemsLoaded(),
       webgl: this.webgl,
       collection: mode.kind === 'finished' && collection ? collectionLine(collection) : null,
       onStart: () => void this.startGame(),

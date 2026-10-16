@@ -3,6 +3,7 @@
 // UI, map, storage and analytics are adapters that run the effects.
 
 import type { Src } from '../analytics/channels.ts';
+import { DECK } from '../deck/config.ts';
 import { EVENTS, STEPS, type EventName, type FeedbackQ, type Step } from '../analytics/events.ts';
 import { scoreRound, skippedRound, type AnswerKey } from '../scoring/game.ts';
 import type { LatLng } from '../scoring/geo.ts';
@@ -95,7 +96,7 @@ function once(
 function deckOk(deck: Deck, keys: readonly AnswerKey[]): boolean {
   const ids = deck.ids;
   return (
-    ids.length > 0 &&
+    ids.length === DECK.size &&
     new Set(ids).size === ids.length &&
     ids.every((id) => keys.some((k) => k.id === id)) &&
     deck.firstSeen.length === ids.length

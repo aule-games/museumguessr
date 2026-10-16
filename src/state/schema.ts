@@ -3,6 +3,7 @@
 
 import { revalidateSrc, type Src } from '../analytics/channels.ts';
 import type { Step } from '../analytics/events.ts';
+import { DECK } from '../deck/config.ts';
 import { SCORING_VERSION } from '../scoring/config.ts';
 import type { RoundAnswers, RoundResult } from '../scoring/game.ts';
 
@@ -140,7 +141,7 @@ function resultOk(r: unknown): r is RoundResult {
 }
 
 const isIdList = (ids: unknown): ids is string[] =>
-  Array.isArray(ids) && ids.length > 0 && ids.every((id) => typeof id === 'string') && new Set(ids).size === ids.length;
+  Array.isArray(ids) && ids.length === DECK.size && ids.every((id) => typeof id === 'string') && new Set(ids).size === ids.length;
 
 function challengeOk(c: unknown): c is Challenge | null {
   return (

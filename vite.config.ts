@@ -3,6 +3,7 @@ import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { defineConfig, type Plugin } from 'vite';
+import { itemsCore } from './scripts/lib/items-core.mjs';
 
 const require = createRequire(import.meta.url);
 const MAPLIBRE_DIR = dirname(require.resolve('maplibre-gl/package.json'));
@@ -121,7 +122,7 @@ export default defineConfig({
     __BUILD_ID__: JSON.stringify(BUILD_ID),
     __MAPLIBRE_VERSION__: JSON.stringify(MAPLIBRE_VERSION),
   },
-  plugins: [maplibreFiles(), buildMeta(), shareImage(), licenceNotices()],
+  plugins: [itemsCore(), maplibreFiles(), buildMeta(), shareImage(), licenceNotices()],
   server: { port: 5173, strictPort: false },
   preview: { port: 4173 },
   build: {

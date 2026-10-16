@@ -55,8 +55,10 @@ asset URLs sit under `/museumguessr/`, the Content-Security-Policy allows only
 the map tiles and the EU PostHog host, the build id in the page matches
 `build.txt`, the PostHog chunk keeps its `posthog-` prefix, the main bundle
 stays within its gzip budget (`scripts/lib/budget.mjs`: its size when the v1
-deck work began plus 25%; if it fails, move the item data into a lazy chunk),
-and no personal API key or dated tile URL is present.
+deck work began plus 25%), the item records stay in their own lazy chunk
+(`assets/items-*.js`; the main bundle carries only the item core built by
+`scripts/lib/items-core.mjs`), and no personal API key or dated tile URL is
+present.
 
 ## CI and deploy
 

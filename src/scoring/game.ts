@@ -5,7 +5,7 @@
 import { DISTANCE } from './config.ts';
 import type { LatLng } from './geo.ts';
 import { madeFullMarksKm, scoreDistance, scoreYear } from './score.ts';
-import type { Item } from '../types/item.ts';
+import type { CoreItem } from '../content/items.ts';
 
 /** The answer key for one item: what a round is scored against. */
 export interface AnswerKey {
@@ -32,7 +32,7 @@ export interface RoundResult {
   skipped: boolean;
 }
 
-export function answerKey(it: Item): AnswerKey {
+export function answerKey(it: CoreItem): AnswerKey {
   return {
     id: it.id,
     kept: { lat: it.kept.lat, lng: it.kept.lng },

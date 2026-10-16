@@ -1,5 +1,7 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { ANSWER_KEYS, ITEMS, ITEM_IDS, POOL, poolOf } from '../../src/content/items';
+import { ANSWER_KEYS, ITEM_IDS, POOL, poolOf } from '../../src/content/items';
 import { newGameId } from '../../src/game/ids';
 import { scoreGame, type AnswerKey } from '../../src/scoring/game';
 import { reduce, seenBucket, totalPoints, type Action, type Deck } from '../../src/state/reducer';
@@ -7,6 +9,9 @@ import { V2_ITEMS_VERSION, parseSave, serialize, type GameState } from '../../sr
 import type { Item } from '../../src/types/item';
 
 const V = 'items';
+const ITEMS = JSON.parse(readFileSync(join(import.meta.dirname, '../../data/items.json'), 'utf8')).items as Item[];
+/** The first ten objects in file order: the v0 fixed set, still a valid deck in the larger pool. */
+const TEN = ITEM_IDS.slice(0, 10);
 
 function play(actions: Action[], keys: readonly AnswerKey[], from: GameState | null = null): GameState {
   let state = from;
@@ -35,7 +40,7 @@ const keyOf = (id: string) => ANSWER_KEYS.find((k) => k.id === id) as AnswerKey;
 
 describe('[V1-04] a round is scored against its own item', () => {
   it('a deck in a different order than the pool scores every round against the item shown', () => {
-    const ids = [...ITEM_IDS].reverse();
+    const ids = [...TEN].reverse();
     const actions: Action[] = [startWith(deckOf(ids))];
     ids.forEach((id, round) => actions.push(...answerAt(round, keyOf(id)), { type: 'next', round }));
     const state = play(actions, ANSWER_KEYS);
@@ -43,15 +48,20 @@ describe('[V1-04] a round is scored against its own item', () => {
     expect(state.results.map((r) => r?.points)).toEqual(ids.map(() => 3000));
   });
 
-  it('start refuses a deck with an unknown or repeated id', () => {
-    expect(reduce(null, startWith(deckOf(['01', '99'])), ANSWER_KEYS).state).toBeNull();
-    expect(reduce(null, startWith(deckOf(['01', '01'])), ANSWER_KEYS).state).toBeNull();
+  it('start refuses a deck with an unknown or repeated id, or not ten objects', () => {
+    expect(reduce(null, startWith(deckOf([...TEN.slice(0, 9), '99'])), ANSWER_KEYS).state).toBeNull();
+    expect(reduce(null, startWith(deckOf([...TEN.slice(0, 9), '01'])), ANSWER_KEYS).state).toBeNull();
+    expect(reduce(null, startWith(deckOf(TEN.slice(0, 9))), ANSWER_KEYS).state).toBeNull();
+    // eleven distinct live ids exist once the pool is larger than one deck
+    const eleven = ITEM_IDS.slice(0, 11);
+    if (eleven.length === 11) expect(reduce(null, startWith(deckOf(eleven)), ANSWER_KEYS).state).toBeNull();
+    expect(reduce(null, startWith(deckOf([...TEN])), ANSWER_KEYS).state).not.toBeNull();
   });
 });
 
 describe('[V1-03] skipped rounds score 0 everywhere', () => {
   it('a round answered in part and then skipped scores 0, and scoreGame matches the game total', () => {
-    const ids = [...ITEM_IDS];
+    const ids = [...TEN];
     const k0 = keyOf(ids[0] as string);
     const k1 = keyOf(ids[1] as string);
     const actions: Action[] = [
@@ -89,13 +99,13 @@ describe('[V1-05] saved games hold their own deck', () => {
     for (const k of ['deck_kind', 'deck_hash', 'fresh', 'first_seen', 'challenge']) delete v2[k];
     return serialize(v2 as unknown as GameState);
   };
-  const midGame = () => play([startWith(deckOf([...ITEM_IDS])), ...answerAt(0, keyOf(ITEM_IDS[0] as string))], ANSWER_KEYS);
+  const midGame = () => play([startWith(deckOf([...TEN])), ...answerAt(0, keyOf(TEN[0] as string))], ANSWER_KEYS);
 
   it('a version 2 save of the v0 set migrates as a random, not-fresh deck', () => {
-    expect(POOL.deckHash(ITEM_IDS)).toBe(V2_ITEMS_VERSION);
+    expect(POOL.deckHash(TEN)).toBe(V2_ITEMS_VERSION);
     const restored = parseSave(v2From(midGame()), POOL);
     expect(restored).toMatchObject({ state_version: 3, deck_kind: 'random', fresh: false, deck_hash: V2_ITEMS_VERSION, challenge: null, round: 0, phase: 'reveal' });
-    expect(restored?.first_seen).toEqual(ITEM_IDS.map(() => false));
+    expect(restored?.first_seen).toEqual(TEN.map(() => false));
   });
 
   it('a version 2 save made against other answers is dropped', () => {
@@ -116,7 +126,7 @@ describe('[V1-05] saved games hold their own deck', () => {
   });
 
   it('a challenge game resumes with its deck kind and the score to beat after the tab closes', () => {
-    const ids = [...ITEM_IDS].reverse();
+    const ids = [...TEN].reverse();
     const state = play([startWith(deckOf(ids, { kind: 'challenge', challenge: { score: 18240, name: 'Ali' } }))], ANSWER_KEYS);
     const restored = parseSave(serialize(state), POOL);
     expect(restored).toMatchObject({ deck_kind: 'challenge', challenge: { score: 18240, name: 'Ali' }, item_ids: ids, fresh: true });
@@ -142,7 +152,7 @@ describe('[V1-27] share and challenge events from the reducer', () => {
   const tracked = (state: GameState, action: Action) => reduce(state, action, ANSWER_KEYS);
 
   it('every share is sent, and first_in_game marks only the first of a game', () => {
-    const done = finish(deckOf([...ITEM_IDS]));
+    const done = finish(deckOf([...TEN]));
     const a = tracked(done, { type: 'shared', method: 'native', kind: 'challenge' });
     const b = tracked(a.state as GameState, { type: 'shared', method: 'copy', kind: 'challenge' });
     const props = [...a.effects, ...b.effects].flatMap((e) => (e.type === 'track' ? [e.props] : []));
@@ -154,11 +164,11 @@ describe('[V1-27] share and challenge events from the reducer', () => {
 
   it('a challenge game ends with challenge_completed: beat true, false, or null without a score', () => {
     const beat = (score: number | null) => {
-      const s = finish(deckOf([...ITEM_IDS], { kind: 'challenge', challenge: { score, name: 'Ali' } }));
+      const s = finish(deckOf([...TEN], { kind: 'challenge', challenge: { score, name: 'Ali' } }));
       return s.sent.includes(`${s.game_id}:challenge_completed::`);
     };
     expect(beat(18240)).toBe(true);
-    const ids = [...ITEM_IDS];
+    const ids = [...TEN];
     const effectsOf = (score: number | null) => {
       const actions: Action[] = [startWith(deckOf(ids, { kind: 'challenge', challenge: { score, name: null } }))];
       ids.forEach((id, round) => actions.push(...answerAt(round, keyOf(id)), { type: 'next', round }));
@@ -180,7 +190,7 @@ describe('[V1-27] share and challenge events from the reducer', () => {
 
 describe('[V1-27] round and game events carry the object and the deck', () => {
   it('round events name the item; round_completed splits the points and says whether the object was new to the device', () => {
-    const ids = [...ITEM_IDS].reverse();
+    const ids = [...TEN].reverse();
     const firstSeen = ids.map((_, i) => i !== 0);
     const actions: Action[] = [{ type: 'start', gameId: 'g1', src: 'webgames', itemsVersion: V, deck: deckOf(ids, { firstSeen }), context: { gameInTab: '2', seenBefore: '10-19' } }, ...answerAt(0, keyOf(ids[0] as string))];
     const tracks: { name: string; props: Record<string, unknown> }[] = [];
@@ -197,7 +207,7 @@ describe('[V1-27] round and game events carry the object and the deck', () => {
   });
 
   it('first_seen survives a reload: it lives in the save', () => {
-    const ids = [...ITEM_IDS];
+    const ids = [...TEN];
     const state = play([startWith(deckOf(ids, { firstSeen: ids.map((_, i) => i % 2 === 0) }))], ANSWER_KEYS);
     expect(parseSave(serialize(state), POOL)?.first_seen).toEqual(ids.map((_, i) => i % 2 === 0));
   });

@@ -2,7 +2,8 @@
 // Post-build checks on the artifact (S2, DX21, ENG23, ENG32, ENG34, DX31).
 // Only what the artifact itself can show: the deployed-file inventory, no
 // source maps, asset URLs under the base path, the CSP meta, the build id,
-// the PostHog chunk name, the main-bundle size budget, no dated tile URLs
+// the PostHog chunk name, the main-bundle size budget, the lazy item
+// records chunk, no dated tile URLs
 // and no secret patterns.
 //
 // Usage: node scripts/check-build.mjs [distDir]
@@ -10,7 +11,7 @@
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { mainBundleProblem } from './lib/budget.mjs';
+import { itemRecordsProblem, mainBundleProblem } from './lib/budget.mjs';
 import { printProblems } from './lib/report.mjs';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
@@ -50,7 +51,10 @@ for (const f of files) {
   else if (!ALLOWED.some((re) => re.test(f))) fail(f, 'unexpected file in the deployed site', 'only the built site may deploy: no tests, scripts, reserve data or dev fixtures', 'S2', 'remove it or extend the allowlist in scripts/check-build.mjs');
 }
 const bundle = mainBundleProblem(files, (f) => readFileSync(join(DIST, f)));
-if (bundle) fail(bundle.where, bundle.problem, 'every page load downloads the main bundle; the item pool must not bloat it', 'V1-02', 'move the item data into a lazy chunk (see scripts/lib/budget.mjs)');
+if (bundle) fail(bundle.where, bundle.problem, 'every page load downloads the main bundle; the item pool must not bloat it', 'V1-02', 'find what grew; the item records are already a lazy chunk (see scripts/lib/budget.mjs)');
+const captions = JSON.parse(readFileSync(join(ROOT, 'data/items.json'), 'utf8')).items.map((it) => it.caption);
+const records = itemRecordsProblem(files, (f) => readFileSync(join(DIST, f)), captions);
+if (records) fail(records.where, records.problem, 'the item records load as a lazy chunk so the pool does not grow every page load', 'V1-02', 'import data/items.json only through loadItems() in src/content/items.ts');
 if (!files.some((f) => /^assets\/posthog-[\w-]{8}\.js$/.test(f))) {
   fail('assets/posthog-*.js', 'PostHog chunk not found under its fixed prefix', 'telemetry filters rely on the chunk name', 'PH1', 'check the dynamic import of src/analytics/posthog.ts');
 }
