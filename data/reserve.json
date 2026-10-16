@@ -319,6 +319,1060 @@
       "claimant_source": null,
       "heritage_image_law": false,
       "retrieved": "2026-10-13"
+    },
+    {
+      "id": "16",
+      "title": "Sunflowers",
+      "difficulty": 1,
+      "object_type": "painting",
+      "alt_neutral": "Thickly painted oil on canvas: a bunch of large yellow flowers, some in full bloom and some wilting and turning to seed, fills a round earthenware vase on a narrow ochre ledge against a pale yellow wall; a thin blue line runs along the ledge",
+      "caption": "Painting of large yellow flowers in a round vase",
+      "record_url": "https://www.nationalgallery.org.uk/paintings/vincent-van-gogh-sunflowers",
+      "wikidata_url": "https://www.wikidata.org/wiki/Q21948567",
+      "kept": {
+        "museum": "The National Gallery",
+        "city": "London",
+        "country": "United Kingdom",
+        "lat": 51.50888888888889,
+        "lng": -0.12833333333333333,
+        "source_url": "https://www.nationalgallery.org.uk/paintings/vincent-van-gogh-sunflowers"
+      },
+      "made": {
+        "place": "Arles",
+        "country": "France",
+        "precision": "city",
+        "wikidata_url": "https://www.wikidata.org/wiki/Q48292",
+        "lat": 43.676944444444,
+        "lng": 4.6286111111111,
+        "source_url": "https://www.nationalgallery.org.uk/paintings/vincent-van-gogh-sunflowers",
+        "note": "Painted at the Yellow House, his rented home in Arles",
+        "full_marks_km": null
+      },
+      "when": {
+        "start": 1888,
+        "end": 1888,
+        "label": "1888",
+        "source_url": "https://www.nationalgallery.org.uk/paintings/vincent-van-gogh-sunflowers"
+      },
+      "moved": true,
+      "journey_fact": {
+        "text": "How it left Arles is not documented. Later owned by the artist's sister-in-law Jo van Gogh-Bonger, then her son until 1923; sold by the Leicester Galleries, London, to the Courtauld Fund in 1924; moved from the Tate in 1961.",
+        "source_url": "https://www.nationalgallery.org.uk/paintings/vincent-van-gogh-sunflowers"
+      },
+      "facts": [
+        {
+          "text": "Van Gogh painted his first four versions in one week of August 1888 at the Yellow House, his rented home in Arles, to decorate it for Paul Gauguin's visit.",
+          "source_url": "https://www.nationalgallery.org.uk/paintings/vincent-van-gogh-sunflowers"
+        },
+        {
+          "text": "This and the Munich version are the most important of the seven; Van Gogh signed both 'Vincent' and chose them for an exhibition in Brussels in 1889.",
+          "source_url": "https://www.nationalgallery.org.uk/paintings/vincent-van-gogh-sunflowers"
+        }
+      ],
+      "photo": {
+        "source_url": "https://commons.wikimedia.org/wiki/File:Vincent_van_Gogh_-_Sunflowers_(1888,_National_Gallery_London).jpg",
+        "file_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fe/Vincent_van_Gogh_-_Sunflowers_%281888%2C_National_Gallery_London%29.jpg/3840px-Vincent_van_Gogh_-_Sunflowers_%281888%2C_National_Gallery_London%29.jpg",
+        "author": "The National Gallery, London (online catalogue), via Wikimedia Commons",
+        "licence": "PD-Art",
+        "pd_basis": "Vincent van Gogh died 1890; Commons tags the file PD-Art (PD-old-100-expired)",
+        "crop_note": "Uncropped: the signature on the vase is part of the paint surface."
+      },
+      "conflicts": [],
+      "contested": false,
+      "claimant_source": null,
+      "heritage_image_law": false,
+      "retrieved": "2026-10-16"
+    },
+    {
+      "id": "17",
+      "title": "Girl with a Pearl Earring",
+      "difficulty": 1,
+      "object_type": "painting",
+      "alt_neutral": "Oil painting of a young woman against a dark background, glancing back over her shoulder with lips parted; a blue and yellow cloth is wound into a turban on her head, a large glinting drop hangs from her ear, and a white collar shows above an ochre jacket",
+      "caption": "Painting of a young woman in a turban looking over her shoulder",
+      "record_url": "https://www.mauritshuis.nl/en/our-collection/artworks/670-girl-with-a-pearl-earring",
+      "wikidata_url": "https://www.wikidata.org/wiki/Q185372",
+      "kept": {
+        "museum": "Mauritshuis",
+        "city": "The Hague",
+        "country": "Netherlands",
+        "lat": 52.08038888888889,
+        "lng": 4.314305555555555,
+        "source_url": "https://www.mauritshuis.nl/en/our-collection/artworks/670-girl-with-a-pearl-earring"
+      },
+      "made": {
+        "place": "Delft",
+        "country": "Netherlands",
+        "precision": "city",
+        "wikidata_url": "https://www.wikidata.org/wiki/Q690",
+        "lat": 52.01166666666666,
+        "lng": 4.359166666666667,
+        "source_url": "https://www.mauritshuis.nl/en/our-collection/our-masters/johannes-vermeer",
+        "note": "Vermeer lived and worked in Delft all his life",
+        "full_marks_km": null
+      },
+      "when": {
+        "start": 1665,
+        "end": 1665,
+        "label": "c. 1665",
+        "source_url": "https://www.mauritshuis.nl/en/our-collection/artworks/670-girl-with-a-pearl-earring"
+      },
+      "moved": true,
+      "journey_fact": {
+        "text": "Possibly owned by Delft collector Pieter van Ruijven and heirs, and sold in Amsterdam in 1696; 1696-1881 not documented. Bought at a Hague auction in 1881 by A.A. des Tombe for 2.30 guilders; his bequest to the Mauritshuis, 1903.",
+        "source_url": "https://www.mauritshuis.nl/en/our-collection/artworks/670-girl-with-a-pearl-earring"
+      },
+      "facts": [
+        {
+          "text": "It is not a portrait but a tronie: a study of an imaginary figure, here a girl in exotic dress with an oriental turban and an improbably large pearl.",
+          "source_url": "https://www.mauritshuis.nl/en/our-collection/artworks/670-girl-with-a-pearl-earring"
+        },
+        {
+          "text": "Vermeer lived and worked in Delft all his life; the Delft collector Pieter van Ruijven owned about half of the paintings Vermeer ever produced.",
+          "source_url": "https://www.mauritshuis.nl/en/our-collection/our-masters/johannes-vermeer"
+        }
+      ],
+      "photo": {
+        "source_url": "https://commons.wikimedia.org/wiki/File:1665_Girl_with_a_Pearl_Earring.jpg",
+        "file_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/1665_Girl_with_a_Pearl_Earring.jpg/3840px-1665_Girl_with_a_Pearl_Earring.jpg",
+        "author": "Mauritshuis, The Hague, via Wikimedia Commons",
+        "licence": "PD-Art",
+        "pd_basis": "Johannes Vermeer died 1675; Commons tags the file PD-Art (PD-old-auto-expired)",
+        "crop_note": null
+      },
+      "conflicts": [],
+      "contested": false,
+      "claimant_source": null,
+      "heritage_image_law": false,
+      "retrieved": "2026-10-16"
+    },
+    {
+      "id": "18",
+      "title": "The Kiss (Lovers)",
+      "difficulty": 2,
+      "object_type": "painting",
+      "alt_neutral": "Square painting glittering with gold leaf: a man in a robe patterned with black and white rectangles bends to embrace a kneeling woman in a robe of coloured circles, his face pressed to her cheek, at the edge of a flowery meadow before a gold-flecked background",
+      "caption": "Gold-leaf painting of an embracing couple on a flowery meadow",
+      "record_url": "https://sammlung.belvedere.at/objects/6678/der-kuss-liebespaar",
+      "wikidata_url": "https://www.wikidata.org/wiki/Q698487",
+      "kept": {
+        "museum": "Belvedere",
+        "city": "Vienna",
+        "country": "Austria",
+        "lat": 48.19138888888889,
+        "lng": 16.380833333333335,
+        "source_url": "https://sammlung.belvedere.at/objects/6678/der-kuss-liebespaar"
+      },
+      "made": {
+        "place": "Vienna",
+        "country": "Austria",
+        "precision": "city",
+        "wikidata_url": "https://www.wikidata.org/wiki/Q1741",
+        "lat": 48.208333333333336,
+        "lng": 16.3725,
+        "source_url": "https://sammlung.belvedere.at/objects/6678/der-kuss-liebespaar",
+        "note": "Shown unfinished in Vienna in 1908, then finished in Klimt's studio",
+        "full_marks_km": null
+      },
+      "when": {
+        "start": 1907,
+        "end": 1909,
+        "label": "c. 1907–1909",
+        "source_url": "https://sammlung.belvedere.at/objects/6678/der-kuss-liebespaar",
+        "note": "Begun probably in 1907, shown unfinished in 1908, and reworked until about the end of June 1909"
+      },
+      "moved": false,
+      "journey_fact": {
+        "text": "Shown as 'Lovers' at the Kunstschau Wien in 1908 and bought by the ministry for the Moderne Galerie, now the Belvedere, which received it in July 1909 once Klimt had finished it. Evacuated outside Vienna in the Second World War.",
+        "source_url": "https://sammlung.belvedere.at/objects/6678/der-kuss-liebespaar"
+      },
+      "facts": [
+        {
+          "text": "Klimt used real gold, silver and platinum leaf; the Belvedere says he painted it at the height of his Golden Period, without a direct commission.",
+          "source_url": "https://sammlung.belvedere.at/objects/6678/der-kuss-liebespaar"
+        },
+        {
+          "text": "A photo taken at the 1908 show records unpainted patches at lower left; Klimt took it back to his studio and probably finished reworking it by the end of June 1909.",
+          "source_url": "https://sammlung.belvedere.at/objects/6678/der-kuss-liebespaar"
+        }
+      ],
+      "photo": {
+        "source_url": "https://commons.wikimedia.org/wiki/File:The_Kiss_-_Gustav_Klimt_-_Google_Cultural_Institute.jpg",
+        "file_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/The_Kiss_-_Gustav_Klimt_-_Google_Cultural_Institute.jpg/3840px-The_Kiss_-_Gustav_Klimt_-_Google_Cultural_Institute.jpg",
+        "author": "Belvedere, Vienna (Google Art Project), via Wikimedia Commons",
+        "licence": "PD-Art",
+        "pd_basis": "Gustav Klimt died 1918; Commons tags the file PD-Art (PD-old-100-expired)",
+        "crop_note": "Uncropped: the signature at lower right is part of the paint surface."
+      },
+      "conflicts": [
+        "Date: the Belvedere record gives c. 1907–1909; Wikidata Q698487 P571 gives 1907 with earliest 1907 and latest 1908. The museum record is used."
+      ],
+      "contested": false,
+      "claimant_source": null,
+      "heritage_image_law": false,
+      "retrieved": "2026-10-16"
+    },
+    {
+      "id": "19",
+      "title": "The Girls on the Bridge",
+      "difficulty": 1,
+      "object_type": "painting",
+      "alt_neutral": "Oil painting: three young figures in white, red and green dresses, one in a straw hat, lean on a wooden railing with their backs to us, looking down at dark water; a pale road curves away past white houses, a huge round dark-green tree and a small yellow moon",
+      "caption": "Painting of three figures in bright dresses at a railing by water",
+      "record_url": "https://www.nasjonalmuseet.no/en/collection/object/NG.M.00844",
+      "wikidata_url": "https://www.wikidata.org/wiki/Q18891072",
+      "kept": {
+        "museum": "Nasjonalmuseet (National Museum of Norway)",
+        "city": "Oslo",
+        "country": "Norway",
+        "lat": 59.91166666666667,
+        "lng": 10.729166666666666,
+        "source_url": "https://www.nasjonalmuseet.no/en/collection/object/NG.M.00844"
+      },
+      "made": {
+        "place": "Åsgårdstrand",
+        "country": "Norway",
+        "precision": "city",
+        "wikidata_url": "https://www.wikidata.org/wiki/Q271269",
+        "lat": 59.348888888889,
+        "lng": 10.4675,
+        "source_url": "https://www.nasjonalmuseet.no/en/collection/object/NG.M.00844",
+        "note": "Munch wrote that he painted it in Åsgårdstrand, the town it shows",
+        "full_marks_km": null
+      },
+      "when": {
+        "start": 1901,
+        "end": 1901,
+        "label": "Antagelig 1901 (probably 1901)",
+        "source_url": "https://www.nasjonalmuseet.no/en/collection/object/NG.M.00844",
+        "note": "The museum dates it 'probably 1901'; Munch wrote that he painted it in the summer of 1901"
+      },
+      "moved": true,
+      "journey_fact": {
+        "text": "Shown in Kristiania (now Oslo) in 1901 and at the Berlin Secession in 1902. Collector Olaf Schou gave it to the National Gallery, now part of the Nasjonalmuseet, in 1909; how Schou acquired it is not documented.",
+        "source_url": "https://www.nasjonalmuseet.no/en/collection/object/NG.M.00844"
+      },
+      "facts": [
+        {
+          "text": "Munch wrote that he painted it in Åsgårdstrand in the summer of 1901; he had bought a small house in the coastal town in 1898 and used local people as models.",
+          "source_url": "https://www.nasjonalmuseet.no/en/collection/object/NG.M.00844"
+        },
+        {
+          "text": "It was first shown in 1901 as 'Summer Evening'; the museum's canvas is the first of several versions Munch painted of the motif.",
+          "source_url": "https://www.nasjonalmuseet.no/en/collection/object/NG.M.00844"
+        }
+      ],
+      "photo": {
+        "source_url": "https://www.nasjonalmuseet.no/en/collection/object/NG.M.00844",
+        "file_url": "https://ms01.nasjonalmuseet.no/iip/?iiif=/tif/113297.tif/full/max/0/default.jpg",
+        "author": "Nasjonalmuseet / Børre Høstland",
+        "licence": "CC BY 4.0",
+        "pd_basis": "Edvard Munch died 1944 (more than 70 years); the museum marks the work 'Free use – no known copyright restrictions'",
+        "crop_note": "Uncropped: the initials at lower left are part of the paint surface."
+      },
+      "conflicts": [],
+      "contested": false,
+      "claimant_source": null,
+      "heritage_image_law": false,
+      "retrieved": "2026-10-16"
+    },
+    {
+      "id": "20",
+      "title": "The Birth of Venus",
+      "difficulty": 1,
+      "object_type": "painting",
+      "alt_neutral": "Wide painting on canvas: a nude woman with long, flowing reddish-gold hair stands on a giant scallop shell drifting to the shore; at left two winged figures, entwined, blow her in among falling roses; at right a woman in a flowered white dress holds out a pink cloak beside a row of trees",
+      "caption": "Painting of a nude woman on a giant shell blown ashore by winds",
+      "record_url": "https://www.uffizi.it/en/artworks/birth-of-venus",
+      "wikidata_url": "https://www.wikidata.org/wiki/Q151047",
+      "kept": {
+        "museum": "Uffizi Galleries (Gallerie degli Uffizi)",
+        "city": "Florence",
+        "country": "Italy",
+        "lat": 43.768333,
+        "lng": 11.255278,
+        "source_url": "https://www.uffizi.it/en/artworks/birth-of-venus"
+      },
+      "made": {
+        "place": "Florence",
+        "country": "Italy",
+        "precision": "city",
+        "wikidata_url": "https://www.wikidata.org/wiki/Q2044",
+        "lat": 43.771389,
+        "lng": 11.254167,
+        "source_url": "https://catalogo.cultura.gov.it/detail/HistoricOrArtisticProperty/0900158551",
+        "note": "First recorded at the Medici villa of Castello, in Florence",
+        "full_marks_km": null
+      },
+      "when": {
+        "start": 1485,
+        "end": 1485,
+        "label": "1485 ca.",
+        "source_url": "https://www.uffizi.it/en/artworks/birth-of-venus"
+      },
+      "moved": false,
+      "journey_fact": {
+        "text": "Described by Vasari at the Medici villa of Castello, Florence, and listed in its inventory in 1598; later held in the Guardaroba (wardrobe) in Florence until 1815, when it entered the Uffizi.",
+        "source_url": "https://sigecweb.beniculturali.it/sigec/item/print/ICCD15782128"
+      },
+      "facts": [
+        {
+          "text": "Orange trees, a Medici emblem (the fruit was then called 'mala medica'), support the view that a member of the Medici family commissioned it.",
+          "source_url": "https://www.uffizi.it/en/artworks/birth-of-venus"
+        },
+        {
+          "text": "Unlike the Primavera, painted on wood, it is on canvas, a support widely used in the 15th century for decorative works for noble houses.",
+          "source_url": "https://www.uffizi.it/en/artworks/birth-of-venus"
+        }
+      ],
+      "photo": {
+        "source_url": "https://commons.wikimedia.org/wiki/File:Sandro_Botticelli_-_La_nascita_di_Venere_-_Google_Art_Project.jpg",
+        "file_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/Sandro_Botticelli_-_La_nascita_di_Venere_-_Google_Art_Project.jpg/3840px-Sandro_Botticelli_-_La_nascita_di_Venere_-_Google_Art_Project.jpg",
+        "author": "Gallerie degli Uffizi (Google Art Project), via Wikimedia Commons",
+        "licence": "PD-Art",
+        "pd_basis": "Artist died 1510; Commons tags PD-Art (PD-old-100-expired)",
+        "crop_note": null
+      },
+      "conflicts": [],
+      "contested": false,
+      "claimant_source": null,
+      "heritage_image_law": true,
+      "retrieved": "2026-10-16"
+    },
+    {
+      "id": "21",
+      "title": "The Starry Night",
+      "difficulty": 1,
+      "object_type": "painting",
+      "alt_neutral": "Oil painting in thick, swirling strokes: a deep blue sky churns with spirals, glowing yellow orbs and a bright crescent moon above a small village with a pointed steeple at the foot of rolling hills; a tall, dark, flame-like tree rises in the left foreground",
+      "caption": "Painting of a swirling sky with glowing orbs over a small village",
+      "record_url": "https://www.moma.org/collection/works/79802",
+      "wikidata_url": "https://www.wikidata.org/wiki/Q45585",
+      "kept": {
+        "museum": "The Museum of Modern Art (MoMA)",
+        "city": "New York",
+        "country": "United States",
+        "lat": 40.761667,
+        "lng": -73.9775,
+        "source_url": "https://www.moma.org/collection/works/79802"
+      },
+      "made": {
+        "place": "Saint-Rémy-de-Provence",
+        "country": "France",
+        "precision": "city",
+        "wikidata_url": "https://www.wikidata.org/wiki/Q221507",
+        "lat": 43.789444,
+        "lng": 4.831667,
+        "source_url": "https://www.moma.org/collection/works/79802",
+        "note": "Painted in Saint-Rémy, where he spent 1889-90 at the Saint-Paul asylum",
+        "full_marks_km": null
+      },
+      "when": {
+        "start": 1889,
+        "end": 1889,
+        "label": "June 1889",
+        "source_url": "https://www.moma.org/collection/works/79802"
+      },
+      "moved": true,
+      "journey_fact": {
+        "text": "Kept by van Gogh until Sept 1889, then his brother Theo, Paris; Jo van Gogh-Bonger, Amsterdam, from 1891; Leclercq and Schuffenecker, Paris, 1900-05; Georgette van Stolk, Rotterdam, 1906-38; Paul Rosenberg; MoMA by exchange, 1941.",
+        "source_url": "https://www.moma.org/collection/works/79802"
+      },
+      "facts": [
+        {
+          "text": "Inspired by the view from his window at the Saint-Paul-de-Mausole asylum in Saint-Rémy; the village came from other views, as it could not be seen from that window.",
+          "source_url": "https://www.moma.org/collection/works/79802"
+        },
+        {
+          "text": "Although it shows the night sky, van Gogh painted it in several sessions during the day, in mid-June 1889.",
+          "source_url": "https://www.moma.org/collection/works/79802"
+        }
+      ],
+      "photo": {
+        "source_url": "https://commons.wikimedia.org/wiki/File:Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg",
+        "file_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg/3840px-Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg",
+        "author": "Google Art Project, via Wikimedia Commons",
+        "licence": "PD-Art",
+        "pd_basis": "Artist died 1890; Commons tags PD-Art (PD-old-100-expired)",
+        "crop_note": null
+      },
+      "conflicts": [],
+      "contested": false,
+      "claimant_source": null,
+      "heritage_image_law": false,
+      "retrieved": "2026-10-16"
+    },
+    {
+      "id": "22",
+      "title": "Wanderer above the Sea of Fog",
+      "difficulty": 2,
+      "object_type": "painting",
+      "alt_neutral": "Upright oil painting: a man in a dark green coat, seen from behind and holding a walking stick, stands on a rocky crag and looks out over banks of mist from which jagged rocks, peaks and distant hills emerge under a pale, cloudy sky",
+      "caption": "Painting of a man seen from behind on a rock above drifting mist",
+      "record_url": "https://online-sammlung.hamburger-kunsthalle.de/en/objekt/HK-5161",
+      "wikidata_url": "https://www.wikidata.org/wiki/Q311243",
+      "kept": {
+        "museum": "Hamburger Kunsthalle (on permanent loan from the Stiftung Hamburger Kunstsammlungen)",
+        "city": "Hamburg",
+        "country": "Germany",
+        "lat": 53.555,
+        "lng": 10.003056,
+        "source_url": "https://online-sammlung.hamburger-kunsthalle.de/en/objekt/HK-5161"
+      },
+      "made": {
+        "place": "Dresden",
+        "country": "Germany",
+        "precision": "city",
+        "wikidata_url": "https://www.wikidata.org/wiki/Q1731",
+        "lat": 51.0493286,
+        "lng": 13.7381437,
+        "source_url": "https://wanderer.cdfriedrich.de/en/",
+        "note": "Shows peaks he sketched on walks; composed in his studio in Dresden",
+        "full_marks_km": null
+      },
+      "when": {
+        "start": 1817,
+        "end": 1817,
+        "label": "um 1817 (c. 1817)",
+        "source_url": "https://online-sammlung.hamburger-kunsthalle.de/en/objekt/HK-5161",
+        "note": "The Kunsthalle notes that the work is neither signed nor dated and that its dating is not secure."
+      },
+      "moved": true,
+      "journey_fact": {
+        "text": "Owners from Friedrich to 1938 not documented. Berlin dealer W. A. Luz had it by July 1938 and sold it to Ernst Henke, Essen; Allied custody 1945-48; Bielefeld private collection by 1957; bought 1970 by the Hamburg foundation that lends it.",
+        "source_url": "https://online-sammlung.hamburger-kunsthalle.de/en/objekt/HK-5161"
+      },
+      "facts": [
+        {
+          "text": "The rock under the figure comes from a drawing Friedrich made on 3 June 1813 in Saxon Switzerland; the cone-shaped peak at left draws on a study he made in Bohemia in May 1808.",
+          "source_url": "https://online-sammlung.hamburger-kunsthalle.de/en/objekt/HK-5161"
+        },
+        {
+          "text": "Friedrich moved to Dresden around 1800 and explored its surroundings on foot; later, in his studio, he assembled such nature studies into this composition.",
+          "source_url": "https://wanderer.cdfriedrich.de/en/"
+        }
+      ],
+      "photo": {
+        "source_url": "https://commons.wikimedia.org/wiki/File:Friedrich,_Caspar_David_-_Wanderer_%C3%BCber_dem_Nebelmeer.jpg",
+        "file_url": "https://upload.wikimedia.org/wikipedia/commons/1/1e/Friedrich%2C_Caspar_David_-_Wanderer_%C3%BCber_dem_Nebelmeer.jpg",
+        "author": "Hamburger Kunsthalle (photo: Elke Walford), via Wikimedia Commons",
+        "licence": "PD-Art",
+        "pd_basis": "Artist died 1840; Commons tags PD-Art (PD-old-100-expired)",
+        "crop_note": null
+      },
+      "conflicts": [
+        "Date: Wikidata P571 gives c. 1818; the Hamburger Kunsthalle record gives 'um 1817' (about 1817) and says the dating is not secure. The museum record is used.",
+        "Made: neither the Kunsthalle record nor Wikidata (no P1071) names the place of creation. Dresden is inferred from Kunsthalle texts: Friedrich settled in Dresden in 1798 (exhibition page), died there in 1840 (object record) and composed this picture in his studio from earlier sketches (Wanderer story)."
+      ],
+      "contested": false,
+      "claimant_source": null,
+      "heritage_image_law": false,
+      "retrieved": "2026-10-16"
+    },
+    {
+      "id": "23",
+      "title": "The Assumption of the Virgin",
+      "difficulty": 2,
+      "object_type": "painting",
+      "alt_neutral": "Very tall oil painting in two zones: below, bearded men in bright red, yellow, green and blue robes crowd around an empty stone tomb, gesturing upward; above, a woman in a red gown and blue mantle rises on a thin crescent moon among angels and clouds",
+      "caption": "Tall painting of a woman rising on a crescent moon above a crowd",
+      "record_url": "https://www.artic.edu/artworks/87479/the-assumption-of-the-virgin",
+      "wikidata_url": "https://www.wikidata.org/wiki/Q11837891",
+      "kept": {
+        "museum": "Art Institute of Chicago",
+        "city": "Chicago",
+        "country": "United States",
+        "lat": 41.879444444444445,
+        "lng": -87.62388888888889,
+        "source_url": "https://www.artic.edu/artworks/87479/the-assumption-of-the-virgin"
+      },
+      "made": {
+        "place": "Toledo",
+        "country": "Spain",
+        "precision": "city",
+        "wikidata_url": "https://www.wikidata.org/wiki/Q5836",
+        "lat": 39.866667,
+        "lng": -4.033333,
+        "source_url": "https://www.artic.edu/artworks/87479/the-assumption-of-the-virgin",
+        "note": "Painted for the high altar of a convent church in Toledo",
+        "full_marks_km": null
+      },
+      "when": {
+        "start": 1577,
+        "end": 1579,
+        "label": "1577–79",
+        "source_url": "https://www.artic.edu/artworks/87479/the-assumption-of-the-virgin"
+      },
+      "moved": true,
+      "journey_fact": {
+        "text": "In Santo Domingo el Antiguo, Toledo, from 1579; sold c. 1830 to Infante Sebastián Gabriel; seized by the state 1835, returned 1861; lent to the Prado 1902-04; bought 1904 by Durand-Ruel with Havemeyer funds; sold to the Art Institute 1906.",
+        "source_url": "https://www.artic.edu/artworks/87479/the-assumption-of-the-virgin"
+      },
+      "facts": [
+        {
+          "text": "It was the central image of El Greco's first major commission, the high altarpiece of the convent church of Santo Domingo el Antiguo in Toledo, ordered in 1577.",
+          "source_url": "https://www.artic.edu/artworks/87479/the-assumption-of-the-virgin"
+        },
+        {
+          "text": "El Greco signed it in Greek on a painted slip of paper at lower right: 'Domenikos Theotokopoulos, Cretan, displayed this in 1577'.",
+          "source_url": "https://www.artic.edu/artworks/87479/the-assumption-of-the-virgin"
+        }
+      ],
+      "photo": {
+        "source_url": "https://www.artic.edu/artworks/87479/the-assumption-of-the-virgin",
+        "file_url": "https://www.artic.edu/iiif/2/47fd1564-93f5-f30b-7786-013421133b4a/full/1686,/0/default.jpg",
+        "author": "Art Institute of Chicago",
+        "licence": "CC0 1.0",
+        "pd_basis": "El Greco died 1614 (>70 years); faithful photo of a 2D work; AIC API is_public_domain=true",
+        "crop_note": null
+      },
+      "conflicts": [
+        "Made: the AIC record's place field gives Greece, labelled 'Artist's nationality', not where it was painted; its provenance and text place the commission and installation in Toledo, which is used. Wikidata has no P1071.",
+        "Date: Wikidata P571 gives 1577 (the year in the signature); the AIC record gives 1577–79. The museum record is used."
+      ],
+      "contested": false,
+      "claimant_source": null,
+      "heritage_image_law": false,
+      "retrieved": "2026-10-16"
+    },
+    {
+      "id": "24",
+      "title": "The Golden Burial Mask of Tutankhamun",
+      "difficulty": 2,
+      "object_type": "sculpture",
+      "alt_neutral": "Gold face mask of a young man with inlaid dark-rimmed eyes and brows, a long braided false beard and a headcloth striped in gold and deep blue; a rearing snake and a bird head rise from the brow; a broad collar of blue, red and turquoise bands covers the chest",
+      "caption": "Gold mask with a striped headcloth, a braided beard and inlaid eyes",
+      "record_url": "https://gem.eg/en/collection/artefacts/the-golden-burial-mask-of-tutankhamun",
+      "wikidata_url": "https://www.wikidata.org/wiki/Q9048095",
+      "kept": {
+        "museum": "Grand Egyptian Museum",
+        "city": "Giza",
+        "country": "Egypt",
+        "lat": 29.993611,
+        "lng": 31.119722,
+        "source_url": "https://gem.eg/en/collection/artefacts/the-golden-burial-mask-of-tutankhamun"
+      },
+      "made": {
+        "place": "Egypt",
+        "country": "Egypt",
+        "precision": "country",
+        "wikidata_url": "https://www.wikidata.org/wiki/Q79",
+        "lat": 27,
+        "lng": 29,
+        "source_url": "https://gem.eg/en/collection/artefacts/the-golden-burial-mask-of-tutankhamun",
+        "note": "Found in the king's tomb at Luxor; the workshop that made it is not recorded",
+        "full_marks_km": null
+      },
+      "when": {
+        "start": -1550,
+        "end": -1070,
+        "label": "New Kingdom",
+        "source_url": "https://gem.eg/en/collection/artefacts/the-golden-burial-mask-of-tutankhamun",
+        "note": "The museum gives only the period (c. 1550-1070 BCE); the mask was made for Tutankhamun, who died about 1323 BCE."
+      },
+      "moved": false,
+      "journey_fact": {
+        "text": "From the tomb Howard Carter found in the Valley of the Kings, Luxor, in 1922; kept for nearly a century in the Egyptian Museum on Cairo's Tahrir Square, then moved to the Grand Egyptian Museum near Giza (transfer date not documented).",
+        "source_url": "https://www.al-monitor.com/originals/2025/06/king-tut-gold-mask-leave-cairo-museum-after-nearly-100-years"
+      },
+      "facts": [
+        {
+          "text": "It was found over the head and shoulders of Tutankhamun's mummy; it shows him as Osiris and as the sun god Re, whose body was gold and hair lapis lazuli.",
+          "source_url": "https://gem.eg/en/collection/artefacts/the-golden-burial-mask-of-tutankhamun"
+        },
+        {
+          "text": "It went on show at the centre of the Grand Egyptian Museum's Tutankhamun galleries in November 2025, with almost all of his tomb treasure displayed together for the first time.",
+          "source_url": "https://www.al-monitor.com/originals/2025/11/king-tuts-collection-displayed-first-time-egypts-grand-museum"
+        }
+      ],
+      "photo": {
+        "source_url": "https://commons.wikimedia.org/wiki/File:Mask_of_Tutankhamun_in_2025.jpg",
+        "file_url": "https://upload.wikimedia.org/wikipedia/commons/3/35/Mask_of_Tutankhamun_in_2025.jpg",
+        "author": "Dawid Wdowczyk, via Wikimedia Commons",
+        "licence": "CC BY 4.0",
+        "pd_basis": "Ancient Egyptian funerary mask of the New Kingdom; no copyright in the object.",
+        "crop_note": null
+      },
+      "conflicts": [
+        "Location: Wikidata P276 still gives the Egyptian Museum, Cairo (Q201219); the GEM record lists the mask in its Tutankhamun Galleries, on show there since November 2025 (AFP). The GEM is used.",
+        "Date: the GEM gives only 'New Kingdom'; Wikidata P571 gives c. 1323 BCE and 1334-1324 BCE. The range is the New Kingdom span from Wikidata Q180568 (c. 1550-1070 BCE).",
+        "Made: the GEM 'Provenance' names Upper Egypt, Luxor, the find site; Wikidata P1071 is Q180568 (the New Kingdom state). Made is set to Egypt at country level because the workshop is not recorded."
+      ],
+      "contested": false,
+      "claimant_source": null,
+      "heritage_image_law": false,
+      "retrieved": "2026-10-16"
+    },
+    {
+      "id": "25",
+      "title": "The Standard of Ur",
+      "difficulty": 2,
+      "object_type": "other",
+      "alt_neutral": "Long panel of pale shell and red stone figures set into a deep blue mosaic ground, in three rows: at the bottom four-wheeled chariots drawn by donkey-like animals ride over fallen men; in the middle cloaked soldiers march and drive naked captives; at the top a taller central figure faces a line of prisoners, a chariot waiting behind him",
+      "caption": "Mosaic panel: rows of chariots, soldiers and captives on blue",
+      "record_url": "https://www.britishmuseum.org/collection/object/W_1928-1010-3",
+      "wikidata_url": "https://www.wikidata.org/wiki/Q524447",
+      "kept": {
+        "museum": "British Museum",
+        "city": "London",
+        "country": "United Kingdom",
+        "lat": 51.519444444444446,
+        "lng": -0.12694444444444444,
+        "source_url": "https://www.britishmuseum.org/collection/object/W_1928-1010-3"
+      },
+      "made": {
+        "place": "Southern Mesopotamia (Sumer)",
+        "country": "Iraq",
+        "precision": "region",
+        "wikidata_url": "https://www.wikidata.org/wiki/Q35355",
+        "lat": 32,
+        "lng": 45.5,
+        "source_url": "https://www.britishmuseum.org/collection/object/W_1928-1010-3",
+        "note": "Found in a royal tomb at Ur; the museum names no workshop",
+        "full_marks_km": null
+      },
+      "when": {
+        "start": -2600,
+        "end": -2400,
+        "label": "2550 BC - 2400 BC (collection record); 2600–2400 BC (gallery page)",
+        "source_url": "https://www.britishmuseum.org/collection/object/W_1928-1010-3",
+        "note": "The museum's record gives 2550-2400 BC and its gallery page 2600-2400 BC; any year from 2600 to 2400 BCE scores full marks."
+      },
+      "moved": true,
+      "journey_fact": {
+        "text": "Excavated by Leonard Woolley in royal tomb PG 779 in the Royal Cemetery at Ur; came to the British Museum through a division of finds with Iraq's Department of Antiquities (registration number 1928,1010.3).",
+        "source_url": "https://www.britishmuseum.org/collection/object/W_1928-1010-3"
+      },
+      "facts": [
+        {
+          "text": "Found crushed in a king's tomb looted in antiquity, between a man's shoulder and skull; its wooden box had rotted away and hundreds of inlay pieces had to be reassembled.",
+          "source_url": "https://www.britishmuseum.org/collection/object/W_1928-1010-3"
+        },
+        {
+          "text": "Woolley dug at Ur for a joint British Museum and Penn Museum expedition begun in 1922; of nearly 2,000 burials he found, he called sixteen \"royal tombs\".",
+          "source_url": "https://almanac.upenn.edu/archive/volumes/v56/n09/ur.html"
+        }
+      ],
+      "photo": {
+        "source_url": "https://commons.wikimedia.org/wiki/File:Standard_of_Ur_-_War_side.jpg",
+        "file_url": "https://upload.wikimedia.org/wikipedia/commons/3/3e/Standard_of_Ur_-_War_side.jpg",
+        "author": "LeastCommonAncestor, from a photo by BabelStone (Andrew West), via Wikimedia Commons",
+        "licence": "CC BY-SA 3.0",
+        "pd_basis": "Sumerian object of about 2600-2400 BCE; no copyright in the object.",
+        "crop_note": null
+      },
+      "conflicts": [
+        "Place: the British Museum names Ur only as the find spot (royal tomb PG 779) and records no place of making, so made is the region around it, Sumer (Wikidata Q35355, about 130 km from Ur), not the city.",
+        "Date: the collection record gives 2550-2400 BC, the Room 56 gallery page 2600-2400 BC, Wikidata P571 c. 2501 BCE. The range covers both museum dates."
+      ],
+      "contested": false,
+      "claimant_source": null,
+      "heritage_image_law": false,
+      "retrieved": "2026-10-16"
+    },
+    {
+      "id": "26",
+      "title": "Clay Figurine (\"Dogū\") with Goggle-Like Eyes",
+      "difficulty": 3,
+      "object_type": "sculpture",
+      "alt_neutral": "Hollow dark grey clay figure with huge oval eyes each crossed by a slit, a tiny nose and mouth and a crown-shaped crest on the head; broad rounded shoulders, stubby arms, a narrow waist and wide hips; the body is covered in incised swirls and dotted raised bands; the left leg is missing",
+      "caption": "Hollow clay figure with huge oval eyes and swirling incised patterns",
+      "record_url": "https://www.tnm.jp/modules/r_collection/index.php?controller=dtl&colid=J38392&lang=en",
+      "wikidata_url": "https://www.wikidata.org/wiki/Q123387215",
+      "kept": {
+        "museum": "Tokyo National Museum",
+        "city": "Tokyo",
+        "country": "Japan",
+        "lat": 35.71888888888889,
+        "lng": 139.7763888888889,
+        "source_url": "https://www.tnm.jp/modules/r_collection/index.php?controller=dtl&colid=J38392&lang=en"
+      },
+      "made": {
+        "place": "Tōhoku region",
+        "country": "Japan",
+        "precision": "region",
+        "wikidata_url": "https://www.wikidata.org/wiki/Q129465",
+        "lat": 38.9,
+        "lng": 140.67,
+        "source_url": "https://emuseum.nich.go.jp/detail?langId=en&webView=&content_base_id=100614",
+        "note": "Found at Kamegaoka in Tsugaru, Aomori; a type made in the Tōhoku region",
+        "full_marks_km": null
+      },
+      "when": {
+        "start": -1000,
+        "end": -400,
+        "label": "Jōmon period, 1000–400 BC",
+        "source_url": "https://www.tnm.jp/modules/r_collection/index.php?controller=dtl&colid=J38392&lang=en"
+      },
+      "moved": true,
+      "journey_fact": {
+        "text": "Unearthed in 1887 in the boggy lowlands of the Kamegaoka site in Tsugaru, Aomori, where ritual dumps held many figurines; how and when it entered the Tokyo National Museum is not documented.",
+        "source_url": "https://jomon-japan.jp/en/learn/jomon-sites/kamegaoka"
+      },
+      "facts": [
+        {
+          "text": "Figurines of this kind, called shakōki dogū after snow goggles, belong to the Kamegaoka culture of the Tōhoku region in the Final Jōmon period; this is the best known of them.",
+          "source_url": "https://emuseum.nich.go.jp/detail?langId=en&webView=&content_base_id=100614"
+        },
+        {
+          "text": "The eyes were once thought to show snow goggles; they are now read as an exaggerated way of showing eyes. Traces of red suggest the whole figure was once painted red.",
+          "source_url": "https://colbase.nich.go.jp/collection_items/tnm/J-38392?locale=en"
+        }
+      ],
+      "photo": {
+        "source_url": "https://colbase.nich.go.jp/collection_items/tnm/J-38392?locale=en",
+        "file_url": "https://colbase.nich.go.jp/media/tnm/J-38392/image/J-38392_E0084447.jpg",
+        "author": "Tokyo National Museum, via ColBase (resized)",
+        "licence": "CC BY 4.0",
+        "pd_basis": "Prehistoric clay figure of 1000-400 BC; no copyright in the object.",
+        "crop_note": null
+      },
+      "conflicts": [
+        "Made: the museum records only the find place (Tsugaru City, Aomori; ColBase's production-place field is empty) and Wikidata has no P1071; made is set to the Tōhoku region, where the museums' e-Museum places the Kamegaoka culture of this type."
+      ],
+      "contested": false,
+      "claimant_source": null,
+      "heritage_image_law": false,
+      "retrieved": "2026-10-16"
+    },
+    {
+      "id": "27",
+      "title": "Mochica portrait bottle of a figure in a turban",
+      "difficulty": 3,
+      "object_type": "vessel",
+      "alt_neutral": "Sculpted ceramic bottle in the shape of a human head with a calm, lifelike face in glossy red-brown, painted in three vertical bands; a cream headcloth frames the face and a band of red triangles crosses the brow; a hollow arched handle with one upright spout rises from the top",
+      "caption": "Ceramic bottle shaped as a human head in a patterned headcloth",
+      "record_url": "https://coleccion.museolarco.org/detail/174/",
+      "wikidata_url": null,
+      "kept": {
+        "museum": "Museo Larco",
+        "city": "Lima",
+        "country": "Peru",
+        "lat": -12.072496,
+        "lng": -77.070862,
+        "source_url": "https://coleccion.museolarco.org/detail/174/"
+      },
+      "made": {
+        "place": "North coast of Peru",
+        "country": "Peru",
+        "precision": "region",
+        "wikidata_url": "https://www.wikidata.org/wiki/Q14204197",
+        "lat": -6.99,
+        "lng": -79.83,
+        "source_url": "https://coleccion.museolarco.org/detail/174/",
+        "note": "The museum records only the region: 'Costa Norte', Peru's north coast",
+        "full_marks_km": null
+      },
+      "when": {
+        "start": 1,
+        "end": 1000,
+        "label": "Larco: Época Auge (1 dC - 800 dC); Rowe: Horizonte Medio (600 dC - 1000 dC)",
+        "source_url": "https://coleccion.museolarco.org/detail/174/",
+        "note": "The museum gives two chronologies, 1-800 CE (Larco) and 600-1000 CE (Rowe); any year from 1 to 1000 CE scores full marks."
+      },
+      "moved": true,
+      "journey_fact": {
+        "text": "Find spot and acquisition not documented. Rafael Larco Hoyle built the collection from 1923, buying many north-coast collections, founded the museum at Hacienda Chiclín in 1926 and moved it to Lima in the 1950s.",
+        "source_url": "https://www.museolarco.org/coleccion/"
+      },
+      "facts": [
+        {
+          "text": "The museum's founder, Rafael Larco Hoyle, proposed the first chronological order of north-coast cultures in 1946, before radiocarbon dating was developed.",
+          "source_url": "https://www.museolarco.org/coleccion/"
+        },
+        {
+          "text": "Larco Hoyle gathered about 50,000 pieces, buying collections from the Chicama, Moche, Virú and Santa valleys of the north coast.",
+          "source_url": "https://www.museolarco.org/coleccion/"
+        }
+      ],
+      "photo": {
+        "source_url": "https://commons.wikimedia.org/wiki/File:Moche_portrait_ceramic_in_Museo_Arqueol%C3%B3gico_Rafael_Larco_Herrera_(2011).jpg",
+        "file_url": "https://upload.wikimedia.org/wikipedia/commons/8/89/Moche_portrait_ceramic_in_Museo_Arqueol%C3%B3gico_Rafael_Larco_Herrera_%282011%29.jpg",
+        "author": "Pierre André Leclercq, via Wikimedia Commons",
+        "licence": "CC BY-SA 4.0",
+        "pd_basis": "Mochica ceramic of 1-1000 CE; no copyright in the object.",
+        "crop_note": null
+      },
+      "conflicts": [
+        "Date: the record gives two chronologies, Larco 'Época Auge' (1-800 CE) and Rowe 'Horizonte Medio' (600-1000 CE); the range covers both. The Commons file page gives 1-800 CE.",
+        "Made: the record names only 'Región: Costa Norte'. Wikidata has no place item for Peru's north coast except the travel region Q14204197 'Northern Coast (Peru)' (Tumbes to Ancash), whose coordinates are used.",
+        "No Wikidata item for this object; the Commons file names accession ML000174 and links the Larco record."
+      ],
+      "contested": false,
+      "claimant_source": null,
+      "heritage_image_law": false,
+      "retrieved": "2026-10-16"
+    },
+    {
+      "id": "28",
+      "title": "Along the River During the Qingming Festival",
+      "difficulty": 3,
+      "object_type": "painting",
+      "alt_neutral": "Long painting in muted browns: a crowd pours over a high arched wooden bridge above a wide stream; below it a big boat with oarsmen swings toward the arch while others watch; tiled roofs, stalls, carts and parasols crowd the banks",
+      "caption": "Painting of a crowded arched bridge over water with boats",
+      "record_url": "https://www.dpm.org.cn/collection/paint/228226.html",
+      "wikidata_url": "https://www.wikidata.org/wiki/Q714802",
+      "kept": {
+        "museum": "The Palace Museum",
+        "city": "Beijing",
+        "country": "China",
+        "lat": 39.91555556,
+        "lng": 116.39083333,
+        "source_url": "https://www.dpm.org.cn/collection/paint/228226.html"
+      },
+      "made": {
+        "place": "Henan",
+        "country": "China",
+        "precision": "region",
+        "wikidata_url": "https://www.wikidata.org/wiki/Q43684",
+        "lat": 33.9,
+        "lng": 113.5,
+        "source_url": "https://minghuaji.dpm.org.cn/paint/detail?id=592d80e225aac624977fee2e19452c1f",
+        "note": "Shows the Song capital, today Kaifeng, where its painter studied",
+        "full_marks_km": null
+      },
+      "when": {
+        "start": 1101,
+        "end": 1127,
+        "label": "Northern Song dynasty, 12th century",
+        "source_url": "https://www.dpm.org.cn/collection/paint/228226.html",
+        "note": "The museum dates it Northern Song (ended 1127) and says it re-creates 12th-century life in the capital: 1101-1127."
+      },
+      "moved": true,
+      "journey_fact": {
+        "text": "Its route from the Northern Song capital to the Qing court is not documented here. Puyi, the last emperor, took it with him when he left the Forbidden City in 1924; it was recovered in 1945 and kept at the Palace Museum.",
+        "source_url": "https://en.wikipedia.org/wiki/Along_the_River_During_the_Qingming_Festival"
+      },
+      "facts": [
+        {
+          "text": "The museum says it shows the Northern Song capital Bianjing, today Kaifeng, at the Qingming festival: the Bian river, the arched Rainbow Bridge and an east city gate.",
+          "source_url": "https://www.dpm.org.cn/collection/paint/228226.html"
+        },
+        {
+          "text": "The earliest attribution to Zhang Zeduan is a colophon dated 1186 by the Jin court curator Zhang Zhu; it calls him a Hanlin academician who had studied in the capital.",
+          "source_url": "https://en.wikipedia.org/wiki/Along_the_River_During_the_Qingming_Festival"
+        }
+      ],
+      "photo": {
+        "source_url": "https://commons.wikimedia.org/wiki/File:Along_the_River_During_the_Qingming_Festival_(detail_of_original).jpg",
+        "file_url": "https://upload.wikimedia.org/wikipedia/commons/4/43/Along_the_River_During_the_Qingming_Festival_%28detail_of_original%29.jpg",
+        "author": "Unknown photographer (scan via Baidu Tieba), via Wikimedia Commons",
+        "licence": "PD-Art",
+        "pd_basis": "Northern Song painting, 12th century; Commons tags the file PD-Art (PD-old-100) as a faithful reproduction of the Palace Museum original",
+        "crop_note": "The Commons file is already a detail of the scroll (the arched bridge); the full scroll is about 21 times wider than tall"
+      },
+      "conflicts": [
+        "Place: the Palace Museum object record names no place of making; it says the scroll shows the Northern Song capital Bianjing (today Kaifeng, Henan). Henan rests on the museum's own artist biography (Minghuaji: Zhang Zeduan studied in the capital as a young man) and its Northern Song date, when the capital was Kaifeng. Region level, not city. Wikidata Q714802 has no P1071.",
+        "Date: the museum's text says Northern Song (北宋) and that the scroll re-creates 12th-century life in the capital; its digital catalogue lists the period only as Song (宋). Scored 1101-1127. Wikidata P571 gives 1085; Wikipedia notes scholars disagree whether it was painted before or after the fall of the Northern Song in 1127.",
+        "Wikidata P195 (The Palace Museum) agrees with the museum."
+      ],
+      "contested": false,
+      "claimant_source": null,
+      "heritage_image_law": false,
+      "retrieved": "2026-10-16"
+    },
+    {
+      "id": "29",
+      "title": "Portable Altar of Countess Gertrude",
+      "difficulty": 3,
+      "object_type": "other",
+      "alt_neutral": "Small rectangular box covered in gold: seven haloed standing figures in relief under enamelled arches line the long side; bands set with coloured stones and pearls frame them; a speckled reddish stone slab forms the top",
+      "caption": "Gold box with standing figures under arches and set gems",
+      "record_url": "https://www.clevelandart.org/art/1931.462",
+      "wikidata_url": "https://www.wikidata.org/wiki/Q60779219",
+      "kept": {
+        "museum": "Cleveland Museum of Art",
+        "city": "Cleveland",
+        "country": "United States",
+        "lat": 41.50888888888889,
+        "lng": -81.61166666666666,
+        "source_url": "https://www.clevelandart.org/art/1931.462"
+      },
+      "made": {
+        "place": "Lower Saxony",
+        "country": "Germany",
+        "precision": "region",
+        "wikidata_url": "https://www.wikidata.org/wiki/Q1197",
+        "lat": 52.756111111111,
+        "lng": 9.3930555555556,
+        "source_url": "https://openaccess-api.clevelandart.org/api/artworks/1931.462",
+        "note": "The museum gives Lower Saxony with a question mark; made for a countess of Brunswick",
+        "full_marks_km": null
+      },
+      "when": {
+        "start": 1040,
+        "end": 1050,
+        "label": "c. 1045",
+        "source_url": "https://openaccess-api.clevelandart.org/api/artworks/1931.462",
+        "note": "The museum dates it c. 1045 and gives 1040-1050 as its date range."
+      },
+      "moved": true,
+      "journey_fact": {
+        "text": "In the treasury of Brunswick's Cathedral of St. Blaise from about 1045, then owned by the House of Brunswick-Lüneburg (dates not documented); sold by Goldschmidt Galleries, New York, to the museum in 1931.",
+        "source_url": "https://openaccess-api.clevelandart.org/api/artworks/1931.462"
+      },
+      "facts": [
+        {
+          "text": "Countess Gertrude of Brunswick commissioned it; the Latin inscription round the stone says Gertrude offers to Christ this stone that glistens with gems and gold.",
+          "source_url": "https://www.clevelandart.org/art/1931.462"
+        },
+        {
+          "text": "Its porphyry altar stone, an imperial colour used only by the imperial family, signals Gertrude's claim of imperial lineage for her own dynasty.",
+          "source_url": "https://www.clevelandart.org/art/1931.462"
+        }
+      ],
+      "photo": {
+        "source_url": "https://www.clevelandart.org/art/1931.462",
+        "file_url": "https://openaccess-cdn.clevelandart.org/1931.462/1931.462_print.jpg",
+        "author": "Cleveland Museum of Art",
+        "licence": "CC0 1.0",
+        "pd_basis": "Anonymous metalwork of c. 1045; CMA share_license_status = CC0",
+        "crop_note": null
+      },
+      "conflicts": [
+        "Place: the museum writes 'Germany, Lower Saxony?', with a question mark; its description says Countess Gertrude of Brunswick commissioned it. Wikidata Q60779219 has no P1071.",
+        "Date: museum c. 1045 (date range 1040-1050); Wikidata P571 c. 1045 agrees. English Wikipedia's Guelph Treasure article captions it 'shortly after 1038'.",
+        "Wikidata P195 (Cleveland Museum of Art) agrees with the museum."
+      ],
+      "contested": false,
+      "claimant_source": null,
+      "heritage_image_law": false,
+      "retrieved": "2026-10-16"
+    },
+    {
+      "id": "30",
+      "title": "Portrait of a Halberdier (Francesco Guardi?)",
+      "difficulty": 2,
+      "object_type": "painting",
+      "alt_neutral": "Oil painting of a youth seen to the thighs, in a puffed cream doublet with a fine gold chain, a red cap with a gold badge and red hose; he grips a tall wooden pole and rests one hand on his hip beside a sword hilt; dark green wall behind",
+      "caption": "Painting of a youth in a red cap holding a tall pole",
+      "record_url": "https://www.getty.edu/art/collection/object/103QSE",
+      "wikidata_url": "https://www.wikidata.org/wiki/Q3607621",
+      "kept": {
+        "museum": "J. Paul Getty Museum",
+        "city": "Los Angeles",
+        "country": "United States",
+        "lat": 34.0775,
+        "lng": -118.475,
+        "source_url": "https://data.getty.edu/museum/collection/object/56016db9-20a4-4a99-814b-23ac542a106e"
+      },
+      "made": {
+        "place": "Florence",
+        "country": "Italy",
+        "precision": "city",
+        "wikidata_url": "https://www.wikidata.org/wiki/Q2044",
+        "lat": 43.771388888889,
+        "lng": 11.254166666667,
+        "source_url": "https://data.getty.edu/museum/collection/object/56016db9-20a4-4a99-814b-23ac542a106e",
+        "note": "Getty lists Italy; its text ties it to Vasari's portrait made in the siege of Florence",
+        "full_marks_km": null
+      },
+      "when": {
+        "start": 1529,
+        "end": 1530,
+        "label": "1529–1530",
+        "source_url": "https://data.getty.edu/museum/collection/object/56016db9-20a4-4a99-814b-23ac542a106e"
+      },
+      "moved": true,
+      "journey_fact": {
+        "text": "Riccardi family, Florence, by 1612; how it left Italy is not documented. Lebrun sale, Paris, 1810, to Cardinal Fesch; Fesch sale, Rome, 1845; Princess Mathilde sale, Paris, 1904; Stillman family; Christie's, New York, 1989, to the Getty.",
+        "source_url": "https://data.getty.edu/museum/collection/object/56016db9-20a4-4a99-814b-23ac542a106e"
+      },
+      "facts": [
+        {
+          "text": "Vasari wrote that during the siege of Florence, about 1529, Pontormo painted the young nobleman Francesco Guardi as a soldier; a Guardi boy was born in 1514.",
+          "source_url": "https://data.getty.edu/museum/collection/object/56016db9-20a4-4a99-814b-23ac542a106e"
+        },
+        {
+          "text": "Auctioned to the Getty in May 1989 for 32.5 million dollars, then the highest price ever paid for an old master painting.",
+          "source_url": "https://en.wikipedia.org/wiki/Portrait_of_a_Halberdier"
+        }
+      ],
+      "photo": {
+        "source_url": "https://www.getty.edu/art/collection/object/103QSE",
+        "file_url": "https://media.getty.edu/iiif/image/9e96cce9-7a79-4260-b657-bf92ab9a661f/full/max/0/default.jpg",
+        "author": "J. Paul Getty Museum (Open Content Program)",
+        "licence": "CC0 1.0",
+        "pd_basis": "Pontormo died 1557; Getty rights statement 'No Copyright'; IIIF manifest rights CC0 1.0",
+        "crop_note": null
+      },
+      "conflicts": [
+        "Place: the Getty's creation-place field gives only Italy; its description cites Vasari, who says Pontormo painted this sitter, Francesco Guardi, as a soldier during the siege of Florence (about 1529). Florence is used. Wikidata Q3607621 has no P1071.",
+        "Date: Getty 1529–1530; Wikidata P571 gives 1529. Those who see the sitter as the young Cosimo I de' Medici date it to 1537 (Wikipedia); the Getty mentions the Cosimo suggestion but keeps 1529–1530.",
+        "The Getty record gives the painting's current location as Storage; kept coordinates are the Getty Center (Wikidata P276, same as the museum's P625)."
+      ],
+      "contested": false,
+      "claimant_source": null,
+      "heritage_image_law": true,
+      "retrieved": "2026-10-16"
+    },
+    {
+      "id": "31",
+      "title": "The Code of Hammurabi",
+      "difficulty": 2,
+      "object_type": "sculpture",
+      "alt_neutral": "Tall polished dark stone slab with a rounded top, on a dark ground: a carved relief at the top shows a standing figure, one hand raised to the mouth, facing a seated figure on a stepped throne who holds out a rod and ring; dense columns of tiny carved signs cover the rest",
+      "caption": "Tall stone slab: a carved scene above dense columns of writing",
+      "record_url": "https://collections.louvre.fr/en/ark:/53355/cl010174436",
+      "wikidata_url": "https://www.wikidata.org/wiki/Q12397781",
+      "kept": {
+        "museum": "Musée du Louvre",
+        "city": "Paris",
+        "country": "France",
+        "lat": 48.861111111111114,
+        "lng": 2.3358333333333334,
+        "source_url": "https://collections.louvre.fr/en/ark:/53355/cl010174436"
+      },
+      "made": {
+        "place": "Mesopotamia",
+        "country": "Iraq",
+        "precision": "region",
+        "wikidata_url": "https://www.wikidata.org/wiki/Q11767",
+        "lat": 33.7,
+        "lng": 43.5,
+        "source_url": "https://collections.louvre.fr/en/ark:/53355/cl010174436",
+        "note": "The Louvre names Iraq = Mesopotamia; found at Susa, Iran, taken there as war spoil",
+        "full_marks_km": null
+      },
+      "when": {
+        "start": -1792,
+        "end": -1750,
+        "label": "1792–1750 BC (1st dynasty of Babylon: Hammurabi)",
+        "source_url": "https://collections.louvre.fr/en/ark:/53355/cl010174436",
+        "note": "The Louvre dates it to Hammurabi's reign; its gallery text says the laws were engraved around 1750 BC."
+      },
+      "moved": true,
+      "journey_fact": {
+        "text": "Carried to Susa, Iran, as war spoil by the Elamite king Shutruk-Nahhunte (reigned about 1185–1160 BC); found there by French excavators in 1902 and on display at the Louvre since 1904.",
+        "source_url": "https://www.louvre.fr/en/the-code-of-hammurabi"
+      },
+      "facts": [
+        {
+          "text": "It records 282 legal judgements handed down by Hammurabi, king of Babylon, on family, property, trade and labour; the text was engraved around 1750 BC.",
+          "source_url": "https://www.louvre.fr/en/the-code-of-hammurabi"
+        },
+        {
+          "text": "The Louvre records it as acquired through the division of finds from Jacques de Morgan's French excavations at Susa; it is owned by the French State.",
+          "source_url": "https://collections.louvre.fr/en/ark:/53355/cl010174436"
+        }
+      ],
+      "photo": {
+        "source_url": "https://commons.wikimedia.org/wiki/File:P1050763_Louvre_code_Hammurabi_face_rwk-gradient.jpg",
+        "file_url": "https://upload.wikimedia.org/wikipedia/commons/9/94/P1050763_Louvre_code_Hammurabi_face_rwk-gradient.jpg",
+        "author": "Mbzt, via Wikimedia Commons",
+        "licence": "CC BY 3.0",
+        "pd_basis": "Ancient stele of 1792–1750 BC; no copyright in the object",
+        "crop_note": null
+      },
+      "conflicts": [
+        "Place: the Louvre names only 'Irak = Mésopotamie' (Wikidata P1071 Mesopotamia agrees). The text's epilogue says it was set up in the Esagila temple at Babylon (L. W. King translation, Avalon Project); Martha Roth suggests this stele was taken from Sippar (Wikipedia). Neither city is in the Louvre record.",
+        "Date: the Louvre gives -1792/-1750 (Hammurabi's reign); Wikidata P571 gives c. 1793 BCE, earliest -1793, latest -1751, one year off, probably a year-numbering difference. The Louvre is used.",
+        "Discovery: the Louvre record gives 1901-1902; its gallery page says 1902. Wikidata P195 (Louvre, Department of Near Eastern Antiquities) agrees."
+      ],
+      "contested": false,
+      "claimant_source": null,
+      "heritage_image_law": false,
+      "retrieved": "2026-10-16"
     }
   ]
 }

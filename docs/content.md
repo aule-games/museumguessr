@@ -54,10 +54,20 @@ Wikimedia Commons. Non-commercial or no-derivatives licences are never used.
 
 ## Made
 
-`made` is the place of creation named by the museum record: not the place the
-work shows, not the find spot unless it was also made there, and not a culture
-name. Items whose record names only a culture, or gives an either/or place, do
-not ship.
+`made` is the place of creation named by the holding museum: in its record,
+or in its own published texts (description, catalogue entry, artist page) that
+place the work, or the artist's workshop, there when it was made. It is not
+the place the work shows, not the find spot unless it was also made there,
+and not a culture name. A place that rests only on other sources does not
+count: use the level the museum names (item 05's museum names only France).
+Items whose museum names only a culture, or gives an either/or place, do not
+ship. `made.source_url` points at the museum text that names the place.
+
+An excavated object whose museum records only its find spot, and nothing
+suggests it was traded there, gets the region or country around that spot,
+never city precision, with a `note` saying so ("Found in a royal tomb at Ur;
+the museum names no workshop"). Trade goods keep the rule above: item 07 was
+made in Athens and found in Italy.
 
 - `precision` is `city`, `region` or `country`, matching what the record names.
 - `lat`/`lng` are the Wikidata P625 coordinates of that place item, stored in
