@@ -1,7 +1,9 @@
 // The share block (V1-19, V1-20): an "Add a name" disclosure, one Share
-// button and a "Copy link" text link. Share opens a chooser with WhatsApp, X
-// and Copy link that returns focus to Share; the phone's share sheet is off
-// for now (on a Mac it opened the system share menu). WhatsApp and X get the
+// button and a "Copy link" text link. On a touch-first device (a phone or a
+// tablet) Share opens the system share sheet with the hook and the link; on
+// a computer, where the sheet is the system share menu, or when the sheet
+// fails, Share opens a chooser with WhatsApp, X and Copy link that returns
+// focus to Share. A cancelled sheet sends nothing. WhatsApp and X get the
 // hook and the link through their public share addresses; Copy link copies
 // the link alone. "Link copied" is announced only after the clipboard write
 // succeeded; when it fails the link is shown, selected, to copy by hand.
@@ -15,8 +17,8 @@ import { closeDialog, openDialog } from './overlay.ts';
 
 export interface ShareSetup {
   kind: ShareKind;
-  /** The challenge link for a channel and the name to carry (null for none), and the message around it. */
-  link(medium: ShareMedium, name: string | null): { url: string; text: string };
+  /** The challenge link for a channel and the name to carry (null for none), its hook, and the hook and link as one message. */
+  link(medium: ShareMedium, name: string | null): { url: string; hook: string; text: string };
   /** The name stored on this device, or null. */
   storedName: string | null;
   onName(name: string | null): void;
@@ -24,6 +26,11 @@ export interface ShareSetup {
 }
 
 let counter = 0;
+
+/** A phone or a tablet: no hover, a coarse pointer. Only these get the system share sheet. */
+function touchFirst(): boolean {
+  return typeof matchMedia === 'function' && matchMedia('(hover: none) and (pointer: coarse)').matches;
+}
 
 function shareGlyph(): SVGSVGElement {
   return s(
@@ -144,8 +151,20 @@ export function shareBlock(p: ShareSetup, label: CopyKey = 'share.button'): HTML
     copyBtn.addEventListener('click', () => closeDialog(dlg, () => void copy(p.link('copy', name).url)));
   };
 
-  const share = (name: string | null) => {
+  const share = async (name: string | null) => {
     p.onName(name);
+    const native = p.link('native', name);
+    const data = { text: native.hook, url: native.url };
+    if (touchFirst() && typeof navigator.share === 'function' && navigator.canShare?.(data)) {
+      try {
+        await navigator.share(data);
+        p.onShared('native');
+        return;
+      } catch (err) {
+        if ((err as DOMException | null)?.name === 'AbortError') return;
+        // any other refusal (NotAllowedError, a missing target) falls back to the chooser
+      }
+    }
     chooser(name);
   };
 
@@ -157,7 +176,7 @@ export function shareBlock(p: ShareSetup, label: CopyKey = 'share.button'): HTML
       return;
     }
     setError(false);
-    share(name);
+    void share(name);
   };
   shareBtn.addEventListener('click', () => go(true));
   without.addEventListener('click', () => go(false));

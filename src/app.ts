@@ -13,7 +13,7 @@ import { stripMessage, takeErrorBudget, toReport, type ErrorReport } from './err
 import { newGameId } from './game/ids.ts';
 import type { WriterLock } from './game/lock.ts';
 import { isListed, nameList } from './game/names.ts';
-import { shareText } from './game/text.ts';
+import { shareHook, shareText } from './game/text.ts';
 import { SeenLists } from './game/seen.ts';
 import type { TabSession } from './game/session.ts';
 import { testGuess } from './game/testplay.ts';
@@ -234,7 +234,8 @@ export class App {
       onName: (name) => (name ? this.d.local.set(KEYS.name, name) : this.d.local.remove(KEYS.name)),
       link: (medium, name) => {
         const url = challengeUrl(SITE_URL, { ids: game.item_ids, score: game.total, name, hash: game.deck_hash }, medium, game.kind);
-        return { url, text: shareText({ total: game.total, url, replay: game.replay, kind: game.kind }) };
+        const p = { total: game.total, url, replay: game.replay, kind: game.kind };
+        return { url, hook: shareHook(p), text: shareText(p) };
       },
       onShared,
     };

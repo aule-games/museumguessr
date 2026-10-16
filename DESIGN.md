@@ -145,8 +145,8 @@ exports rather than silently discarding them.
 
 The share text never carries a wall label or round-by-round answers: a
 challenge link replays the same 10 for a friend, so it must not name places,
-museums, dates or distances. WhatsApp and X get the hook and the challenge
-link; Copy link copies the link alone (V1-19):
+museums, dates or distances. The phone's share sheet, WhatsApp and X get the
+hook and the challenge link; Copy link copies the link alone (V1-19):
 
 ```text
 Can you beat my 21,480/30,000 on MuseumGuessr? https://aule-games.github.io/museumguessr/?d=…&s=21480&h=…

@@ -66,13 +66,16 @@ export function xLength(text: string): number {
   return [...text.replace(/https:\/\/\S+/g, 'x'.repeat(X_LINK_LENGTH))].length;
 }
 
+/** The share hook (V1-19). A replay marks its total "(replay)"; a reply answers a friend's challenge. */
+export function shareHook(p: { total: number; replay: boolean; kind: 'challenge' | 'reply' }): string {
+  const total = formatNumber(p.total);
+  return p.kind === 'reply' ? t('share.hookReply', { total }) : t(p.replay ? 'share.hookReplay' : 'share.hook', { total });
+}
+
 /**
  * The share message for a finished game (V1-19): the hook and the challenge
  * link, nothing about the answers, so a friend plays the same 10 unspoiled.
- * A replay marks its total "(replay)"; a reply answers a friend's challenge.
  */
 export function shareText(p: { total: number; url: string; replay: boolean; kind: 'challenge' | 'reply' }): string {
-  const total = formatNumber(p.total);
-  const hook = p.kind === 'reply' ? t('share.hookReply', { total }) : t(p.replay ? 'share.hookReplay' : 'share.hook', { total });
-  return `${hook} ${p.url}`;
+  return `${shareHook(p)} ${p.url}`;
 }

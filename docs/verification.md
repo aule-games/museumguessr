@@ -16,12 +16,12 @@ Last run: 2026-10-16.
 | lint | passed (2 s) |
 | build | passed (1 s) |
 | build checks | passed (0 s) |
-| browser tests (5 viewports) | passed (95 s) |
+| browser tests (5 viewports) | passed (92 s) |
 | release scan (publish candidate) | passed (6 s) |
 
 ## Automated checks
 
-394 tests, 394 passed, 111 requirement IDs.
+396 tests, 396 passed, 111 requirement IDs.
 
 | ID | Rule | Test file | Result |
 | --- | --- | --- | --- |
@@ -670,8 +670,10 @@ Last run: 2026-10-16.
 | V1-19 | share text › the share text is the hook and the link only, with no round-by-round answers | `tests/unit/share-challenge.test.ts` | passed |
 | V1-19 | share text › the share text fits 280 characters on X with the link counted as 23 | `tests/unit/share-challenge.test.ts` | passed |
 | V1-19 | share text › a reply answers the friend | `tests/unit/share-challenge.test.ts` | passed |
-| V1-19 | Share › Share opens a chooser with WhatsApp, X and Copy link, never the system share sheet, and returns focus to Share (phone) | `tests/e2e/challenge.spec.ts` | passed |
-| V1-19 | Share › Copy link in the chooser copies the link alone and sends result_shared (phone) | `tests/e2e/challenge.spec.ts` | passed |
+| V1-19 | Share on a phone › Share opens the system share sheet with the hook and the link only, and sends result_shared (phone) | `tests/e2e/challenge.spec.ts` | passed |
+| V1-19 | Share on a phone › a cancelled share sheet sends nothing; a refused one falls back to the chooser (phone) | `tests/e2e/challenge.spec.ts` | passed |
+| V1-19 | Share on a phone › without a share sheet, Copy link in the chooser copies the link alone and sends result_shared (phone) | `tests/e2e/challenge.spec.ts` | passed |
+| V1-19 | Share on a computer › Share opens the chooser with WhatsApp, X and Copy link, never the system share menu, and returns focus to Share (phone) | `tests/e2e/challenge.spec.ts` | passed |
 | V1-19 | a full game › ten rounds end on the results screen; Copy link copies the challenge link; replay starts over (phone) | `tests/e2e/game.spec.ts` | passed |
 | V1-20 | player names › keeps "Ali" as "Ali" | `tests/unit/share-challenge.test.ts` | passed |
 | V1-20 | player names › keeps " Barış Can " as "Barış Can" | `tests/unit/share-challenge.test.ts` | passed |

@@ -233,12 +233,14 @@ and Share are above the fold; at 390×844 Play another 10 is too.
 | Recap | thumbnail, title, made → now in, points (or Skipped) per round | `end.recapRow`, `end.points`, `reveal.skipped` | title wraps |
 | Replay | text link: the same 10 again (a replay, marked in its share text) | `end.replay` | — |
 
-Share opens the Share your score chooser (WhatsApp, X, Copy link), which
-returns focus to Share when closed. The browser's own share sheet is off for
-now: on a Mac it opened the system share menu. WhatsApp and X get the hook and
-the link, within 280 characters as X counts them, and no round-by-round
-answers; Copy link copies the link alone. "Link copied" is announced only
-after the clipboard write succeeds (V1-19).
+On a phone or tablet (no hover, a coarse pointer) Share opens the system
+share sheet with the hook as its text and the link in its own field. On a
+computer, where the sheet is the system share menu, or when the sheet fails
+with anything but a cancel, the Share your score chooser opens (WhatsApp, X,
+Copy link) and returns focus to Share when closed. WhatsApp and X get the
+hook and the link, within 280 characters as X counts them, and no
+round-by-round answers; Copy link copies the link alone. "Link copied" is
+announced only after the clipboard write succeeds (V1-19).
 
 A finished game saved under other answers shows the total and
 `end.versionChanged` instead of the recap and the share block.
@@ -271,7 +273,7 @@ A finished game saved under other answers shows the total and
 | Made and held in one area | — | — | — | combined glyph, "Made and held in the same area: …" | — |
 | Region origin | — | — | — | pin + full-marks area + words | — |
 | Difficulty row | — | row shown after round 3 | — | "Thanks", chips removed | — |
-| Share | — | no name: Share without one | invalid name: inline rule, Share stays closed; clipboard fails: the link, selected | chooser; "Link copied" | chooser closed: nothing sent |
+| Share | — | no name: Share without one | invalid name: inline rule, Share stays closed; clipboard fails: the link, selected | sheet (phone) or chooser; "Link copied" | cancelled sheet or closed chooser: nothing sent |
 | Challenge link | h1 empty while the name is checked | no score: "Play the same 10 your friend played" | broken link screen | challenge line | answers changed: no score to beat |
 | Resume | — | start screen | unreadable save: discarded, start screen | "Continue · Round 4 of 10" | a game left on a reveal resumes on that reveal |
 | Error screen | — | — | "Something broke" + Reload + New game; adds "Your progress is saved" when a save exists | — | — |

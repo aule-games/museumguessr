@@ -40,43 +40,62 @@ async function seedFinished(page: Page, opts: { total?: number; kind?: 'random' 
 
 const link = (q: Record<string, string>) => `./?${new URLSearchParams(q).toString()}`;
 
-/** A browser share sheet that records its calls; Share must never open it (it is off for now). */
-async function recordShareSheet(page: Page) {
-  await page.addInitScript(() => {
+/** Replace the browser's share sheet: resolve, cancel, refuse, or be absent. Calls are recorded in `__shares`. */
+async function shareSheet(page: Page, mode: 'resolve' | 'abort' | 'refuse' | 'absent') {
+  await page.addInitScript((m) => {
     const calls: unknown[] = [];
     (window as unknown as { __shares: unknown[] }).__shares = calls;
+    if (m === 'absent') {
+      Object.defineProperty(navigator, 'share', { value: undefined, configurable: true });
+      return;
+    }
     Object.defineProperty(navigator, 'canShare', { value: () => true, configurable: true });
     Object.defineProperty(navigator, 'share', {
       configurable: true,
       value: (data: unknown) => {
         calls.push(data);
-        return Promise.resolve();
+        if (m === 'resolve') return Promise.resolve();
+        return Promise.reject(new DOMException('no', m === 'abort' ? 'AbortError' : 'NotAllowedError'));
       },
     });
-  });
+  }, mode);
 }
 
-test.describe('[V1-19] Share', () => {
-  test('Share opens a chooser with WhatsApp, X and Copy link, never the system share sheet, and returns focus to Share', async ({ page }) => {
-    await recordShareSheet(page);
+const shares = (page: Page) => page.evaluate(() => (window as unknown as { __shares: { text: string; url: string }[] }).__shares);
+
+test.describe('[V1-19] Share on a phone', () => {
+  test('Share opens the system share sheet with the hook and the link only, and sends result_shared', async ({ page, recorder }) => {
+    await shareSheet(page, 'resolve');
     await seedFinished(page);
     await page.locator('[data-test=review]').click();
-    const share = page.locator('[data-test=share]');
-    await share.click();
-    const wa = page.locator('[data-test=share-whatsapp]');
-    await expect(wa).toBeVisible();
-    expect(await page.evaluate(() => (window as unknown as { __shares: unknown[] }).__shares)).toHaveLength(0);
-    const waText = decodeURIComponent(new URL((await wa.getAttribute('href')) ?? '').searchParams.get('text') ?? '');
-    expect(waText).toMatch(/^Can you beat my 18,240\/30,000 on MuseumGuessr\? https:\/\/\S+utm_medium=whatsapp\S*$/);
-    const xText = decodeURIComponent(new URL((await page.locator('[data-test=share-x]').getAttribute('href')) ?? '').searchParams.get('text') ?? '');
-    expect(xText).toMatch(/^Can you beat my 18,240\/30,000 on MuseumGuessr\? https:\/\/\S+utm_medium=x\S*$/);
-    await page.keyboard.press('Escape');
-    await expect(wa).toBeHidden();
-    await expect(share).toBeFocused();
+    await page.locator('[data-test=share]').click();
+    const calls = await shares(page);
+    expect(calls).toHaveLength(1);
+    expect(calls[0]?.text).toBe('Can you beat my 18,240/30,000 on MuseumGuessr?');
+    expect(new URL(calls[0]?.url ?? '').searchParams.get('utm_medium')).toBe('native');
+    await recorder.idle(page);
+    expect(recorder.of('result_shared').map((e) => e.properties.method)).toEqual(['native']);
   });
 
-  test('Copy link in the chooser copies the link alone and sends result_shared', async ({ page, context, recorder }) => {
+  test('a cancelled share sheet sends nothing; a refused one falls back to the chooser', async ({ page, recorder }) => {
+    await shareSheet(page, 'abort');
+    await seedFinished(page);
+    await page.locator('[data-test=review]').click();
+    await page.locator('[data-test=share]').click();
+    await recorder.idle(page);
+    expect(recorder.of('result_shared')).toHaveLength(0);
+    await expect(page.locator('[data-test=share-whatsapp]')).toHaveCount(0);
+
+    await shareSheet(page, 'refuse');
+    await page.reload();
+    await page.locator('[data-test=review]').click();
+    await page.locator('[data-test=share]').click();
+    await expect(page.locator('[data-test=share-whatsapp]')).toBeVisible();
+  });
+
+  test('without a share sheet, Copy link in the chooser copies the link alone and sends result_shared', async ({ page, context, recorder }) => {
     await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+    await shareSheet(page, 'absent');
     await seedFinished(page);
     await page.locator('[data-test=review]').click();
     await page.locator('[data-test=share]').click();
@@ -87,6 +106,28 @@ test.describe('[V1-19] Share', () => {
     expect(new URL(text).searchParams.get('utm_medium')).toBe('copy');
     await recorder.idle(page);
     expect(recorder.of('result_shared').map((e) => e.properties.method)).toEqual(['copy']);
+  });
+});
+
+test.describe('[V1-19] Share on a computer', () => {
+  test.use({ hasTouch: false, viewport: { width: 1280, height: 800 } });
+
+  test('Share opens the chooser with WhatsApp, X and Copy link, never the system share menu, and returns focus to Share', async ({ page }) => {
+    await shareSheet(page, 'resolve');
+    await seedFinished(page);
+    await page.locator('[data-test=review]').click();
+    const share = page.locator('[data-test=share]');
+    await share.click();
+    const wa = page.locator('[data-test=share-whatsapp]');
+    await expect(wa).toBeVisible();
+    expect(await shares(page)).toHaveLength(0);
+    const waText = decodeURIComponent(new URL((await wa.getAttribute('href')) ?? '').searchParams.get('text') ?? '');
+    expect(waText).toMatch(/^Can you beat my 18,240\/30,000 on MuseumGuessr\? https:\/\/\S+utm_medium=whatsapp\S*$/);
+    const xText = decodeURIComponent(new URL((await page.locator('[data-test=share-x]').getAttribute('href')) ?? '').searchParams.get('text') ?? '');
+    expect(xText).toMatch(/^Can you beat my 18,240\/30,000 on MuseumGuessr\? https:\/\/\S+utm_medium=x\S*$/);
+    await page.keyboard.press('Escape');
+    await expect(wa).toBeHidden();
+    await expect(share).toBeFocused();
   });
 });
 
@@ -173,6 +214,7 @@ test.describe('[V1-16] [V1-17] challenge links', () => {
 test.describe('[V1-18] [V1-21] replies', () => {
   test('a reply to this device\'s own deck shows the result; a challenge game sends its score back', async ({ page, context }) => {
     await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+    await shareSheet(page, 'absent');
     await seedFinished(page, { total: 18240 });
     await page.goto(link({ d: IDS.join('.'), s: '19000', n: 'Bea', h: HASH }));
     await expect(page.locator('[data-test=challenge-line]')).toHaveText('Bea scored 19,000 on your 10. You scored 18,240. Bea wins by 760.');
@@ -231,6 +273,7 @@ test.describe('[V1-26] keyboard and enlarged text', () => {
   });
 
   test('Share opens the chooser with the keyboard, keeps focus inside it, and Escape returns focus to Share', async ({ page }) => {
+    await shareSheet(page, 'absent');
     await seedFinished(page);
     await tabTo(page, '[data-test=review]');
     await page.keyboard.press('Enter');
