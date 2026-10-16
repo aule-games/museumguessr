@@ -30,8 +30,21 @@ export interface Deck {
   challenge: Challenge | null;
 }
 
+/** Device facts game_start carries (V1-27); the app reads them, the reducer stays pure. */
+export interface StartContext {
+  /** Games started in this tab session, this one included: 1, 2 or 3+. */
+  gameInTab: '1' | '2' | '3+';
+  /** How many objects this device had seen before this game: 0, 1-9, 10-19, 20-29 or 30+. */
+  seenBefore: '0' | '1-9' | '10-19' | '20-29' | '30+';
+}
+
+/** The coarse bucket game_start reports for a seen-list size (V1-27): 30+ means a fourth game or later. */
+export function seenBucket(n: number): StartContext['seenBefore'] {
+  return n <= 0 ? '0' : n < 10 ? '1-9' : n < 20 ? '10-19' : n < 30 ? '20-29' : '30+';
+}
+
 export type Action =
-  | { type: 'start'; gameId: string; src: Src; itemsVersion: string; deck: Deck }
+  | { type: 'start'; gameId: string; src: Src; itemsVersion: string; deck: Deck; context?: StartContext }
   | { type: 'confirm'; round: number; step: Step; value: LatLng | number }
   | { type: 'back'; round: number; step: Step }
   | { type: 'skip'; round: number }
@@ -94,9 +107,14 @@ function withRoundCompleted(state: GameState, effects: Effect[], round: number):
   return once(state, effects, ledgerKey(state.game_id, EVENTS.roundCompleted, round + 1), EVENTS.roundCompleted, {
     src: state.src,
     round: round + 1,
+    item_id: state.item_ids[round],
     skipped: result.skipped,
     answered_count: answeredCount(state),
     points: result.points,
+    made_points: result.made.points,
+    when_points: result.when.points,
+    kept_points: result.kept.points,
+    first_seen: state.first_seen[round] ?? false,
   });
 }
 
@@ -131,10 +149,15 @@ export function reduce(state: GameState | null, action: Action, keys: readonly A
       sent: [],
       finished: false,
     };
-    next = once(next, effects, ledgerKey(next.game_id, EVENTS.gameStart), EVENTS.gameStart, { src: next.src });
+    next = once(next, effects, ledgerKey(next.game_id, EVENTS.gameStart), EVENTS.gameStart, {
+      src: next.src,
+      deck_kind: next.deck_kind,
+      ...(action.context ? { game_in_tab: action.context.gameInTab, seen_before: action.context.seenBefore } : {}),
+    });
     next = once(next, effects, ledgerKey(next.game_id, EVENTS.roundStarted, 1), EVENTS.roundStarted, {
       src: next.src,
       round: 1,
+      item_id: next.item_ids[0],
     });
     return { state: next, effects: [{ type: 'save' }, ...effects] };
   }
@@ -177,7 +200,7 @@ export function reduce(state: GameState | null, action: Action, keys: readonly A
         effects,
         ledgerKey(state.game_id, EVENTS.stepCompleted, state.round + 1, action.step),
         EVENTS.stepCompleted,
-        { src: state.src, round: state.round + 1, step: action.step },
+        { src: state.src, round: state.round + 1, step: action.step, item_id: state.item_ids[state.round] },
       );
       const stepIndex = STEPS.indexOf(action.step);
       if (stepIndex < STEPS.length - 1) {
@@ -233,6 +256,7 @@ export function reduce(state: GameState | null, action: Action, keys: readonly A
         next = once(next, effects, ledgerKey(next.game_id, EVENTS.roundStarted, next.round + 1), EVENTS.roundStarted, {
           src: next.src,
           round: next.round + 1,
+          item_id: next.item_ids[next.round],
         });
         return { state: next, effects: [{ type: 'save' }, ...effects] };
       }

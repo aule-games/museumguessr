@@ -18,7 +18,7 @@ import { SeenLists } from './game/seen.ts';
 import type { TabSession } from './game/session.ts';
 import { GameMap, hasWebGL2, prefetchMap, type MapState } from './map/map.ts';
 import type { LatLng } from './scoring/geo.ts';
-import { ledgerKey, reduce, totalPoints, type Action, type Deck, type Effect, type ShareMethod } from './state/reducer.ts';
+import { ledgerKey, reduce, seenBucket, totalPoints, type Action, type Deck, type Effect, type ShareMethod, type StartContext } from './state/reducer.ts';
 import { KEYS, parseSave, parseSnapshot, serialize, type GameState, type ParsedSnapshot, type RoundResult } from './state/schema.ts';
 import type { KV } from './storage/guarded.ts';
 import { clear, focus } from './ui/dom.ts';
@@ -304,7 +304,7 @@ export class App {
       if (first && offered?.ids[0] !== deck.ids[0]) new Image().src = imageUrl(first.id);
       if (deck.restart) this.seenLists.restart(deck.ids);
       const committed: Deck = { ids: deck.ids, kind: deck.kind, hash: deck.hash, firstSeen: deck.firstSeen, challenge: deck.challenge };
-      this.dispatch({ type: 'start', gameId: this.id(), src: this.d.tab.src, itemsVersion: ITEMS_VERSION, deck: committed });
+      this.begin(committed);
     });
   }
 
@@ -318,6 +318,14 @@ export class App {
 
   newGame() {
     void this.startGame();
+  }
+
+  /** Commit a deck: game_start carries the tab's game count and a rough seen count, read before the deck is shown (V1-27). */
+  private begin(deck: Deck) {
+    const n = Number(this.d.session.get(KEYS.gamesInTab) ?? '0') + 1;
+    this.d.session.set(KEYS.gamesInTab, String(n));
+    const context: StartContext = { gameInTab: n >= 3 ? '3+' : n === 2 ? '2' : '1', seenBefore: seenBucket(this.seenLists.ever().size) };
+    this.dispatch({ type: 'start', gameId: this.id(), src: this.d.tab.src, itemsVersion: ITEMS_VERSION, deck, context });
   }
 
   private dropChallenge() {
@@ -336,7 +344,7 @@ export class App {
           const deck = this.challengeDeck(c.link);
           this.dropChallenge();
           if (this.waiting && sameIds(this.waiting.ids, c.link.ids)) this.setWaiting(null);
-          this.dispatch({ type: 'start', gameId: this.id(), src: this.d.tab.src, itemsVersion: ITEMS_VERSION, deck });
+          this.begin(deck);
         });
       });
     if (this.state && !this.state.finished) confirmNewGame(opener, go);
@@ -364,7 +372,7 @@ export class App {
       this.guard(() => {
         this.dropChallenge();
         const deck: Deck = { ids: [...ids], kind: 'replay', hash: POOL.deckHash(ids) ?? ITEMS_VERSION, firstSeen: ids.map(() => false), challenge: null };
-        this.dispatch({ type: 'start', gameId: this.id(), src: this.d.tab.src, itemsVersion: ITEMS_VERSION, deck });
+        this.begin(deck);
       });
     });
   }

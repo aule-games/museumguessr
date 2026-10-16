@@ -96,8 +96,10 @@ without their query string, except campaign tags (`utm_*` and `ref`). The full
 list is in [docs/analytics.md](docs/analytics.md#events).
 
 Your device remembers which objects you have seen, so your next game shows
-new ones, and the name you add to a shared link. Neither is sent anywhere;
-anyone with a link you share sees the name in it.
+new ones, and the name you add to a shared link. Each game start sends only a
+rough count of the objects seen (0, 1-9, 10-19, 20-29 or 30 and more); the
+list and the name stay on the device, and anyone with a link you share sees
+the name in it.
 
 Open the site with `?test=1` to stop sending events from your browser;
 `?test=0` turns them back on.

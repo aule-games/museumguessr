@@ -9,8 +9,8 @@ const queries = readdirSync(join(DIR, 'queries')).filter((f) => f.endsWith('.sql
 const sql = (f: string) => readFileSync(join(DIR, 'queries', f), 'utf8');
 
 describe('[DX20] [PH6] checked-in analytics queries', () => {
-  it('has the smoke, KPI, cross-check, spike, errors-by-build and cap queries', () => {
-    expect(queries.sort()).toEqual(['cap.sql', 'crosscheck.sql', 'errors-by-build.sql', 'kpi.sql', 'smoke.sql', 'spike.sql']);
+  it('has the smoke, KPI, cross-check, spike, errors-by-build, cap, difficulty and return queries [V1-28]', () => {
+    expect(queries.sort()).toEqual(['cap.sql', 'crosscheck.sql', 'difficulty.sql', 'errors-by-build.sql', 'kpi.sql', 'return.sql', 'smoke.sql', 'spike.sql']);
   });
 
   it.each(queries.filter((f) => f !== 'cap.sql'))('%s keeps only this game’s events (project_id filter)', (f) => {
@@ -47,5 +47,13 @@ describe('[DX20] [PH6] checked-in analytics queries', () => {
     for (const f of [...queries.map((q) => join('queries', q)), 'kpi-funnel.json', 'env.example']) {
       expect(readFileSync(join(DIR, f), 'utf8')).not.toMatch(/phx_[A-Za-z0-9]{8,}/);
     }
+  });
+
+  it('[V1-28] the difficulty query counts first encounters of answered rounds only, per object', () => {
+    const text = sql('difficulty.sql');
+    expect(text).toMatch(/GROUP BY item_id/);
+    expect(text).toMatch(/first_seen\) = 'true'/);
+    expect(text).toMatch(/skipped\) = 'false'/);
+    expect(text).toMatch(/src != 'smoke'/);
   });
 });

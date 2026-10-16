@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { ANSWER_KEYS, ITEMS, ITEM_IDS, POOL, poolOf } from '../../src/content/items';
 import { newGameId } from '../../src/game/ids';
 import { scoreGame, type AnswerKey } from '../../src/scoring/game';
-import { reduce, totalPoints, type Action, type Deck } from '../../src/state/reducer';
+import { reduce, seenBucket, totalPoints, type Action, type Deck } from '../../src/state/reducer';
 import { V2_ITEMS_VERSION, parseSave, serialize, type GameState } from '../../src/state/schema';
 import type { Item } from '../../src/types/item';
 
@@ -175,5 +175,34 @@ describe('[V1-27] share and challenge events from the reducer', () => {
     expect(effectsOf(30000)).toEqual([{ src: 'webgames', beat: false }]);
     expect(effectsOf(null)).toEqual([{ src: 'webgames', beat: null }]);
     expect(finish(deckOf(ids)).sent.some((k) => k.includes('challenge_completed'))).toBe(false);
+  });
+});
+
+describe('[V1-27] round and game events carry the object and the deck', () => {
+  it('round events name the item; round_completed splits the points and says whether the object was new to the device', () => {
+    const ids = [...ITEM_IDS].reverse();
+    const firstSeen = ids.map((_, i) => i !== 0);
+    const actions: Action[] = [{ type: 'start', gameId: 'g1', src: 'webgames', itemsVersion: V, deck: deckOf(ids, { firstSeen }), context: { gameInTab: '2', seenBefore: '10-19' } }, ...answerAt(0, keyOf(ids[0] as string))];
+    const tracks: { name: string; props: Record<string, unknown> }[] = [];
+    let state: GameState | null = null;
+    for (const a of actions) {
+      const r = reduce(state, a, ANSWER_KEYS);
+      state = r.state;
+      for (const e of r.effects) if (e.type === 'track') tracks.push({ name: e.name, props: e.props });
+    }
+    expect(tracks.find((t) => t.name === 'game_start')?.props).toEqual({ src: 'webgames', deck_kind: 'random', game_in_tab: '2', seen_before: '10-19' });
+    expect(tracks.find((t) => t.name === 'round_started')?.props).toMatchObject({ round: 1, item_id: ids[0] });
+    expect(tracks.filter((t) => t.name === 'step_completed').every((t) => t.props.item_id === ids[0])).toBe(true);
+    expect(tracks.find((t) => t.name === 'round_completed')?.props).toMatchObject({ item_id: ids[0], made_points: 1000, when_points: 1000, kept_points: 1000, first_seen: false });
+  });
+
+  it('first_seen survives a reload: it lives in the save', () => {
+    const ids = [...ITEM_IDS];
+    const state = play([startWith(deckOf(ids, { firstSeen: ids.map((_, i) => i % 2 === 0) }))], ANSWER_KEYS);
+    expect(parseSave(serialize(state), POOL)?.first_seen).toEqual(ids.map((_, i) => i % 2 === 0));
+  });
+
+  it('seen_before buckets: 30+ means a fourth game or later', () => {
+    expect([0, 1, 9, 10, 19, 20, 29, 30, 50].map(seenBucket)).toEqual(['0', '1-9', '1-9', '10-19', '10-19', '20-29', '20-29', '30+', '30+']);
   });
 });

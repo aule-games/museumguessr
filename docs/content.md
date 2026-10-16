@@ -147,6 +147,12 @@ city-level made place, no record conflict and no contested claim. At least 30%
 of the pool is difficulty 1 and at most 30% is difficulty 3. In the fixed set
 of 10, rounds 1-3 are difficulty 1.
 
+Recalibration: once an object has 30 or more first-encounter rounds in
+`analytics/queries/difficulty.sql`, a mean of 2,000 points or more suggests
+difficulty 1, 1,200-1,999 difficulty 2 and below 1,200 difficulty 3. The
+agent proposes changes on the next batch contact sheet; the founder approves
+them there.
+
 ## Spread
 
 Fairness rules for the fixed set of 10: at least 6 holding cities with no more

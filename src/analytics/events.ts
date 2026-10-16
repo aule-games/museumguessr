@@ -38,11 +38,22 @@ export interface SuperProps {
 
 export interface EventProps {
   $pageview: { src: string; landing: boolean; resumed: boolean };
-  game_start: { src: string };
-  round_started: { src: string; round: number };
-  step_completed: { src: string; round: number; step: Step };
+  game_start: { src: string; deck_kind: 'random' | 'challenge' | 'replay'; game_in_tab?: '1' | '2' | '3+'; seen_before?: '0' | '1-9' | '10-19' | '20-29' | '30+' };
+  round_started: { src: string; round: number; item_id: string };
+  step_completed: { src: string; round: number; step: Step; item_id: string };
   step_back: { src: string; round: number; from: Step };
-  round_completed: { src: string; round: number; skipped: boolean; answered_count: number; points: number };
+  round_completed: {
+    src: string;
+    round: number;
+    item_id: string;
+    skipped: boolean;
+    answered_count: number;
+    points: number;
+    made_points: number;
+    when_points: number;
+    kept_points: number;
+    first_seen: boolean;
+  };
   game_completed: { src: string; total: number; answered_count: number };
   client_error: { name: string; message: string; frame: string };
   feedback: { src: string; q: FeedbackQ; a: string };
@@ -71,21 +82,21 @@ export const CATALOGUE: CatalogueEntry[] = [
   },
   {
     name: EVENTS.gameStart,
-    props: 'src: channel captured at the start of the game',
+    props: 'src: channel captured at the start of the game; deck_kind: random | challenge | replay; game_in_tab: 1 | 2 | 3+ (games started in this tab session); seen_before: 0 | 1-9 | 10-19 | 20-29 | 30+ (a rough count of objects this device had seen)',
     fires: 'when a new game starts (Start, New game, Replay)',
     dedupe: 'once per game',
     feeds: 'share of visitors who start a game',
   },
   {
     name: EVENTS.roundStarted,
-    props: 'src; round: 1-10',
+    props: 'src; round: 1-10; item_id: the object shown',
     fires: 'when a round is shown for the first time',
     dedupe: 'once per game and round',
     feeds: 'drop-off by round',
   },
   {
     name: EVENTS.stepCompleted,
-    props: 'src; round: 1-10; step: made | when | kept',
+    props: 'src; round: 1-10; step: made | when | kept; item_id',
     fires: 'when an answer is confirmed',
     dedupe: 'once per game, round and step (a changed answer after Back is not sent again)',
     feeds: 'drop-off inside a round',
@@ -99,7 +110,7 @@ export const CATALOGUE: CatalogueEntry[] = [
   },
   {
     name: EVENTS.roundCompleted,
-    props: 'src; round: 1-10; skipped: boolean; answered_count: answered rounds so far; points: 0-3000',
+    props: 'src; round: 1-10; item_id; skipped: boolean; answered_count: answered rounds so far; points: 0-3000; made_points, when_points, kept_points: 0-1000 each; first_seen: this device had not seen the object before this game (boolean)',
     fires: 'when the reveal is shown (or a round is skipped after an image failure)',
     dedupe: 'once per game and round',
     feeds: 'KPI step 2 (answered_count = 3); median time per round',

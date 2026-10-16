@@ -54,11 +54,11 @@ screen, from the same source in `src/analytics/events.ts`):
 | Event | Properties | Fires | Once per |
 | --- | --- | --- | --- |
 | `$pageview` | `src`, `landing` (first load in this tab session), `resumed` (a saved game was restored) | each page load, after the first screen renders | every load counts |
-| `game_start` | `src` | a new game starts (Start, New game, Replay) | game |
-| `round_started` | `src`, `round` (1-10) | a round is shown the first time | game and round |
-| `step_completed` | `src`, `round`, `step` (`made`, `when`, `kept`) | an answer is confirmed (a changed answer after Back is not sent again) | game, round and step |
+| `game_start` | `src`, `deck_kind` (`random`, `challenge`, `replay`), `game_in_tab` (`1`, `2`, `3+`), `seen_before` (`0`, `1-9`, `10-19`, `20-29`, `30+`: a rough count of objects this device had seen) | a new game starts (Start, Play another 10, a challenge, Replay) | game |
+| `round_started` | `src`, `round` (1-10), `item_id` | a round is shown the first time | game and round |
+| `step_completed` | `src`, `round`, `step` (`made`, `when`, `kept`), `item_id` | an answer is confirmed (a changed answer after Back is not sent again) | game, round and step |
 | `step_back` | `src`, `round`, `from` (the step left: `when`, `kept`) | the player taps Back to change an earlier answer | every Back |
-| `round_completed` | `src`, `round`, `skipped`, `answered_count` (answered rounds so far), `points` (0-3000) | the reveal is shown, or a round is skipped after its photo failed | game and round |
+| `round_completed` | `src`, `round`, `item_id`, `skipped`, `answered_count` (answered rounds so far), `points` (0-3000), `made_points`, `when_points`, `kept_points` (0-1000 each), `first_seen` (the device had not seen the object before this game) | the reveal is shown, or a round is skipped after its photo failed | game and round |
 | `game_completed` | `src`, `total` (0-30000), `answered_count` | the end screen opens after round 10 | game |
 | `client_error` | `name`, `message` (first 80 characters, URLs removed), `frame` (chunk:line:col) | an uncaught error in game code, or the map cannot run | at most 3 per tab session |
 | `feedback` | `src`, `q` (`difficulty`, `most_fun`), `a` | the optional difficulty row (after round 3) or the "most fun" row (end) | game and question |
@@ -133,6 +133,21 @@ answered rounds.**
   this device has seen; no secrets.
 - **Hosting budget:** a full game downloads about 4 MB; GitHub Pages' 100 GB
   monthly soft limit is about 25,000 full games.
+
+## Return play and difficulty
+
+`seen_before` and `first_seen` come from the device's seen list, read when the
+deck is committed and kept in the saved game, so a reload never changes them.
+[`return.sql`](../analytics/queries/return.sql) counts game starts by
+`seen_before`: a device's first game starts at `0`, its fourth or later at
+`30+`. **Batch B threshold (proposed, the founder confirms it on the batch-B
+contact sheet):** grow the pool to 50 when, over 14 days with at least 200
+first games, `fourth_game_rate` passes 10%. Share rate per finished game is
+`result_shared` with `first_in_game = true` over `game_completed`.
+
+[`difficulty.sql`](../analytics/queries/difficulty.sql) gives each object's
+mean points over first encounters; docs/content.md "Difficulty" turns them
+into difficulty proposals.
 
 ## Event budget
 

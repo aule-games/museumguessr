@@ -41,6 +41,8 @@ export const KEYS = {
   challenge: 'museumguessr:v1:challenge',
   /** sessionStorage: a challenge set aside with "Continue my game" (V1-17). */
   waiting: 'museumguessr:v1:waiting-challenge',
+  /** sessionStorage: games started in this tab session, for game_start's game_in_tab (V1-27). */
+  gamesInTab: 'museumguessr:v1:games-in-tab',
   /** sessionStorage: challenge links whose screen already sent challenge_opened. */
   challengeOpened: 'museumguessr:v1:challenge-opened',
 } as const;

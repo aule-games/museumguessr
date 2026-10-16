@@ -186,7 +186,7 @@ export const COPY = {
   'about.body':
     'No cookies and no sign-up. To learn whether the game is fun, anonymous play counts go to PostHog (EU servers). Each event also carries the technical details PostHog adds: browser, operating system, device type, screen size, language, time zone and the site that linked here. The address of this page is sent without its query string, except campaign tags (utm_* and ref). These events are sent:',
   'about.testMode': 'Open the site with ?test=1 to stop sending events from this browser; ?test=0 turns them back on.',
-  'about.device': 'This device remembers which objects you have seen, so your next game shows new ones, and the name you add to a shared link. Neither is sent anywhere; anyone with a link you share sees the name in it.',
+  'about.device': 'This device remembers which objects you have seen, so your next game shows new ones, and the name you add to a shared link. Each game start sends only a rough count of the objects seen (0, 1-9, 10-19, 20-29 or 30 and more); the list and the name stay here, and anyone with a link you share sees the name in it.',
   'confirmNew.title': 'Start over?',
   'confirmNew.body': 'Your score will be lost.',
   'confirmNew.yes': 'Start over',
