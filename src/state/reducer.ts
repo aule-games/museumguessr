@@ -4,29 +4,34 @@
 
 import type { Src } from '../analytics/channels.ts';
 import { EVENTS, STEPS, type EventName, type FeedbackQ, type Step } from '../analytics/events.ts';
+import { scoreRound, skippedRound, type AnswerKey } from '../scoring/game.ts';
 import type { LatLng } from '../scoring/geo.ts';
-import { scoreDistance, scoreYear } from '../scoring/score.ts';
 import {
   currentVersions,
+  type Challenge,
+  type DeckKind,
   type FinishedSnapshot,
   type GameState,
   type RoundAnswers,
   type RoundResult,
 } from './schema.ts';
 
-/** The answer key the reducer needs for one item. */
-export interface AnswerKey {
-  id: string;
-  kept: LatLng;
-  keptFullMarksKm: number;
-  made: LatLng;
-  madeFullMarksKm: number;
-  start: number;
-  end: number;
+export type { AnswerKey } from '../scoring/game.ts';
+
+/** The deck a game commits to at Start (V1-04, V1-05). */
+export interface Deck {
+  /** Item ids in round order. */
+  ids: string[];
+  kind: DeckKind;
+  /** `itemsVersion` over the deck's items, in deck order. */
+  hash: string;
+  /** Per round: the item was not on this device's seen list when the deck was committed. */
+  firstSeen: boolean[];
+  challenge: Challenge | null;
 }
 
 export type Action =
-  | { type: 'start'; gameId: string; src: Src; itemsVersion: string }
+  | { type: 'start'; gameId: string; src: Src; itemsVersion: string; deck: Deck }
   | { type: 'confirm'; round: number; step: Step; value: LatLng | number }
   | { type: 'back'; round: number; step: Step }
   | { type: 'skip'; round: number }
@@ -71,17 +76,15 @@ function once(
   return { ...state, sent: [...state.sent, key] };
 }
 
-function scoreRound(a: RoundAnswers, key: AnswerKey): RoundResult {
-  const kept = scoreDistance(a.kept, key.kept, key.keptFullMarksKm);
-  const made = scoreDistance(a.made, key.made, key.madeFullMarksKm);
-  const when = scoreYear(a.when, key.start, key.end);
-  return {
-    kept: { points: kept.points, km: kept.km },
-    made: { points: made.points, km: made.km },
-    when: { points: when.points, yearsOff: when.yearsOff },
-    points: kept.points + made.points + when.points,
-    skipped: false,
-  };
+/** A deck is playable when its ids are distinct and every one has an answer key. */
+function deckOk(deck: Deck, keys: readonly AnswerKey[]): boolean {
+  const ids = deck.ids;
+  return (
+    ids.length > 0 &&
+    new Set(ids).size === ids.length &&
+    ids.every((id) => keys.some((k) => k.id === id)) &&
+    deck.firstSeen.length === ids.length
+  );
 }
 
 function withRoundCompleted(state: GameState, effects: Effect[], round: number): GameState {
@@ -95,17 +98,29 @@ function withRoundCompleted(state: GameState, effects: Effect[], round: number):
   });
 }
 
+/**
+ * `keys` holds the answer keys of every item the game may use (the live
+ * pool); a round is always scored against the key of its own item id, never
+ * by position (V1-04).
+ */
 export function reduce(state: GameState | null, action: Action, keys: readonly AnswerKey[]): Result {
   const effects: Effect[] = [];
 
   if (action.type === 'start') {
-    const n = keys.length;
+    const deck = action.deck;
+    if (!deckOk(deck, keys)) return { state, effects };
+    const n = deck.ids.length;
     let next: GameState = {
       ...currentVersions(action.itemsVersion),
       game_id: action.gameId,
       rev: (state?.rev ?? 0) + 1,
       src: action.src,
-      item_ids: keys.map((k) => k.id),
+      item_ids: [...deck.ids],
+      deck_kind: deck.kind,
+      deck_hash: deck.hash,
+      fresh: deck.firstSeen.every(Boolean),
+      first_seen: [...deck.firstSeen],
+      challenge: deck.challenge,
       round: 0,
       step: STEPS[0],
       phase: 'answering',
@@ -143,7 +158,8 @@ export function reduce(state: GameState | null, action: Action, keys: readonly A
       if (action.round !== state.round || action.step !== state.step || state.phase !== 'answering') {
         return { state, effects };
       }
-      const key = keys[state.round];
+      const id = state.item_ids[state.round];
+      const key = keys.find((k) => k.id === id);
       if (!key) return { state, effects };
       const valid =
         action.step === 'when'
@@ -189,13 +205,7 @@ export function reduce(state: GameState | null, action: Action, keys: readonly A
 
     case 'skip': {
       if (action.round !== state.round || state.phase !== 'answering') return { state, effects };
-      const skipped: RoundResult = {
-        kept: { points: 0, km: NaN },
-        made: { points: 0, km: NaN },
-        when: { points: 0, yearsOff: NaN },
-        points: 0,
-        skipped: true,
-      };
+      const skipped: RoundResult = skippedRound();
       let next: GameState = {
         ...state,
         rev: state.rev + 1,
@@ -235,6 +245,9 @@ export function reduce(state: GameState | null, action: Action, keys: readonly A
         items_version: next.items_version,
         game_id: next.game_id,
         item_ids: next.item_ids,
+        deck_kind: next.deck_kind,
+        deck_hash: next.deck_hash,
+        challenge: next.challenge,
         answers: next.answers,
         results: next.results as RoundResult[],
         total: totalPoints(next),

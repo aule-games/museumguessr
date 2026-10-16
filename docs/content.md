@@ -129,6 +129,15 @@ Fairness rules: the 10 rounds use at least 6 holding cities with no more than
 2 items per city, and a player who always guesses the same place or year must
 score under 40% of that question's maximum. `items:check` prints both.
 
+## Answer edits and saved games
+
+A saved game and the "Review your 10" recap hold their own 10 objects. They
+stay valid while the kept, made and when answers of those 10 are unchanged:
+adding objects to the pool keeps them, and changing one of those answers drops
+them, so the player starts a fresh game instead of being scored against an
+answer they never saw. Text and fact edits never drop a game. Saves from the
+fixed set of 10 carry over only while those 10 answers are the original ones.
+
 ## Sample
 
 The start-screen example comes from `data/sample.json`. Its photo must be CC0

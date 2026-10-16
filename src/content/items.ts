@@ -3,9 +3,8 @@
 
 import itemsFile from '../../data/items.json';
 import sampleFile from '../../data/sample.json';
-import { DISTANCE } from '../scoring/config.ts';
-import { madeFullMarksKm } from '../scoring/score.ts';
-import type { AnswerKey } from '../state/reducer.ts';
+import { answerKey, type AnswerKey } from '../scoring/game.ts';
+import type { Pool } from '../state/schema.ts';
 import type { Item } from '../types/item.ts';
 import { itemsVersion } from './version.ts';
 
@@ -23,16 +22,35 @@ export function imageUrl(id: string): string {
   return images[`/images/${id}.jpg`] ?? '';
 }
 
-export function answerKey(it: Item): AnswerKey {
+export { answerKey };
+
+/** Answer keys of the whole live pool; the reducer looks a round's key up by item id (V1-04). */
+export const ANSWER_KEYS: readonly AnswerKey[] = ITEMS.map(answerKey);
+
+const BY_ID: ReadonlyMap<string, Item> = new Map(ITEMS.map((it) => [it.id, it]));
+
+export function itemById(id: string): Item | undefined {
+  return BY_ID.get(id);
+}
+
+/** The items of a deck, in deck order; throws on an id that is not in the pool. */
+export function deckItems(ids: readonly string[]): Item[] {
+  return ids.map((id) => {
+    const it = BY_ID.get(id);
+    if (!it) throw new Error(`unknown item id ${id}`);
+    return it;
+  });
+}
+
+/** A pool as the saved-state parser sees it: a deck's hash, or null for an unknown id (V1-05). */
+export function poolOf(items: readonly Item[]): Pool {
+  const byId = new Map(items.map((it) => [it.id, it]));
   return {
-    id: it.id,
-    kept: { lat: it.kept.lat, lng: it.kept.lng },
-    keptFullMarksKm: DISTANCE.keptFullMarksKm,
-    made: { lat: it.made.lat, lng: it.made.lng },
-    madeFullMarksKm: madeFullMarksKm(it.made.precision, it.made.full_marks_km),
-    start: it.when.start,
-    end: it.when.end,
+    deckHash(ids) {
+      const deck = ids.map((id) => byId.get(id));
+      return deck.every((it) => it !== undefined) ? itemsVersion(deck as Item[]) : null;
+    },
   };
 }
 
-export const ANSWER_KEYS: readonly AnswerKey[] = ITEMS.map(answerKey);
+export const POOL: Pool = poolOf(ITEMS);

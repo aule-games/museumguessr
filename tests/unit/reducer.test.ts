@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { EVENTS } from '../../src/analytics/events';
-import { answeredCount, reduce, type Action, type AnswerKey, type Effect } from '../../src/state/reducer';
-import { parseSave, serialize, type GameState } from '../../src/state/schema';
+import { answeredCount, reduce, type Action, type AnswerKey, type Deck, type Effect } from '../../src/state/reducer';
+import { parseSave, serialize, type GameState, type Pool } from '../../src/state/schema';
 
 const KEYS: AnswerKey[] = Array.from({ length: 10 }, (_, i) => ({
   id: String(i + 1).padStart(2, '0'),
@@ -14,6 +14,9 @@ const KEYS: AnswerKey[] = Array.from({ length: 10 }, (_, i) => ({
 }));
 const IDS = KEYS.map((k) => k.id);
 const V = 'test-items-version';
+/** A pool that knows the ten fixture ids and hashes any deck of them to V. */
+const POOL: Pool = { deckHash: (ids) => (ids.every((id) => IDS.includes(id)) ? V : null) };
+const DECK: Deck = { ids: IDS, kind: 'random', hash: V, firstSeen: IDS.map(() => true), challenge: null };
 
 function run(actions: Action[], start: GameState | null = null) {
   let state = start;
@@ -28,7 +31,7 @@ function run(actions: Action[], start: GameState | null = null) {
   return { state: state as GameState, tracked, effects: all };
 }
 
-const start: Action = { type: 'start', gameId: 'g1', src: 'webgames', itemsVersion: V };
+const start: Action = { type: 'start', gameId: 'g1', src: 'webgames', itemsVersion: V, deck: DECK };
 const answerRound = (round: number): Action[] => [
   { type: 'confirm', round, step: 'made', value: { lat: 36, lng: 43 } },
   { type: 'confirm', round, step: 'when', value: -870 },
@@ -101,7 +104,7 @@ describe('[ENG28] KPI completion counts answered rounds only', () => {
 describe('[E6] [ENG14] resume and the event ledger', () => {
   it('a reload mid-round 2 resumes with round 1 intact and sends no duplicates', () => {
     const first = run([start, ...answerRound(0), { type: 'next', round: 0 }, answerRound(1)[0] as Action]);
-    const restored = parseSave(serialize(first.state), V, IDS);
+    const restored = parseSave(serialize(first.state), POOL);
     expect(restored).not.toBeNull();
     expect(restored?.round).toBe(1);
     expect(restored?.step).toBe('when');
@@ -110,17 +113,17 @@ describe('[E6] [ENG14] resume and the event ledger', () => {
     const again = run([answerRound(1)[0] as Action], restored);
     expect(again.tracked).toHaveLength(0);
   });
-  it('discards saves with another items version, unknown ids or a parse error', () => {
+  it('[V1-05] discards saves whose deck answers changed, with unknown ids, another version or a parse error', () => {
     const { state } = run([start]);
-    expect(parseSave(serialize(state), 'other', IDS)).toBeNull();
-    expect(parseSave(serialize(state), V, [...IDS.slice(0, 9), '99'])).toBeNull();
-    expect(parseSave('{not json', V, IDS)).toBeNull();
-    expect(parseSave(serialize({ ...state, state_version: 999 }), V, IDS)).toBeNull();
-    expect(parseSave(serialize({ ...state, scoring_version: 999 }), V, IDS)).toBeNull();
+    expect(parseSave(serialize(state), { deckHash: () => 'answers-changed' })).toBeNull();
+    expect(parseSave(serialize({ ...state, item_ids: [...IDS.slice(0, 9), '99'] }), POOL)).toBeNull();
+    expect(parseSave('{not json', POOL)).toBeNull();
+    expect(parseSave(serialize({ ...state, state_version: 999 }), POOL)).toBeNull();
+    expect(parseSave(serialize({ ...state, scoring_version: 999 }), POOL)).toBeNull();
   });
   it('re-validates src from saved state', () => {
     const { state } = run([start]);
-    const restored = parseSave(serialize({ ...state, src: '<script>' }), V, IDS);
+    const restored = parseSave(serialize({ ...state, src: '<script>' }), POOL);
     expect(restored?.src).toBe('other');
   });
   it('replaying the same 10 starts a new game id and sends round_started round 1 again exactly once', () => {
@@ -130,7 +133,7 @@ describe('[E6] [ENG14] resume and the event ledger', () => {
     expect(done.state.finished).toBe(true);
     expect(done.tracked.filter((t) => t.name === EVENTS.gameCompleted)).toHaveLength(1);
     expect(done.effects.some((e) => e.type === 'snapshot')).toBe(true);
-    const replay = run([{ type: 'start', gameId: 'g2', src: 'webgames', itemsVersion: V }], done.state);
+    const replay = run([{ type: 'start', gameId: 'g2', src: 'webgames', itemsVersion: V, deck: DECK }], done.state);
     expect(replay.state.game_id).toBe('g2');
     expect(replay.tracked.filter((t) => t.name === EVENTS.roundStarted && t.props.round === 1)).toHaveLength(1);
   });
@@ -170,7 +173,7 @@ describe('[DS35] every round asks Made, then When, then Kept', () => {
   });
   it('a save from the Kept-first version is not resumed', () => {
     const { state } = run([start]);
-    expect(parseSave(serialize({ ...state, state_version: 1 }), V, IDS)).toBeNull();
+    expect(parseSave(serialize({ ...state, state_version: 1 }), POOL)).toBeNull();
   });
 });
 

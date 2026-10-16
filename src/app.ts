@@ -4,13 +4,14 @@
 
 import type { Analytics } from './analytics/core.ts';
 import { EVENTS, STEPS, type FeedbackQ } from './analytics/events.ts';
-import { ANSWER_KEYS, ITEMS, ITEMS_VERSION, ITEM_IDS, SAMPLE, imageUrl } from './content/items.ts';
+import { ANSWER_KEYS, ITEMS_VERSION, ITEM_IDS, POOL, SAMPLE, deckItems, imageUrl, itemById } from './content/items.ts';
 import { stripMessage, takeErrorBudget, toReport, type ErrorReport } from './errors/boundary.ts';
+import { newGameId } from './game/ids.ts';
 import type { WriterLock } from './game/lock.ts';
 import type { TabSession } from './game/session.ts';
 import { GameMap, hasWebGL2, prefetchMap, type MapState } from './map/map.ts';
 import type { LatLng } from './scoring/geo.ts';
-import { ledgerKey, reduce, totalPoints, type Action, type Effect } from './state/reducer.ts';
+import { ledgerKey, reduce, totalPoints, type Action, type Deck, type Effect } from './state/reducer.ts';
 import { KEYS, parseSave, parseSnapshot, serialize, type GameState, type ParsedSnapshot } from './state/schema.ts';
 import type { KV } from './storage/guarded.ts';
 import { clear, focus } from './ui/dom.ts';
@@ -42,7 +43,8 @@ export class App {
   private map: GameMap | null = null;
   private mapEverReady = false;
   private photo: PhotoRegion | null = null;
-  private photoRound = -1;
+  /** `${game_id}:${item id}` of the photo region on screen (V1-11). */
+  private photoKey = '';
   private roundView: RoundView | null = null;
   private startReady = false;
   private readonly webgl: boolean;
@@ -57,9 +59,9 @@ export class App {
 
   /** Decide the first screen (DS8, DS24): same-tab reload resumes silently; a later visit sees Continue. */
   boot(): { resumed: boolean } {
-    this.state = parseSave(this.d.local.get(KEYS.save), ITEMS_VERSION, ITEM_IDS);
+    this.state = parseSave(this.d.local.get(KEYS.save), POOL);
     if (this.state?.finished) this.state = null;
-    this.snapshot = parseSnapshot(this.d.local.get(KEYS.last), ITEMS_VERSION);
+    this.snapshot = parseSnapshot(this.d.local.get(KEYS.last), POOL);
     const resume = !!this.state && !this.d.tab.landing;
     if (this.d.analytics.testMode) this.badge = testBadge(() => this.d.analytics.inspect());
     if (!this.webgl) this.telemetry({ name: 'webgl_unavailable', message: '', frame: '' });
@@ -100,7 +102,17 @@ export class App {
   }
 
   private id(): string {
-    return this.d.newId?.() ?? (globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`).slice(0, 18);
+    return this.d.newId?.() ?? newGameId();
+  }
+
+  /**
+   * The deck the start screen offers and Start commits. Until the pool
+   * reaches the planner's minimum it is the whole pool in its fixed order.
+   */
+  private pendingDeck(): Deck {
+    const ids = [...ITEM_IDS];
+    const seen = new Set(this.snapshot?.snapshot.item_ids ?? []);
+    return { ids, kind: 'random', hash: POOL.deckHash(ids) ?? ITEMS_VERSION, firstSeen: ids.map((id) => !seen.has(id)), challenge: null };
   }
 
   dispatch(action: Action) {
@@ -124,7 +136,7 @@ export class App {
         }
         if (!this.d.lock.supported && !isStart && prev) {
           // Without Web Locks: refuse to write over a newer save from another tab (ENG30).
-          const stored = parseSave(this.d.local.get(KEYS.save), ITEMS_VERSION, ITEM_IDS);
+          const stored = parseSave(this.d.local.get(KEYS.save), POOL);
           if (stored && (stored.game_id !== prev.game_id || stored.rev !== prev.rev)) {
             this.show('frozen');
             return false;
@@ -165,13 +177,13 @@ export class App {
 
   async startGame() {
     if (!(await this.d.lock.acquire(true))) return;
-    this.dispatch({ type: 'start', gameId: this.id(), src: this.d.tab.src, itemsVersion: ITEMS_VERSION });
+    this.dispatch({ type: 'start', gameId: this.id(), src: this.d.tab.src, itemsVersion: ITEMS_VERSION, deck: this.pendingDeck() });
   }
 
   async continueGame() {
     if (!(await this.d.lock.acquire(true))) return;
     this.guard(() => {
-      this.state = parseSave(this.d.local.get(KEYS.save), ITEMS_VERSION, ITEM_IDS);
+      this.state = parseSave(this.d.local.get(KEYS.save), POOL);
       this.show(this.state && !this.state.finished ? 'play' : 'start');
     });
   }
@@ -243,7 +255,7 @@ export class App {
     else if (this.snapshot) mode = { kind: 'finished', total: this.snapshot.snapshot.total, canReview: this.snapshot.current };
 
     if (this.webgl) prefetchMap();
-    const first = ITEMS[0];
+    const first = itemById(this.pendingDeck().ids[0] ?? '');
     if (!this.startReady && first) {
       // Preload round 1's photo; Start waits for it at most 4 s (DS9, DS23).
       const img = new Image();
@@ -273,7 +285,7 @@ export class App {
   private renderReview(): HTMLElement {
     const snap = this.snapshot;
     return endScreen({
-      items: ITEMS,
+      items: snap?.current ? deckItems(snap.snapshot.item_ids) : [],
       results: snap?.current ? snap.snapshot.results : null,
       total: snap?.snapshot.total ?? 0,
       detailed: !!snap?.current,
@@ -306,9 +318,10 @@ export class App {
     const s = this.state;
     if (!s) return { screen: this.renderStart(), focus: null };
     const total = totalPoints(s);
+    const items = deckItems(s.item_ids);
     const onMenu = (opener: HTMLElement) =>
       openMenu(opener, {
-        items: ITEMS,
+        items,
         sample: SAMPLE,
         inGame: !s.finished,
         onNewGame: () => this.newGame(),
@@ -319,7 +332,7 @@ export class App {
       const asked = s.sent.includes(ledgerKey(s.game_id, EVENTS.feedback, 'most_fun'));
       return {
         screen: endScreen({
-          items: ITEMS,
+          items,
           results: s.results,
           total,
           detailed: true,
@@ -332,24 +345,31 @@ export class App {
       };
     }
 
-    const item = ITEMS[s.round];
+    const item = items[s.round];
     if (!item) throw new Error('round out of range');
-    if (this.photoRound !== s.round || !this.photo) {
-      this.photo = new PhotoRegion(item, () => this.dispatch({ type: 'skip', round: s.round }));
-      this.photoRound = s.round;
+    const photoKey = `${s.game_id}:${item.id}`;
+    if (this.photoKey !== photoKey || !this.photo) {
+      // A photo belongs to one game and one item; a late callback from an
+      // older photo must not skip a round of the game now on screen (V1-11).
+      const round = s.round;
+      const region: PhotoRegion = new PhotoRegion(item, () => {
+        if (this.photo === region) this.dispatch({ type: 'skip', round });
+      });
+      this.photo = region;
+      this.photoKey = photoKey;
     }
 
     if (s.phase === 'reveal') {
       const result = s.results[s.round];
       if (!result) throw new Error('reveal without a result');
-      const next = ITEMS[s.round + 1];
+      const next = items[s.round + 1];
       if (next) new Image().src = imageUrl(next.id); // preload the next round's photo (R2)
       const pulse = s.round === 2 && !s.sent.includes(ledgerKey(s.game_id, EVENTS.feedback, 'difficulty'));
       const view = revealScreen({
         item,
         round: s.round,
         total,
-        isLast: s.round === ITEMS.length - 1,
+        isLast: s.round === s.item_ids.length - 1,
         answers: s.answers[s.round] ?? { kept: null, made: null, when: null },
         result,
         map: this.ensureMap(),

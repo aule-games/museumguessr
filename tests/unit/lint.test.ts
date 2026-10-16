@@ -14,6 +14,11 @@ describe('[ENG34] [DX30] [SEC1] [DS30] source lint rules', () => {
   it('rejects ?src= links', async () => {
     expect((await lint("export const u = 'https://x.io/?src=share';\n", 'src/fixture.ts')).join()).toContain('PH3');
   });
+  it('[V1-04] rejects indexing the whole item pool by round in the app and the screens', async () => {
+    expect((await lint('const item = ITEMS[round];\n', 'src/app.ts')).join()).toContain('V1-04');
+    expect((await lint('const key = ANSWER_KEYS[0];\n', 'src/ui/screens/fixture.ts')).join()).toContain('V1-04');
+    expect((await lint('const item = items[round];\n', 'src/app.ts')).join()).not.toContain('V1-04');
+  });
   it('rejects "owns" in the copy deck', async () => {
     expect((await lint("export const C = { a: 'The museum owns it.' };\n", 'src/copy.ts')).join()).toContain('DS30');
   });

@@ -3,29 +3,42 @@ import tseslint from 'typescript-eslint';
 
 const EVENT_NAMES = '^(\\$pageview|game_start|round_started|step_completed|round_completed|game_completed|client_error|feedback|result_copied)$';
 
+const SOURCE_RULES = [
+  {
+    selector: "AssignmentExpression[left.property.name=/^(innerHTML|outerHTML)$/]",
+    message: 'SEC1: render text with textContent or the h() helper, never innerHTML.',
+  },
+  {
+    selector: "CallExpression[callee.property.name='insertAdjacentHTML']",
+    message: 'SEC1: never insert HTML strings.',
+  },
+  {
+    selector: `Literal[value=/${EVENT_NAMES}/]`,
+    message: 'DX30: use the EVENTS constant from src/analytics/events.ts, not an event-name string.',
+  },
+  {
+    selector: 'Literal[value=/\\?src=/]',
+    message: 'PH3: channel links use utm_source, never ?src=.',
+  },
+];
+
 export default tseslint.config(
   { ignores: ['dist/**', 'node_modules/**', 'test-results/**', 'playwright-report/**', 'src/types/item.ts'] },
   ...tseslint.configs.recommended,
   {
     files: ['src/**/*.ts'],
+    rules: { 'no-restricted-syntax': ['error', ...SOURCE_RULES] },
+  },
+  {
+    // A game plays its own deck: screens never index the whole pool by round (V1-04).
+    files: ['src/app.ts', 'src/ui/**/*.ts'],
     rules: {
       'no-restricted-syntax': [
         'error',
+        ...SOURCE_RULES,
         {
-          selector: "AssignmentExpression[left.property.name=/^(innerHTML|outerHTML)$/]",
-          message: 'SEC1: render text with textContent or the h() helper, never innerHTML.',
-        },
-        {
-          selector: "CallExpression[callee.property.name='insertAdjacentHTML']",
-          message: 'SEC1: never insert HTML strings.',
-        },
-        {
-          selector: `Literal[value=/${EVENT_NAMES}/]`,
-          message: 'DX30: use the EVENTS constant from src/analytics/events.ts, not an event-name string.',
-        },
-        {
-          selector: 'Literal[value=/\\?src=/]',
-          message: 'PH3: channel links use utm_source, never ?src=.',
+          selector: 'MemberExpression[computed=true][object.name=/^(ITEMS|ANSWER_KEYS)$/]',
+          message: "V1-04: read a round's item from the game's deck (deckItems(state.item_ids)), never ITEMS[...] or ANSWER_KEYS[...].",
         },
       ],
     },
