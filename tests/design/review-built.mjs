@@ -185,6 +185,28 @@ try {
       await page.locator('[data-test=next]').click();
     }
     await capture('end');
+    // v1 share and challenge states (V1-31)
+    await page.locator('[data-test=add-name]').click();
+    await page.locator('[data-test=name-input]').fill('x');
+    await page.locator('[data-test=share]').click();
+    await capture('end-name-error');
+    await page.locator('[data-test=name-input]').fill('Barış');
+    await page.evaluate(() => Object.defineProperty(navigator, 'share', { value: undefined, configurable: true }));
+    await page.locator('[data-test=share]').click();
+    await expect(page.locator('[data-test=share-whatsapp]')).toBeVisible();
+    await capture('share-chooser');
+    await page.keyboard.press('Escape');
+    const last = await page.evaluate(() => JSON.parse(localStorage.getItem('museumguessr:v1:last') ?? '{}'));
+    const deck = last.item_ids.join('.');
+    await page.goto(`${url}?d=${deck}&s=19000&n=Bea&h=${last.deck_hash}`);
+    await expect(page.locator('[data-test=challenge-line]')).toContainText('Bea');
+    await capture('challenge-reply');
+    await page.goto(`${url}?d=${[...last.item_ids].reverse().join('.')}&s=18240&n=Barış`);
+    await expect(page.locator('[data-test=challenge-line]')).toContainText('Barış');
+    await capture('challenge');
+    await page.goto(`${url}?d=01.02`);
+    await expect(page.locator('[data-test=challenge-line]')).toBeVisible();
+    await capture('challenge-broken');
     await page.close();
     page = await context.newPage();
     await page.goto(`${url}?test=1`);
