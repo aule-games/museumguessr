@@ -2,7 +2,6 @@
 // how-it's-scored explanations (DS12), and the share text (DS15). Tested
 // against the scoring config.
 
-import { SITE_URL } from '../config.ts';
 import { formatNumber, t } from '../copy.ts';
 import { DISTANCE, MAX_POINTS } from '../scoring/config.ts';
 import type { Step } from '../analytics/events.ts';
@@ -58,27 +57,45 @@ export function howText(step: Step, item: Item, r: RoundResult): string {
   return t('scoring.distance', { radius: formatNumber(radius), place, half: formatNumber(halfDistanceKm()), km: formatNumber(res.km), points: formatNumber(res.points) });
 }
 
-export const SHARE_URL = `${SITE_URL}?utm_source=share&utm_medium=share`;
+/** X counts every link as this many characters, whatever its length. */
+export const X_LINK_LENGTH = 23;
+export const X_LIMIT = 280;
 
-/** The copied result text (DS15, PH3). */
-export function shareText(results: readonly (RoundResult | null)[], total: number): string {
-  const lines = [t('share.title', { total: formatNumber(total) })];
-  results.forEach((r, i) => {
-    if (!r) return;
-    if (r.skipped) {
-      lines.push(t('share.skipped', { round: i + 1 }));
-      return;
-    }
-    lines.push(
+/** A post's length as X counts it: every https link is 23 characters. */
+export function xLength(text: string): number {
+  return [...text.replace(/https:\/\/\S+/g, 'x'.repeat(X_LINK_LENGTH))].length;
+}
+
+/** One compact, spoiler-free line per round, in question order: made, when, kept (V1-19). */
+export function shareRoundLines(results: readonly (RoundResult | null)[]): string[] {
+  return results.flatMap((r, i) => {
+    if (!r) return [];
+    if (r.skipped) return [t('share.skipped', { round: i + 1 })];
+    return [
       t('share.round', {
         round: i + 1,
         points: formatNumber(r.points),
-        keptKm: formatNumber(r.kept.km),
         madeKm: formatNumber(r.made.km),
         years: formatNumber(r.when.yearsOff),
+        keptKm: formatNumber(r.kept.km),
       }),
-    );
+    ];
   });
-  lines.push(t('share.footer'), SHARE_URL);
-  return lines.join('\n');
+}
+
+export interface ShareTexts {
+  /** For the phone's share sheet: the text without the link, which goes in its own field. */
+  sheet: string;
+  /** For WhatsApp and Copy: the hook, the round lines, then the link. */
+  long: string;
+  /** For X: the hook and the link, at most 280 characters as X counts them. */
+  short: string;
+}
+
+/** The share texts for a finished game (V1-19). A replay marks its total "(replay)"; a reply answers a friend's challenge. */
+export function shareTexts(p: { results: readonly (RoundResult | null)[]; total: number; url: string; replay: boolean; kind: 'challenge' | 'reply' }): ShareTexts {
+  const total = formatNumber(p.total);
+  const hook = p.kind === 'reply' ? t('share.hookReply', { total }) : t(p.replay ? 'share.hookReplay' : 'share.hook', { total });
+  const sheet = [hook, ...shareRoundLines(p.results)].join('\n');
+  return { sheet, long: `${sheet}\n${p.url}`, short: `${hook} ${p.url}` };
 }

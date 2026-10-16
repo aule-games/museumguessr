@@ -5,23 +5,29 @@
 import type { Analytics } from './analytics/core.ts';
 import { EVENTS, STEPS, type FeedbackQ } from './analytics/events.ts';
 import { ANSWER_KEYS, DECK_ITEMS, ITEMS_VERSION, ITEM_IDS, POOL, SAMPLE, deckItems, imageUrl, itemById } from './content/items.ts';
+import { challengeUrl, parseChallenge, type ChallengeLink, type ParsedChallenge, type ShareKind } from './challenge/link.ts';
+import { SITE_URL } from './config.ts';
+import { formatNumber, t } from './copy.ts';
 import { drawDeck, seededRng } from './deck/planner.ts';
 import { stripMessage, takeErrorBudget, toReport, type ErrorReport } from './errors/boundary.ts';
 import { newGameId } from './game/ids.ts';
 import type { WriterLock } from './game/lock.ts';
+import { isListed, nameList } from './game/names.ts';
+import { shareTexts } from './game/text.ts';
 import { SeenLists } from './game/seen.ts';
 import type { TabSession } from './game/session.ts';
 import { GameMap, hasWebGL2, prefetchMap, type MapState } from './map/map.ts';
 import type { LatLng } from './scoring/geo.ts';
-import { ledgerKey, reduce, totalPoints, type Action, type Deck, type Effect } from './state/reducer.ts';
-import { KEYS, parseSave, parseSnapshot, serialize, type GameState, type ParsedSnapshot } from './state/schema.ts';
+import { ledgerKey, reduce, totalPoints, type Action, type Deck, type Effect, type ShareMethod } from './state/reducer.ts';
+import { KEYS, parseSave, parseSnapshot, serialize, type GameState, type ParsedSnapshot, type RoundResult } from './state/schema.ts';
 import type { KV } from './storage/guarded.ts';
 import { clear, focus } from './ui/dom.ts';
-import { endScreen } from './ui/screens/end.ts';
-import { errorScreen, frozenScreen, openMenu, aboutPrivacy, testBadge } from './ui/screens/misc.ts';
+import { endScreen, resultLine, collectionLine } from './ui/screens/end.ts';
+import { confirmNewGame, errorScreen, frozenScreen, openMenu, aboutPrivacy, testBadge } from './ui/screens/misc.ts';
 import { revealScreen } from './ui/screens/reveal.ts';
 import { PhotoRegion, roundScreen, type RoundView } from './ui/screens/round.ts';
 import { startScreen, type StartMode } from './ui/screens/start.ts';
+import type { ShareSetup } from './ui/share.ts';
 import { startTour } from './ui/tour.ts';
 
 export type View = 'start' | 'play' | 'review' | 'error' | 'frozen';
@@ -33,6 +39,8 @@ export interface AppDeps {
   session: KV;
   lock: WriterLock;
   tab: TabSession;
+  /** The landing URL's query, read once for a challenge link (V1-16). */
+  params?: URLSearchParams;
   newId?: () => string;
 }
 
@@ -44,6 +52,20 @@ type PendingDeck = Deck & { restart: boolean };
 /** The ids a game has shown so far: every round up to the current one. */
 const shownIds = (s: GameState) => s.item_ids.slice(0, s.finished ? s.item_ids.length : s.round + 1);
 
+const sameIds = (a: readonly string[], b: readonly string[]) => a.length === b.length && a.every((id, i) => id === b[i]);
+
+/** A challenge kept in sessionStorage, re-checked against the live pool on read. */
+function readChallenge(kv: KV, key: string): ParsedChallenge | null {
+  try {
+    const v = JSON.parse(kv.get(key) ?? 'null') as ParsedChallenge | null;
+    if (v?.kind === 'broken') return v;
+    if (v?.kind === 'ok' && Array.isArray(v.link?.ids) && v.link.ids.every((id) => !!itemById(id))) return v;
+  } catch {
+    // a damaged entry is no challenge
+  }
+  return null;
+}
+
 export class App {
   state: GameState | null = null;
   snapshot: ParsedSnapshot | null = null;
@@ -54,7 +76,9 @@ export class App {
   /** `${game_id}:${item id}` of the photo region on screen (V1-11). */
   private photoKey = '';
   private roundView: RoundView | null = null;
-  private startReady = false;
+  /** The item whose round-1 photo the start screen has preloaded (or waited 4 s for). */
+  private readyFor = '';
+  private preloading = '';
   private readonly webgl: boolean;
   private errorReport: ErrorReport | null = null;
   private badge: HTMLElement | null = null;
@@ -62,6 +86,12 @@ export class App {
   private readonly seenLists: SeenLists;
   /** The deck the start screen preloads and Start commits (V1-10); cleared whenever the seen lists change. */
   private pending: PendingDeck | null = null;
+  /** A challenge link opened in this tab and not yet played (V1-16). */
+  private challenge: ParsedChallenge | null = null;
+  /** A challenge set aside with "Continue my game" (V1-17). */
+  private waiting: ChallengeLink | null = null;
+  /** Checked friend names: the name, or null when it matched the word list (V1-20). */
+  private checkedNames = new Map<string, string | null>();
 
   constructor(private d: AppDeps) {
     this.webgl = hasWebGL2();
@@ -77,7 +107,14 @@ export class App {
     // Repair the seen lists from the save, the commit point (V1-07).
     if (this.state) this.seenLists.add(shownIds(this.state));
     if (this.snapshot) this.seenLists.add(this.snapshot.snapshot.item_ids);
-    const resume = !!this.state && !this.d.tab.landing;
+    const linked = this.d.params ? parseChallenge(this.d.params, (id) => !!itemById(id)) : { kind: 'none' as const };
+    if (linked.kind !== 'none') this.d.session.set(KEYS.challenge, JSON.stringify(linked));
+    this.challenge = readChallenge(this.d.session, KEYS.challenge);
+    const waiting = readChallenge(this.d.session, KEYS.waiting);
+    this.waiting = waiting?.kind === 'ok' ? waiting.link : null;
+    for (const c of [this.challenge?.kind === 'ok' ? this.challenge.link : null, this.waiting]) if (c?.name) this.checkName(c.name);
+    // A challenge link just opened shows its screen, even over a game this tab could resume.
+    const resume = !!this.state && !this.d.tab.landing && linked.kind === 'none';
     if (this.d.analytics.testMode) this.badge = testBadge(() => this.d.analytics.inspect());
     if (!this.webgl) this.telemetry({ name: 'webgl_unavailable', message: '', frame: '' });
     if (resume && this.d.lock.held) this.show('play');
@@ -139,6 +176,58 @@ export class App {
       restart: !draw.fresh,
     };
     return this.pending;
+  }
+
+  /** Check a friend's name against the public word list, which loads on first use (V1-20). */
+  private checkName(name: string) {
+    if (this.checkedNames.has(name)) return;
+    void nameList()
+      .then((list) => this.checkedNames.set(name, isListed(name, list) ? null : name))
+      .catch(() => this.checkedNames.set(name, null))
+      .then(() => {
+        if (this.view === 'start' || (this.view === 'play' && this.state?.finished)) this.guard(() => this.show(this.view));
+      });
+  }
+
+  /** A friend's name as the page shows it: undefined while it is being checked. */
+  private shownName(name: string | null): string | null | undefined {
+    if (name === null) return null;
+    return this.checkedNames.has(name) ? (this.checkedNames.get(name) ?? null) : undefined;
+  }
+
+  /** The friend's score, unless the answers of that deck changed since the link was made (V1-16). */
+  private comparableScore(link: ChallengeLink): number | null {
+    return link.hash === null || link.hash === POOL.deckHash(link.ids) ? link.score : null;
+  }
+
+  private challengeDeck(link: ChallengeLink): Deck {
+    const ever = this.seenLists.ever();
+    return {
+      ids: [...link.ids],
+      kind: 'challenge',
+      hash: POOL.deckHash(link.ids) ?? ITEMS_VERSION,
+      firstSeen: link.ids.map((id) => !ever.has(id)),
+      challenge: { score: this.comparableScore(link), name: this.shownName(link.name) ?? null },
+    };
+  }
+
+  /** The share block for a finished deck; shares go through `onShared`. */
+  private shareSetup(game: { item_ids: string[]; deck_hash: string; results: readonly (RoundResult | null)[]; total: number; replay: boolean; kind: ShareKind }, onShared: (method: ShareMethod) => void): ShareSetup {
+    return {
+      kind: game.kind,
+      storedName: this.d.local.get(KEYS.name),
+      onName: (name) => (name ? this.d.local.set(KEYS.name, name) : this.d.local.remove(KEYS.name)),
+      texts: (medium, name) => {
+        const url = challengeUrl(SITE_URL, { ids: game.item_ids, score: game.total, name, hash: game.deck_hash }, medium, game.kind);
+        return { ...shareTexts({ results: game.results, total: game.total, url, replay: game.replay, kind: game.kind }), url };
+      },
+      onShared,
+    };
+  }
+
+  /** "You have seen N of M objects", or null when this device keeps no list (V1-15). */
+  private collection(): { seen: number; total: number } | null {
+    return this.d.local.persistent ? { seen: this.seenLists.ever().size, total: ITEM_IDS.length } : null;
   }
 
   dispatch(action: Action) {
@@ -206,6 +295,7 @@ export class App {
   async startGame() {
     if (!(await this.d.lock.acquire(true))) return;
     this.guard(() => {
+      this.dropChallenge();
       // Re-draw under the lock: another tab may have shown some of the offered objects (V1-10).
       const offered = this.pending;
       this.pending = null;
@@ -228,6 +318,74 @@ export class App {
 
   newGame() {
     void this.startGame();
+  }
+
+  private dropChallenge() {
+    this.challenge = null;
+    this.d.session.remove(KEYS.challenge);
+  }
+
+  /** Play a friend's deck (V1-16); with a game in progress, the Start-over dialog asks first (V1-17). */
+  playChallenge(opener: HTMLElement | null) {
+    const c = this.challenge;
+    if (c?.kind !== 'ok') return;
+    const go = () =>
+      void this.d.lock.acquire(true).then((ok) => {
+        if (!ok) return;
+        this.guard(() => {
+          const deck = this.challengeDeck(c.link);
+          this.dropChallenge();
+          if (this.waiting && sameIds(this.waiting.ids, c.link.ids)) this.setWaiting(null);
+          this.dispatch({ type: 'start', gameId: this.id(), src: this.d.tab.src, itemsVersion: ITEMS_VERSION, deck });
+        });
+      });
+    if (this.state && !this.state.finished) confirmNewGame(opener, go);
+    else go();
+  }
+
+  /** "Continue my game": keep the challenge for after this game (V1-17). */
+  private continueMine() {
+    const c = this.challenge;
+    if (c?.kind === 'ok') this.setWaiting(c.link);
+    this.dropChallenge();
+    void this.continueGame();
+  }
+
+  private setWaiting(link: ChallengeLink | null) {
+    this.waiting = link;
+    if (link) this.d.session.set(KEYS.waiting, JSON.stringify({ kind: 'ok', link }));
+    else this.d.session.remove(KEYS.waiting);
+  }
+
+  /** Play the same deck again; a replay is never fresh (V1-22). */
+  replayDeck(ids: readonly string[]) {
+    void this.d.lock.acquire(true).then((ok) => {
+      if (!ok) return;
+      this.guard(() => {
+        this.dropChallenge();
+        const deck: Deck = { ids: [...ids], kind: 'replay', hash: POOL.deckHash(ids) ?? ITEMS_VERSION, firstSeen: ids.map(() => false), challenge: null };
+        this.dispatch({ type: 'start', gameId: this.id(), src: this.d.tab.src, itemsVersion: ITEMS_VERSION, deck });
+      });
+    });
+  }
+
+  /** Send challenge_opened once per link in this tab session (V1-27). */
+  private challengeOpened(c: ParsedChallenge, own: boolean) {
+    const key = c.kind === 'ok' ? JSON.stringify(c.link) : 'broken';
+    let sent: string[] = [];
+    try {
+      sent = JSON.parse(this.d.session.get(KEYS.challengeOpened) ?? '[]') as string[];
+    } catch {
+      sent = [];
+    }
+    if (sent.includes(key)) return;
+    this.d.session.set(KEYS.challengeOpened, JSON.stringify([...sent, key]));
+    this.d.analytics.track(EVENTS.challengeOpened, {
+      src: this.d.tab.src,
+      valid: c.kind === 'ok',
+      has_score: c.kind === 'ok' && c.link.score !== null,
+      own_deck: own,
+    });
   }
 
   // ----- rendering -----
@@ -289,49 +447,116 @@ export class App {
 
   private renderStart(): HTMLElement {
     let mode: StartMode = { kind: 'new' };
-    if (this.state && !this.state.finished) mode = { kind: 'continue', round: this.state.round + 1 };
-    else if (this.snapshot) mode = { kind: 'finished', total: this.snapshot.snapshot.total, canReview: this.snapshot.current };
+    let firstId = '';
+    const c = this.challenge;
+    if (c?.kind === 'broken') {
+      mode = { kind: 'broken' };
+      this.challengeOpened(c, false);
+    } else if (c?.kind === 'ok') {
+      const link = c.link;
+      firstId = link.ids[0] ?? '';
+      const name = this.shownName(link.name);
+      const shown = name ?? t('challenge.friend');
+      const score = this.comparableScore(link);
+      const snap = this.snapshot;
+      const own = !!snap?.current && sameIds(snap.snapshot.item_ids, link.ids);
+      if (own && score !== null && snap && name !== undefined) {
+        const you = snap.snapshot.total;
+        mode = { kind: 'reply', line: t('reply.line', { name: shown, them: formatNumber(score), you: formatNumber(you), result: resultLine(you, shown, score) }) };
+      } else {
+        const ever = this.seenLists.ever();
+        const seen = link.ids.filter((id) => ever.has(id)).length;
+        const notes: string[] = [];
+        if (link.hash !== null && score === null && link.score !== null) notes.push(t('challenge.changed'));
+        if (seen > 0) notes.push(t('challenge.seenSome', { count: seen }));
+        mode = {
+          kind: 'challenge',
+          line: name === undefined ? null : score !== null ? t('challenge.line', { name: shown, score: formatNumber(score) }) : t('challenge.lineNoScore'),
+          meta: name ? t('challenge.meta', { name }) : t('challenge.metaFriend'),
+          notes,
+          unfinished: !!this.state && !this.state.finished,
+        };
+      }
+      this.challengeOpened(c, own);
+    } else if (this.state && !this.state.finished) {
+      mode = { kind: 'continue', round: this.state.round + 1, challenge: this.state.deck_kind === 'challenge' };
+    } else if (this.snapshot) {
+      mode = { kind: 'finished', total: this.snapshot.snapshot.total, canReview: this.snapshot.current };
+    }
+    if (!firstId && mode.kind !== 'continue' && mode.kind !== 'reply') firstId = this.pendingDeck().ids[0] ?? '';
 
     if (this.webgl) prefetchMap();
-    const first = itemById(this.pendingDeck().ids[0] ?? '');
-    if (!this.startReady && first) {
-      // Preload round 1's photo; Start waits for it at most 4 s (DS9, DS23).
+    const first = itemById(firstId);
+    if (first && this.readyFor !== first.id && this.preloading !== first.id) {
+      // Preload the offered deck's round-1 photo; Start waits for it at most 4 s (DS9, DS23, V1-10).
+      const id = first.id;
+      this.preloading = id;
       const img = new Image();
       const ready = () => {
-        if (this.startReady) return;
-        this.startReady = true;
+        if (this.readyFor === id || this.preloading !== id) return;
+        this.readyFor = id;
         if (this.view === 'start') this.guard(() => this.show('start'));
       };
       img.onload = ready;
       img.onerror = ready;
       setTimeout(ready, START_IMAGE_WAIT_MS);
-      img.src = imageUrl(first.id);
+      img.src = imageUrl(id);
     }
+    const collection = this.collection();
     return startScreen({
       sample: SAMPLE,
       mode,
-      ready: this.startReady,
+      ready: !first || this.readyFor === first.id,
       webgl: this.webgl,
+      collection: mode.kind === 'finished' && collection ? collectionLine(collection) : null,
       onStart: () => void this.startGame(),
-      onContinue: () => void this.continueGame(),
+      onContinue: () => (mode.kind === 'challenge' ? this.continueMine() : void this.continueGame()),
       onNew: () => void this.startGame(),
       onReview: () => this.guard(() => this.show('review')),
+      onChallenge: (opener) => this.guard(() => this.playChallenge(opener)),
+      onReplay: () => this.replayDeck(this.snapshot?.snapshot.item_ids ?? []),
       onAbout: (opener) => aboutPrivacy(opener),
     });
   }
 
   private renderReview(): HTMLElement {
     const snap = this.snapshot;
+    const game = snap?.snapshot;
+    const kind: ShareKind = game?.deck_kind === 'challenge' ? 'reply' : 'challenge';
     return endScreen({
-      items: snap?.current ? deckItems(snap.snapshot.item_ids) : [],
-      results: snap?.current ? snap.snapshot.results : null,
-      total: snap?.snapshot.total ?? 0,
+      items: snap?.current && game ? deckItems(game.item_ids) : [],
+      results: snap?.current && game ? game.results : null,
+      total: game?.total ?? 0,
       detailed: !!snap?.current,
       askMostFun: false,
       onMostFun: () => {},
-      onCopied: (method) => this.d.analytics.track(EVENTS.resultCopied, { src: this.d.tab.src, total: snap?.snapshot.total ?? 0, method }),
-      onReplay: () => this.newGame(),
+      share:
+        snap?.current && game
+          ? this.shareSetup({ ...game, replay: game.deck_kind === 'replay', kind }, (method) => this.sharedFromReview(game.game_id, method, kind))
+          : null,
+      challenge: game ? this.endChallenge(game) : null,
+      collection: this.collection(),
+      waiting: null,
+      onAnother: () => this.newGame(),
+      onReplay: () => this.replayDeck(game?.item_ids ?? []),
     });
+  }
+
+  /** A share from "Review your 10": the finished game's own save still holds its ledger. */
+  private sharedFromReview(gameId: string, method: ShareMethod, kind: ShareKind) {
+    const saved = parseSave(this.d.local.get(KEYS.save), POOL);
+    if (saved?.game_id === gameId) {
+      const r = reduce(saved, { type: 'shared', method, kind }, ANSWER_KEYS);
+      this.persist(saved, r.state, r.effects, false);
+    } else {
+      this.d.analytics.track(EVENTS.resultShared, { src: this.d.tab.src, total: this.snapshot?.snapshot.total ?? 0, method, kind, first_in_game: false });
+    }
+  }
+
+  /** The friend's side of a finished challenge game, for the end screen. */
+  private endChallenge(g: { deck_kind: string; challenge: { score: number | null; name: string | null } | null }) {
+    if (g.deck_kind !== 'challenge' || !g.challenge) return null;
+    return { name: g.challenge.name ?? t('challenge.friend'), score: g.challenge.score };
   }
 
   private ensureMap(): GameMap | null {
@@ -357,9 +582,11 @@ export class App {
     if (!s) return { screen: this.renderStart(), focus: null };
     const total = totalPoints(s);
     const items = deckItems(s.item_ids);
+    // During a game, Credits lists only the photos already revealed, never a future round (V1-24).
+    const credited = s.finished ? items : items.filter((_, i) => s.results[i] != null);
     const onMenu = (opener: HTMLElement) =>
       openMenu(opener, {
-        items,
+        items: credited,
         sample: SAMPLE,
         inGame: !s.finished,
         onNewGame: () => this.newGame(),
@@ -368,6 +595,8 @@ export class App {
 
     if (s.finished) {
       const asked = s.sent.includes(ledgerKey(s.game_id, EVENTS.feedback, 'most_fun'));
+      const kind: ShareKind = s.deck_kind === 'challenge' ? 'reply' : 'challenge';
+      const w = this.waiting;
       return {
         screen: endScreen({
           items,
@@ -376,8 +605,28 @@ export class App {
           detailed: true,
           askMostFun: !asked,
           onMostFun: (a) => this.dispatch({ type: 'pulse', q: 'most_fun', a }),
-          onCopied: (method) => this.dispatch({ type: 'copied', method, total }),
-          onReplay: () => this.newGame(),
+          share: this.shareSetup({ ...s, total, replay: s.deck_kind === 'replay', kind }, (method) => this.dispatch({ type: 'shared', method, kind })),
+          challenge: this.endChallenge(s),
+          collection: this.collection(),
+          waiting: w
+            ? {
+                name: this.shownName(w.name) ?? null,
+                onPlay: () =>
+                  this.guard(() => {
+                    this.challenge = { kind: 'ok', link: w };
+                    this.d.session.set(KEYS.challenge, JSON.stringify(this.challenge));
+                    this.setWaiting(null);
+                    this.show('start');
+                  }),
+                onDismiss: () =>
+                  this.guard(() => {
+                    this.setWaiting(null);
+                    this.show('play');
+                  }),
+              }
+            : null,
+          onAnother: () => this.newGame(),
+          onReplay: () => this.replayDeck(s.item_ids),
         }),
         focus: null,
       };
@@ -412,6 +661,7 @@ export class App {
         result,
         map: this.ensureMap(),
         pulse,
+        toBeat: s.deck_kind === 'challenge' ? (s.challenge?.score ?? null) : null,
         onPulse: (a) => this.dispatch({ type: 'pulse', q: 'difficulty' as FeedbackQ, a }),
         onNext: () => this.dispatch({ type: 'next', round: s.round }),
         onMenu,

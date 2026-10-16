@@ -1,7 +1,8 @@
 // Per-tab session facts (E5, PH3, ENG28, ENG38). A session is one browser
 // tab's lifetime (sessionStorage). The channel is read once per session from
 // the landing URL; `test` and `dev` are removed from the address bar so a
-// copied link cannot silently exclude other people.
+// copied link cannot silently exclude other people, and so are a challenge
+// link's parameters once read.
 
 import { channelFrom, revalidateSrc, type Src } from '../analytics/channels.ts';
 import { KEYS } from '../state/schema.ts';
@@ -33,11 +34,13 @@ export function readSession(url: URL, session: KV): TabSession {
   return { src, landing, testParam, devParam };
 }
 
-/** URL without `test` and `dev`, for history.replaceState. Other parameters stay. */
+/** Parameters the page removes from the address bar after reading them: test flags and challenge links (V1-16). */
+const CLEANED = ['test', 'dev', 'd', 's', 'n', 'h'];
+
+/** URL without `test`, `dev` and the challenge parameters, for history.replaceState. Other parameters stay. */
 export function cleanedUrl(url: URL): string | null {
-  if (!url.searchParams.has('test') && !url.searchParams.has('dev')) return null;
+  if (!CLEANED.some((p) => url.searchParams.has(p))) return null;
   const next = new URL(url.href);
-  next.searchParams.delete('test');
-  next.searchParams.delete('dev');
+  for (const p of CLEANED) next.searchParams.delete(p);
   return `${next.pathname}${next.search}${next.hash}`;
 }

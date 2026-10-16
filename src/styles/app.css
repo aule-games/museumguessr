@@ -484,6 +484,27 @@ p {
   font-weight: var(--font-weight-medium);
 }
 
+.start__challenge {
+  font-family: var(--font-body);
+  font-size: var(--text-2xl);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--leading-tight);
+  letter-spacing: -0.01em;
+  text-transform: none;
+  min-height: calc(2em * 1.2);
+}
+
+.start__challenge:focus {
+  outline: none;
+}
+
+.start__note,
+.start__collection {
+  margin-top: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--color-ink-muted);
+}
+
 .start__meta {
   font-size: var(--text-sm);
 }
@@ -1254,6 +1275,14 @@ p {
   line-height: var(--leading-normal);
 }
 
+.reveal__tobeat {
+  padding-inline: var(--space-4);
+  font-family: var(--font-display);
+  font-size: var(--text-md);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
 .reveal__total {
   display: flex;
   align-items: baseline;
@@ -1707,7 +1736,144 @@ p {
 }
 
 .end__replay {
-  align-self: start;
+  justify-self: start;
+}
+
+.end__layout,
+.end__summary,
+.end__recap {
+  display: grid;
+  gap: var(--space-4);
+  align-content: start;
+}
+
+.end__versus {
+  margin-top: var(--space-3);
+  font-weight: var(--font-weight-bold);
+  font-variant-numeric: tabular-nums;
+  color: var(--color-accent-ink);
+}
+
+.end__result {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 800;
+  line-height: var(--leading-tight);
+  color: var(--color-accent-ink);
+}
+
+.end__waiting {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+}
+
+/* ---------- share block (V1-19, V1-20) ---------- */
+
+.share {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.share__add {
+  justify-self: start;
+}
+
+.share__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-4);
+}
+
+.share__btn {
+  display: inline-flex;
+  flex: 1 1 auto;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: var(--space-7);
+}
+
+.share__glyph {
+  flex: none;
+}
+
+.share__status {
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-success);
+}
+
+.share__status:empty {
+  display: none;
+}
+
+.share__text {
+  width: 100%;
+  padding: var(--space-2);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font-family: var(--font-numeric);
+  font-size: var(--text-sm);
+}
+
+.share__targets {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.share__target {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.field {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.field__label {
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-bold);
+}
+
+.field__input {
+  min-height: var(--layout-tap);
+  padding: 0 var(--space-4);
+  border: 1.5px solid var(--color-line);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: var(--text-md);
+  transition: border-color var(--motion-fast) var(--motion-ease-standard);
+}
+
+.field__input:hover,
+.field__input:focus {
+  border-color: var(--color-ink);
+}
+
+.field__input[aria-invalid='true'] {
+  border-color: var(--color-danger);
+}
+
+.field__help {
+  font-size: var(--text-xs);
+  color: var(--color-ink-muted);
+}
+
+.field__error {
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-danger);
 }
 
 /* ---------- other screens ---------- */
@@ -2289,9 +2455,11 @@ p {
     font-size: var(--text-2xl);
   }
 
-  .end > .recap {
-    grid-column: 2;
-    grid-row: 2 / span 8;
+  .end > .end__layout {
+    grid-column: 1 / -1;
+    grid-template-columns: minmax(0, 45fr) minmax(0, 55fr);
+    column-gap: var(--space-6);
+    align-items: start;
   }
 
   .recap__title {

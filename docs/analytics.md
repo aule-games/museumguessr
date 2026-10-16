@@ -62,7 +62,9 @@ screen, from the same source in `src/analytics/events.ts`):
 | `game_completed` | `src`, `total` (0-30000), `answered_count` | the end screen opens after round 10 | game |
 | `client_error` | `name`, `message` (first 80 characters, URLs removed), `frame` (chunk:line:col) | an uncaught error in game code, or the map cannot run | at most 3 per tab session |
 | `feedback` | `src`, `q` (`difficulty`, `most_fun`), `a` | the optional difficulty row (after round 3) or the "most fun" row (end) | game and question |
-| `result_copied` | `src`, `total`, `method` (`clipboard`, `manual`) | the player copies the result | every copy |
+| `result_shared` | `src`, `total`, `method` (`native`, `whatsapp`, `x`, `copy`, `manual`), `kind` (`challenge`, `reply`), `first_in_game` | a share sheet completes or a share button opens its target (a cancelled sheet sends nothing) | every share (`first_in_game` marks the first) |
+| `challenge_opened` | `src`, `valid` (10 known objects), `has_score`, `own_deck` (the deck this device just finished) | a challenge link's screen first renders | challenge link and tab session |
+| `challenge_completed` | `src`, `beat` (`true`, `false`, or `null` without a comparable score) | a challenge game ends | game |
 | `tour_ended` | `src`, `outcome` (`done`, `skipped`), `step` (last step shown, 1-7), `replay` (opened from the menu) | the game tour closes | every close |
 
 **`src`** is the channel. Posted links carry `?utm_source=<channel>`; the game
@@ -70,7 +72,9 @@ keeps it only if it is an approved channel (`src/analytics/channels.ts`:
 `webgames`, `geoguessr`, `reply`, `share`, `smoke`, `hn`, `museum`,
 `arthistory`, `glam`, `discord`, `city-<name>`, `oa-<name>`), records `none`
 when there is no tag and `other` for anything else, and keeps the value for
-the whole game. The share text links back with `utm_source=share`.
+the whole game. Shared challenge links carry `utm_source=share`, `utm_medium`
+(`native`, `whatsapp`, `x`, `copy`) and `utm_campaign` (`challenge`, or `reply`
+for a score sent back).
 
 **URLs** in event properties keep only the `utm_*` and `ref` query parameters; click ids
 (`gclid`, `fbclid` and others) and fragments are removed before sending.

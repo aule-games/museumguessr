@@ -50,11 +50,12 @@ Order (top to bottom; desktop puts the sample in the right column):
 | Region | Content | Copy keys | Overflow |
 | --- | --- | --- | --- |
 | Wordmark bar | Made and Kept glyphs + name | `app.name` | one line |
-| Intro | eyebrow, then the three-sentence headline, one sentence per line, the last set white on a vermilion highlight | `start.eyebrow`, `app.tagline` | headline wraps by sentence |
+| Intro | eyebrow, then the three-sentence headline, one sentence per line, the last set navy on a lime highlight | `start.eyebrow`, `app.tagline` | headline wraps by sentence |
 | Sample card | the sample object's photo (whole object, never cropped) tagged "Example", over a static made→kept mini map | `start.example`, `start.sampleCaption` (mini map label) | photo `contain` on matte |
 | Caption | sample title, made → now in, photo credit | `start.sampleCaption`, `reveal.credit` | wraps |
-| Actions | see states | `start.*` | Start fills the width |
-| Meta | the one-line expectation | `start.meta` | wraps |
+| Actions | see states | `start.*`, `challenge.*` | Start fills the width |
+| Collection line | returning visitors: how many objects this device has seen (V1-15) | `end.collection`, `end.collectionAll` | wraps |
+| Meta | the one-line expectation | `start.meta`, `challenge.meta`, `challenge.metaFriend` | wraps |
 | Privacy | the privacy line + About & privacy link | `start.privacy`, `start.privacyLink` | wraps |
 
 States:
@@ -63,8 +64,8 @@ States:
 | --- | --- |
 | New visitor, loading | Start disabled, reads `start.loading`, until the bundle is ready and photo 1 has loaded (at most 4 s) |
 | New visitor, ready | Start (`start.start`) |
-| Game in progress | Continue (`start.continue`, with the round) + New game (`start.new`) |
-| Finished visitor | `start.finished` (the last total), Review your 10 (`start.review`) when the snapshot matches this collection, Play again (`start.again`) |
+| Game in progress | Continue (`start.continue`, with the round; `start.continueChallenge` for a challenge game) + New game (`start.new`) |
+| Finished visitor | `start.finished` (the last total), primary Play another 10 (`start.another`), secondary Review your 10 (`start.review`) when the snapshot still matches the pool, the collection line (V1-23) |
 | No WebGL | `start.noWebgl` in place of Start (an alert) |
 | Sample photo fails | the card keeps its matte placeholder; nothing else changes |
 
@@ -154,6 +155,24 @@ step 1), Next (`tour.next`). Skip, Escape and the browser's Back close it as
 skipped; the last button closes it as done; either way the flag is set and
 `tour_ended` is sent.
 
+### Challenge link (V1-16 to V1-18)
+
+A challenge link (`?d=<10 ids>&s=<score>&n=<name>&h=<deck hash>`) opens the
+Start layout with its own line as the h1, in the body face and never
+uppercased, with `app.tagline` above it as the eyebrow; focus goes to the h1.
+The parameters leave the address bar once read; the challenge waits in
+sessionStorage until Start, so a reload keeps it.
+
+| Variant | h1 | Actions | Notes |
+| --- | --- | --- | --- |
+| Valid link | `challenge.line` with the name (or `challenge.friend`) and score; `challenge.lineNoScore` without a valid score; empty while the name is checked against the word list | primary Play the same 10 (`challenge.play`) | `challenge.changed` when the deck's answers changed since the link was made (no score to beat); `challenge.seenSome` when this device has seen some of the 10; meta `challenge.meta` / `challenge.metaFriend` |
+| With a game in progress | as above | primary Play the challenge (`challenge.playChallenge`) opens Start over? (`confirmNew.*`); secondary Continue my game (`challenge.continueMine`) keeps the challenge for after that game | — |
+| Broken link | `challenge.broken` | primary Play 10 objects (`challenge.brokenPlay`): a normal game | — |
+| Reply result (the deck this device just finished, with a score) | `reply.line` with both totals and the result (`challenge.youWin`, `challenge.theyWin`, `challenge.tie`) | primary Play another 10 (`start.another`), secondary Replay these 10 (not ranked) (`reply.replay`) | — |
+
+A name that matches the public word list (whole tokens) shows as
+`challenge.friend`. Names render inside `<bdi>`, in the body face.
+
 ## Reveal
 
 Phone order: compact wall label → score table (three rows, then the round
@@ -175,8 +194,9 @@ and there is only one score live region. (DS21)
 | Journey | the sourced journey fact | `reveal.source` | wraps |
 | Map | answer pins (filled), guesses (hollow), one made→kept line, dashed guess links, the full-marks area for a region or country origin; a 78% veil in the map's own ground colour fades the base map, with its labels hidden; answer countries have 28% Kept/Made tints and opaque 2 px outlines; every pin has a map-ground keyline and a soft shadow; kept pins are rounded squares with a museum icon, made pins round teardrops with a paintbrush, guesses the same shapes outlined | `reveal.madeRegion`, `reveal.lineLabel` | fitted with measured pin-label/control/attribution clearance; controls hidden in phone portrait, only World at top-left in short landscape, with a reserved left column; credit resizing re-fits until the player moves the map; pinch, double-tap and keyboard zoom remain; long pin labels wrap at 192 px (DS22) |
 | Legend | raised caption rail under the map, normal line height; in the split layout map and legend fit the actual body height above the action bar, including feedback | `reveal.legend` | wraps; never reserved outside the map's available height |
-| Score rows | Made / When / Kept (question order, DS35): glyph, name and disclosure chevron, the result (`result.km` / `result.years` with the difference in bold, or `reveal.spotOn`), a shared 88 px right-hand points column in large display-face numbers on the white rounded table (green when full marks); the round total row is a vermilion bar, white text; on every viewport the name and points share the top line and the result runs full width below it; hover or keyboard focus (hover-capable devices) and tap cover the whole row (name, result and points) with the scoring explanation, white on ink, in the same place and with no heading; tap also opens the row's extras below (When's timeline, Made's place note) | `reveal.row.*`, `result.*`, `reveal.spotOn`, `reveal.kmCount`, `reveal.yearCount`, `reveal.yearOne`, `scoring.*` | each result stays on one line, its font stepping down to 11 px to fit, and only then wraps (never cut off or ellipsed); minimum 68 px rows; explanations scroll with the table, not over the action bar (DS31) |
-| Round total | the table's final row, a vermilion bar: label + points out of 3,000 in white (announced) | `reveal.scoreLabel`, `reveal.score` | one line; focus ring remains outside the cell |
+| Score rows | Made / When / Kept (question order, DS35): glyph, name and disclosure chevron, the result (`result.km` / `result.years` with the difference in bold, or `reveal.spotOn`), a shared 88 px right-hand points column in large display-face numbers on the white rounded table (green when full marks); the round total row is a lime bar, navy text; on every viewport the name and points share the top line and the result runs full width below it; hover or keyboard focus (hover-capable devices) and tap cover the whole row (name, result and points) with the scoring explanation, white on ink, in the same place and with no heading; tap also opens the row's extras below (When's timeline, Made's place note) | `reveal.row.*`, `result.*`, `reveal.spotOn`, `reveal.kmCount`, `reveal.yearCount`, `reveal.yearOne`, `scoring.*` | each result stays on one line, its font stepping down to 11 px to fit, and only then wraps (never cut off or ellipsed); minimum 68 px rows; explanations scroll with the table, not over the action bar (DS31) |
+| Round total | the table's final row, a lime bar: label + points out of 3,000 in navy (announced) | `reveal.scoreLabel`, `reveal.score` | one line; focus ring remains outside the cell |
+| To beat (challenge games) | "To beat: 18,240" directly under the round total bar, never in the top bar (V1-21) | `reveal.toBeat` | one line |
 | Contested | the sourced claim | `reveal.contested` | wraps |
 | Facts | sourced facts | `reveal.source` | list |
 | Credit | photo credit, photo source, museum record | `reveal.credit`, `reveal.creditSource`, `reveal.record` | wraps |
@@ -196,23 +216,33 @@ States:
 
 ## End
 
-Order: wordmark bar → total and tier → Copy result → "Copied" → Most fun → the
-10-row recap → collection line → Replay the same 10. Desktop: summary left,
-recap right. Copy result is above the fold at 390×844.
+Order (V1-22): wordmark bar → total and tier (a challenge game adds both
+totals and the result) → share block → Play another 10 → a waiting challenge →
+collection line → Most fun → the 10-row recap → Replay these 10. Desktop:
+summary and actions left, recap right. At 375×667 and 390×844 the total, tier
+and Share are above the fold; at 390×844 Play another 10 is too.
 
 | Region | Content | Copy keys | Overflow |
 | --- | --- | --- | --- |
-| Summary | total out of 30,000 and tier name, white on a vermilion rounded panel like the reveal round total | `end.total` | one line on a phone |
-| Copy result | copies the share text | `end.copy`, `share.*` | — |
-| Copied | shown only after the clipboard write succeeds (announced) | `end.copied` | — |
-| Manual copy | if the clipboard fails: selectable text, focused and selected | `end.copyManual` | textarea |
+| Summary | total out of 30,000 and tier name, navy on a lime rounded panel like the reveal round total; a challenge game with a score adds "You 18,240 · Ali 19,000" and the result | `end.total`, `challenge.both`, `challenge.youWin`, `challenge.theyWin`, `challenge.tie` | one line on a phone |
+| Share block | "Add a name" disclosure (opens the name field: label, helper, inline rule, Share without a name), the one lime primary Share with a share glyph (a challenge game: Send your score back), Copy link as a text link beside it, the polite status line, the manual-copy textarea when the clipboard fails | `name.*`, `share.button`, `sendBack.button`, `share.copyLink`, `share.copied`, `share.copyManual` | Share fills the row |
+| Play another 10 | full-width secondary | `end.another` | — |
+| Waiting challenge | after "Continue my game": a link to the friend's challenge and Not now | `end.waiting`, `end.waitingFriend`, `end.waitingDismiss` | wraps |
+| Collection line | how many objects this device has seen; hidden when storage is off | `end.collection`, `end.collectionAll` | wraps |
 | Most fun | optional chips Made / When / Kept | `pulse.mostFun`, `step.*`, `pulse.thanks` | wraps |
 | Recap | thumbnail, title, made → now in, points (or Skipped) per round | `end.recapRow`, `end.points`, `reveal.skipped` | title wraps |
-| Collection line | the whole collection for now | `end.collection` | wraps |
-| Replay | text link | `end.replay` | — |
+| Replay | text link: the same 10 again (a replay, marked in its share text) | `end.replay` | — |
 
-A finished game saved under another collection version shows the total and
-`end.versionChanged` instead of the recap.
+Share opens the phone's share sheet when the browser can share the text and
+link (the link only in its own field); otherwise, or when the sheet fails
+with anything but a cancel, the Share your score chooser opens (WhatsApp, X,
+Copy link) and returns focus to Share when closed. "Link copied" is announced
+only after the clipboard write succeeds. The long text (sheet, WhatsApp,
+Copy) is the hook, ten compact lines in Made, When, Kept order and the link;
+the X text is the hook and the link within 280 characters (V1-19).
+
+A finished game saved under other answers shows the total and
+`end.versionChanged` instead of the recap and the share block.
 
 ## Other screens and overlays
 
@@ -222,9 +252,10 @@ A finished game saved under another collection version shows the total and
 | Continued in another tab | title, body, Play here instead (takes the game over in this tab) | `tab.*` |
 | Menu | How to play, New game (in a game only), Credits, About & privacy | `menu.*`, `app.name` |
 | How to play | body + the three hints | `how.*`, `hint.*` |
-| Credits | one row per photo (round objects and the sample) with source links; map credit | `credits.*`, `reveal.creditSource` |
+| Credits | one row per photo with source links: during a game only the rounds already revealed and the sample, never a future round; after the game the whole deck (V1-24); map credit | `credits.*`, `reveal.creditSource` |
 | About & privacy | what is sent, the event list, how `?test=1` stops sending | `about.*` |
 | Start over? | body; Keep playing / Start over | `confirmNew.*` |
+| Share your score | WhatsApp, X and Copy link as full-width buttons; closing returns focus to Share | `share.chooser`, `share.whatsapp`, `share.x`, `share.copyLink` |
 | Photo lightbox | the full photo, pinch and zoom | `overlay.close` |
 | Test badge (`?test=1` only) | "Test mode · analytics off"; expands to the events that would have been sent | `test.*` |
 
@@ -241,6 +272,7 @@ A finished game saved under another collection version shows the total and
 | Made and held in one area | — | — | — | combined glyph, "Made and held in the same area: …" | — |
 | Region origin | — | — | — | pin + full-marks area + words | — |
 | Difficulty row | — | row shown after round 3 | — | "Thanks", chips removed | — |
-| Copy result | — | — | selectable text | "Copied" | — |
+| Share | — | no name: Share without one | invalid name: inline rule, Share stays closed; clipboard fails: selectable text | sheet or chooser; "Link copied" | cancelled sheet: nothing sent |
+| Challenge link | h1 empty while the name is checked | no score: "Play the same 10 your friend played" | broken link screen | challenge line | answers changed: no score to beat |
 | Resume | — | start screen | unreadable save: discarded, start screen | "Continue · Round 4 of 10" | a game left on a reveal resumes on that reveal |
 | Error screen | — | — | "Something broke" + Reload + New game; adds "Your progress is saved" when a save exists | — | — |

@@ -35,6 +35,14 @@ export const KEYS = {
   everSeen: 'museumguessr:v1:ever-seen',
   /** The objects shown since the last restart, with the planner's seed (V1-07). */
   seen: 'museumguessr:v1:seen',
+  /** The name this device shares in challenge links (V1-20). */
+  name: 'museumguessr:v1:name',
+  /** sessionStorage: a challenge link read on this tab, until Start (V1-16). */
+  challenge: 'museumguessr:v1:challenge',
+  /** sessionStorage: a challenge set aside with "Continue my game" (V1-17). */
+  waiting: 'museumguessr:v1:waiting-challenge',
+  /** sessionStorage: challenge links whose screen already sent challenge_opened. */
+  challengeOpened: 'museumguessr:v1:challenge-opened',
 } as const;
 
 export type Phase = 'answering' | 'reveal';

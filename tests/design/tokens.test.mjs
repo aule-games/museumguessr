@@ -37,7 +37,7 @@ for (const direction of ['a', 'b']) {
     for (const fg of ['ink', 'ink-muted']) for (const bg of ['bg', 'surface', 'surface-raised', 'matte']) {
       assert.ok(contrast(c[fg], c[bg]) >= 4.5, `${fg}/${bg}: ${contrast(c[fg], c[bg])}`);
     }
-    for (const [fg, bg] of [['accent-ink', 'accent'], ['accent-ink', 'accent-hover'], ['badge-ink', 'badge'], ['disabled-ink', 'disabled'], ['success', 'surface-raised']]) {
+    for (const [fg, bg] of [['accent-ink', 'accent'], ['accent-ink', 'accent-hover'], ['badge-ink', 'badge'], ['disabled-ink', 'disabled'], ['success', 'surface-raised'], ['success', 'bg'], ['danger', 'bg'], ['danger', 'surface']]) {
       assert.ok(contrast(c[fg], c[bg]) >= 4.5, `${fg}/${bg}`);
     }
     for (const fg of ['line', 'focus']) for (const bg of ['bg', 'surface', 'surface-raised', 'matte']) {

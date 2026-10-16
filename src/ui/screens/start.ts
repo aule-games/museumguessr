@@ -1,6 +1,8 @@
-// Start screen (DS9, DS24, PH11, ENG1, ENG21). Order: headline, sample photo
-// with its made→kept mini map, Start (or Continue + New game, or the finished
-// visitor's options), the one-line expectation, the privacy line.
+// Start screen (DS9, DS24, PH11, ENG1, ENG21, V1-17, V1-18, V1-23). Order:
+// headline, sample photo with its made→kept mini map, Start (or Continue +
+// New game, or the returning visitor's options), the one-line expectation,
+// the privacy line. A challenge link uses the same layout: its line is the
+// h1, in the body face; a broken link and the reply result do too.
 
 import { formatNumber, t } from '../../copy.ts';
 import { imageUrl } from '../../content/items.ts';
@@ -12,8 +14,12 @@ import { h, s } from '../dom.ts';
 
 export type StartMode =
   | { kind: 'new' }
-  | { kind: 'continue'; round: number }
-  | { kind: 'finished'; total: number; canReview: boolean };
+  | { kind: 'continue'; round: number; challenge: boolean }
+  | { kind: 'finished'; total: number; canReview: boolean }
+  /** `line` is null while the friend's name is being checked. */
+  | { kind: 'challenge'; line: string | null; meta: string; notes: string[]; unfinished: boolean }
+  | { kind: 'broken' }
+  | { kind: 'reply'; line: string };
 
 export interface StartProps {
   sample: Item;
@@ -21,10 +27,16 @@ export interface StartProps {
   /** Start stays "Loading…" until the round-1 image is ready (max 4 s). */
   ready: boolean;
   webgl: boolean;
+  /** "You have seen N of M objects", or null. */
+  collection: string | null;
   onStart(): void;
   onContinue(): void;
   onNew(): void;
   onReview(): void;
+  /** Play the challenge deck ("Play the same 10", "Play the challenge"). */
+  onChallenge(opener: HTMLElement): void;
+  /** The reply result's "Replay these 10 (not ranked)". */
+  onReplay(): void;
   onAbout(opener: HTMLElement): void;
 }
 
@@ -86,26 +98,31 @@ export function startScreen(p: StartProps): HTMLElement {
   const caption = t('start.sampleCaption', { made: sample.made.place, kept: `${sample.kept.museum}, ${sample.kept.city}` });
 
   const actions = h('div', { class: 'start__actions' });
+  const primary = (label: string, test: string, onclick: (e: MouseEvent) => void) =>
+    h('button', { type: 'button', class: 'btn btn--primary', 'data-test': test, disabled: !p.ready, 'aria-busy': String(!p.ready), onclick }, p.ready ? label : t('start.loading'));
+  const secondary = (label: string, test: string, onclick: () => void) => h('button', { type: 'button', class: 'btn btn--secondary', 'data-test': test, onclick }, label);
+  const mode = p.mode;
   if (!p.webgl) {
     actions.append(h('p', { class: 'start__nowebgl', role: 'alert' }, t('start.noWebgl')));
-  } else if (p.mode.kind === 'continue') {
+  } else if (mode.kind === 'continue') {
     actions.append(
-      h('button', { type: 'button', class: 'btn btn--primary', 'data-test': 'continue', onclick: p.onContinue }, t('start.continue', { round: p.mode.round })),
-      h('button', { type: 'button', class: 'btn btn--secondary', 'data-test': 'new-game', onclick: p.onNew }, t('start.new')),
+      h('button', { type: 'button', class: 'btn btn--primary', 'data-test': 'continue', onclick: p.onContinue }, t(mode.challenge ? 'start.continueChallenge' : 'start.continue', { round: mode.round })),
+      secondary(t('start.new'), 'new-game', p.onNew),
     );
-  } else if (p.mode.kind === 'finished') {
-    actions.append(h('p', { class: 'start__finished' }, t('start.finished', { total: formatNumber(p.mode.total) })));
-    if (p.mode.canReview) {
-      actions.append(h('button', { type: 'button', class: 'btn btn--secondary', 'data-test': 'review', onclick: p.onReview }, t('start.review')));
-    }
-    actions.append(h('button', { type: 'button', class: 'btn btn--primary', 'data-test': 'play-again', onclick: p.onStart }, t('start.again')));
+  } else if (mode.kind === 'finished') {
+    actions.append(h('p', { class: 'start__finished' }, t('start.finished', { total: formatNumber(mode.total) })));
+    actions.append(primary(t('start.another'), 'play-another', p.onStart));
+    if (mode.canReview) actions.append(secondary(t('start.review'), 'review', p.onReview));
+  } else if (mode.kind === 'challenge') {
+    const onPlay = (e: MouseEvent) => p.onChallenge(e.currentTarget as HTMLElement);
+    actions.append(primary(t(mode.unfinished ? 'challenge.playChallenge' : 'challenge.play'), 'play-challenge', onPlay));
+    if (mode.unfinished) actions.append(secondary(t('challenge.continueMine'), 'continue-mine', p.onContinue));
+  } else if (mode.kind === 'broken') {
+    actions.append(primary(t('challenge.brokenPlay'), 'start', p.onStart));
+  } else if (mode.kind === 'reply') {
+    actions.append(primary(t('start.another'), 'play-another', p.onStart), secondary(t('reply.replay'), 'replay-reply', p.onReplay));
   } else {
-    const start = h(
-      'button',
-      { type: 'button', class: 'btn btn--primary', 'data-test': 'start', disabled: !p.ready, 'aria-busy': String(!p.ready), onclick: p.onStart },
-      p.ready ? t('start.start') : t('start.loading'),
-    );
-    actions.append(start);
+    actions.append(primary(t('start.start'), 'start', p.onStart));
   }
 
   const about = h('button', { type: 'button', class: 'link', onclick: (e: MouseEvent) => p.onAbout(e.currentTarget as HTMLElement) }, t('start.privacyLink'));
@@ -118,15 +135,31 @@ export function startScreen(p: StartProps): HTMLElement {
   });
   img.addEventListener('error', () => img.classList.add('is-broken'));
 
-  const lines = t('app.tagline').split(/(?<=\.)\s+/);
-  const headline = h('h1', { class: 'start__headline' });
-  lines.forEach((line, i) => headline.append(i > 0 ? ' ' : '', h('span', { class: 'start__line' }, line)));
+  // A challenge, broken link or reply result puts its own line in the h1 (V1-17).
+  const own = mode.kind === 'challenge' ? mode.line ?? '' : mode.kind === 'broken' ? t('challenge.broken') : mode.kind === 'reply' ? mode.line : null;
+  let intro: HTMLElement;
+  if (own === null) {
+    const lines = t('app.tagline').split(/(?<=\.)\s+/);
+    const headline = h('h1', { class: 'start__headline' });
+    lines.forEach((line, i) => headline.append(i > 0 ? ' ' : '', h('span', { class: 'start__line' }, line)));
+    intro = h('div', { class: 'start__intro' }, h('p', { class: 'eyebrow' }, t('start.eyebrow')), headline);
+  } else {
+    const notes = mode.kind === 'challenge' ? mode.notes : [];
+    intro = h(
+      'div',
+      { class: 'start__intro start__intro--challenge' },
+      h('p', { class: 'eyebrow' }, t('app.tagline')),
+      h('h1', { class: 'start__challenge', tabindex: -1, 'data-test': 'challenge-line', 'aria-busy': String(mode.kind === 'challenge' && mode.line === null) }, h('bdi', {}, own)),
+      ...notes.map((n) => h('p', { class: 'start__note', 'data-test': 'challenge-note' }, n)),
+    );
+  }
+  const meta = mode.kind === 'challenge' ? mode.meta : t('start.meta');
 
   return h(
     'main',
     { class: 'screen start', 'data-screen': 'start' },
     h('header', { class: 'brandbar' }, wordmark()),
-    h('div', { class: 'start__intro' }, h('p', { class: 'eyebrow' }, t('start.eyebrow')), headline),
+    intro,
     h(
       'figure',
       { class: 'start__sample' },
@@ -146,7 +179,8 @@ export function startScreen(p: StartProps): HTMLElement {
       ),
     ),
     actions,
-    h('p', { class: 'start__meta' }, t('start.meta')),
+    p.collection ? h('p', { class: 'start__collection', 'data-test': 'collection' }, p.collection) : null,
+    h('p', { class: 'start__meta' }, meta),
     h('footer', { class: 'start__privacy' }, t('start.privacy'), ' ', about),
   );
 }

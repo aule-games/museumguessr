@@ -26,6 +26,8 @@ export interface RevealProps {
   map: GameMap | null;
   /** Show the optional difficulty row (after round 3, once per game). */
   pulse: boolean;
+  /** During a challenge game, the friend's score, shown under the round total (V1-21). */
+  toBeat?: number | null;
   onPulse(a: string): void;
   onNext(): void;
   onMenu(opener: HTMLElement): void;
@@ -192,6 +194,7 @@ export function revealScreen(p: RevealProps): RevealView {
         h('p', { class: 'label__line' }, wallLabel(item)),
       ),
       rows,
+      p.toBeat != null ? h('p', { class: 'reveal__tobeat', 'data-test': 'to-beat' }, t('reveal.toBeat', { score: formatNumber(p.toBeat) })) : null,
       h('div', { class: 'reveal__media' }, mapHost, legend),
       journey && h('p', { class: 'reveal__journey', 'data-test': 'journey' }, journey.text, ' ', ext(journey.source_url, t('reveal.source'))),
       item.contested && item.claimant_source

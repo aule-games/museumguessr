@@ -143,15 +143,21 @@ points layout; its thumbnail placeholders are not a substitute for production
 credits. The game implementation must retain credits in recap detail and text
 exports rather than silently discarding them.
 
-Example share-label structure (specification, not wired clipboard behaviour):
+The share text never carries a wall label: a challenge link replays the same
+10 for a friend, so it must not name places, museums or dates. The long text
+(share sheet, WhatsApp, Copy) is the hook, ten compact numeric lines in
+question order and the challenge link (V1-19):
 
 ```text
-MuseumGuessr · 21,480 / 30,000 · Curator
-Lamassu
-Made in Nimrud, 883–859 BCE
-Now in The Metropolitan Museum of Art, New York
-Photo: The Metropolitan Museum of Art, CC0
+Can you beat my 21,480/30,000 on MuseumGuessr?
+R1 2,840 · made 120 km · 15 yrs · kept 0 km
+R2 1,910 · made 640 km · 80 yrs · kept 4 km
+…
+https://aule-games.github.io/museumguessr/?d=…&s=21480&h=…
 ```
+
+The X text is the hook and the link only. After a replay the hook reads
+"21,480/30,000 (replay)".
 
 ### Map style and pin glyphs
 

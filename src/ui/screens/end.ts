@@ -1,50 +1,57 @@
-// End screen and "Review your 10" (DS7, DS15, DS25, V2, V4, ENG37).
-// Order: total and tier, Copy result, "Copied", the "Most fun" row, the
-// 10-row recap, the collection line, "Replay the same 10".
+// End screen and "Review your 10" (DS7, DS25, V2, ENG37, V1-19 to V1-22).
+// Normal game: total and tier, the share block (name disclosure, Share,
+// Copy link), "Play another 10", a waiting challenge, the collection line,
+// the "Most fun" row, the 10-row recap, "Replay these 10". A challenge game
+// shows both totals and the result, and its share block sends the score
+// back. Desktop puts the summary and actions left and the recap right.
 
 import { FEEDBACK } from '../../analytics/events.ts';
 import { formatNumber, t, type CopyKey } from '../../copy.ts';
 import { imageUrl } from '../../content/items.ts';
-import { shareText } from '../../game/text.ts';
 import { tierFor } from '../../scoring/score.ts';
 import type { RoundResult } from '../../state/schema.ts';
 import type { Item } from '../../types/item.ts';
 import { h, scoreText } from '../dom.ts';
+import { shareBlock, type ShareSetup } from '../share.ts';
 import { wordmark } from './start.ts';
+
+export interface ChallengeResult {
+  /** The friend's name as shown, already checked ("A friend" when none). */
+  name: string;
+  /** The friend's score, or null when the link had no comparable one. */
+  score: number | null;
+}
 
 export interface EndProps {
   items: readonly Item[];
   results: readonly (RoundResult | null)[] | null;
   total: number;
-  /** False for a snapshot saved under other content versions: total only. */
+  /** False for a snapshot saved under other answers: total only. */
   detailed: boolean;
   askMostFun: boolean;
   onMostFun(a: string): void;
-  onCopied(method: 'clipboard' | 'manual'): void;
+  /** The share block; null when the recap is not available. */
+  share: ShareSetup | null;
+  challenge: ChallengeResult | null;
+  /** "You have seen N of M objects"; null when this device keeps no list. */
+  collection: { seen: number; total: number } | null;
+  /** A friend's challenge set aside with "Continue my game". */
+  waiting: { name: string | null; onPlay(): void; onDismiss(): void } | null;
+  onAnother(): void;
   onReplay(): void;
 }
 
-export function endScreen(p: EndProps): HTMLElement {
-  const copied = h('p', { class: 'end__copied', 'aria-live': 'polite', 'data-test': 'copied' });
-  const manual = h('div', { class: 'end__manual', hidden: true });
-  const copy = h('button', { type: 'button', class: 'btn btn--primary', 'data-test': 'copy' }, t('end.copy'));
-  copy.addEventListener('click', async () => {
-    const text = shareText(p.results ?? [], p.total);
-    try {
-      await navigator.clipboard.writeText(text);
-      copied.textContent = t('end.copied');
-      p.onCopied('clipboard');
-    } catch {
-      const area = h('textarea', { class: 'end__text', readonly: true, rows: 8, 'aria-label': t('end.copyManual') });
-      area.value = text;
-      manual.replaceChildren(h('p', {}, t('end.copyManual')), area);
-      manual.hidden = false;
-      area.focus();
-      area.select();
-      p.onCopied('manual');
-    }
-  });
+/** "You win by 760", "Ali wins by 760" or "A tie: you both scored 18,240". */
+export function resultLine(you: number, name: string, them: number): string {
+  if (you === them) return t('challenge.tie', { total: formatNumber(you) });
+  return you > them ? t('challenge.youWin', { diff: formatNumber(you - them) }) : t('challenge.theyWin', { name, diff: formatNumber(them - you) });
+}
 
+export function collectionLine(c: { seen: number; total: number }): string {
+  return c.seen >= c.total ? t('end.collectionAll') : t('end.collection', { seen: formatNumber(c.seen), total: formatNumber(c.total) });
+}
+
+export function endScreen(p: EndProps): HTMLElement {
   let mostFun: HTMLElement | null = null;
   if (p.askMostFun) {
     const thanks = h('span', { class: 'pulse__thanks', 'aria-live': 'polite' });
@@ -90,22 +97,60 @@ export function endScreen(p: EndProps): HTMLElement {
         )
       : h('p', { class: 'end__note' }, t('end.versionChanged'));
 
-  return h(
-    'main',
-    { class: 'screen end', 'data-screen': 'end' },
-    h('header', { class: 'brandbar' }, wordmark()),
+  const c = p.challenge;
+  const versus =
+    c && c.score !== null
+      ? [
+          h('p', { class: 'end__versus', 'data-test': 'end-versus' }, h('bdi', {}, t('challenge.both', { you: formatNumber(p.total), name: c.name, them: formatNumber(c.score) }))),
+          h('p', { class: 'end__result', 'data-test': 'end-result' }, h('bdi', {}, resultLine(p.total, c.name, c.score))),
+        ]
+      : [];
+
+  const waiting = p.waiting
+    ? h(
+        'p',
+        { class: 'end__waiting', 'data-test': 'waiting-challenge' },
+        h(
+          'button',
+          { type: 'button', class: 'link', onclick: p.waiting.onPlay },
+          h('bdi', {}, p.waiting.name ? t('end.waiting', { name: p.waiting.name }) : t('end.waitingFriend')),
+        ),
+        ' · ',
+        h('button', { type: 'button', class: 'link end__dismiss', onclick: p.waiting.onDismiss }, t('end.waitingDismiss')),
+      )
+    : null;
+
+  const summary = h(
+    'div',
+    { class: 'end__summary' },
     h(
       'header',
       { class: 'end__head' },
       h('p', { class: 'end__total', 'data-test': 'end-total' }, ...scoreText(t('end.total', { total: formatNumber(p.total) }))),
       h('p', { class: 'end__tier' }, tierFor(p.total)),
+      ...versus,
     ),
-    p.detailed ? copy : null,
-    copied,
-    manual,
+    p.detailed && p.share ? shareBlock(p.share, c ? 'sendBack.button' : 'share.button') : null,
+    h('button', { type: 'button', class: 'btn btn--secondary btn--wide end__another', 'data-test': 'play-another', onclick: p.onAnother }, t('end.another')),
+    waiting,
+    p.collection ? h('p', { class: 'end__collection', 'data-test': 'collection' }, collectionLine(p.collection)) : null,
     mostFun,
-    recap,
-    h('p', { class: 'end__collection' }, t('end.collection')),
-    h('button', { type: 'button', class: 'link end__replay', 'data-test': 'replay', onclick: p.onReplay }, t('end.replay')),
+  );
+
+  return h(
+    'main',
+    { class: 'screen end', 'data-screen': 'end' },
+    h('header', { class: 'brandbar' }, wordmark()),
+    h(
+      'div',
+      { class: 'end__layout' },
+      summary,
+      h(
+        'div',
+        { class: 'end__recap' },
+        recap,
+        h('button', { type: 'button', class: 'link end__replay', 'data-test': 'replay', onclick: p.onReplay }, t('end.replay')),
+      ),
+    ),
   );
 }

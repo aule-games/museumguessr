@@ -41,7 +41,7 @@ async function boot() {
   const root = document.getElementById('app') as HTMLElement;
   const lock = createLock();
   await lock.acquire(false);
-  const app = new App({ root, analytics, local, session, lock, tab });
+  const app = new App({ root, analytics, local, session, lock, tab, params: url.searchParams });
 
   // Telemetry only: the error screen comes from game-code boundaries (ENG11).
   const bundlePrefix = new URL(import.meta.env.DEV ? BASE_URL : `${BASE_URL}assets/`, location.origin).href;

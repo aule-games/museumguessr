@@ -37,7 +37,8 @@ export const COPY = {
   'start.privacyLink': 'About & privacy',
   'start.finished': 'You scored {total} / 30,000',
   'start.review': 'Review your 10',
-  'start.again': 'Play again',
+  'start.another': 'Play another 10',
+  'start.continueChallenge': 'Continue the challenge · Round {round} of 10',
   'start.noWebgl': "Your browser can't show the map (WebGL is off). Try another browser.",
 
   // round
@@ -120,20 +121,59 @@ export const COPY = {
 
   // end
   'end.total': '{total} / 30,000',
-  'end.copy': 'Copy result',
-  'end.copied': 'Copied',
-  'end.copyManual': 'Copy this text:',
-  'end.collection': "That's the whole collection for now: 10 objects, the same for everyone",
-  'end.replay': 'Replay the same 10',
+  'end.another': 'Play another 10',
+  'end.collection': 'You have seen {seen} of {total} objects',
+  'end.collectionAll': 'You have seen every object',
+  'end.replay': 'Replay these 10',
+  'end.waiting': "Play {name}'s challenge",
+  'end.waitingFriend': "Play your friend's challenge",
+  'end.waitingDismiss': 'Not now',
   'end.recapRow': 'Made in {made} → Now in {kept}',
   'end.points': '{points} pts',
   'end.versionChanged': 'The collection changed since this game; only the total is kept.',
 
-  // share text (DS15)
-  'share.title': 'MuseumGuessr {total}/30,000',
-  'share.round': 'R{round} {points} · kept {keptKm} km · made {madeKm} km · {years} yrs',
+  // share block (V1-19, V1-20)
+  'share.button': 'Share',
+  'share.copyLink': 'Copy link',
+  'share.copied': 'Link copied',
+  'share.copyManual': 'Copy this text:',
+  'share.chooser': 'Share your score',
+  'share.whatsapp': 'WhatsApp',
+  'share.x': 'X',
+  'name.add': 'Add a name',
+  'name.label': 'Your name (optional)',
+  'name.help': 'Shown to anyone with your link',
+  'name.rule': 'Use 2–16 letters, numbers, spaces, - or _',
+  'name.without': 'Share without a name',
+  'sendBack.button': 'Send your score back',
+
+  // challenges (V1-16, V1-17, V1-18, V1-21)
+  'challenge.friend': 'A friend',
+  'challenge.line': '{name} scored {score} on these 10. Can you beat it?',
+  'challenge.lineNoScore': 'Play the same 10 your friend played',
+  'challenge.play': 'Play the same 10',
+  'challenge.meta': 'The same 10 objects {name} played · about 10 min',
+  'challenge.metaFriend': 'The same 10 objects your friend played · about 10 min',
+  'challenge.changed': "The answers for these objects changed since your friend played, so the scores can't be compared",
+  'challenge.seenSome': 'You have seen {count} of these 10',
+  'challenge.broken': "This challenge link doesn't work any more",
+  'challenge.brokenPlay': 'Play 10 objects',
+  'challenge.playChallenge': 'Play the challenge',
+  'challenge.continueMine': 'Continue my game',
+  'challenge.youWin': 'You win by {diff}',
+  'challenge.theyWin': '{name} wins by {diff}',
+  'challenge.tie': 'A tie: you both scored {total}',
+  'challenge.both': 'You {you} · {name} {them}',
+  'reply.line': '{name} scored {them} on your 10. You scored {you}. {result}.',
+  'reply.replay': 'Replay these 10 (not ranked)',
+  'reveal.toBeat': 'To beat: {score}',
+
+  // share text (DS15, V1-19)
+  'share.hook': 'Can you beat my {total}/30,000 on MuseumGuessr?',
+  'share.hookReplay': 'Can you beat my {total}/30,000 (replay) on MuseumGuessr?',
+  'share.hookReply': 'I scored {total}/30,000 on your 10 on MuseumGuessr. Your move.',
+  'share.round': 'R{round} {points} · made {madeKm} km · {years} yrs · kept {keptKm} km',
   'share.skipped': 'R{round} skipped',
-  'share.footer': 'Same 10 objects for everyone',
 
   // menu overlays
   'how.title': 'How to play',
@@ -146,6 +186,7 @@ export const COPY = {
   'about.body':
     'No cookies and no sign-up. To learn whether the game is fun, anonymous play counts go to PostHog (EU servers). Each event also carries the technical details PostHog adds: browser, operating system, device type, screen size, language, time zone and the site that linked here. The address of this page is sent without its query string, except campaign tags (utm_* and ref). These events are sent:',
   'about.testMode': 'Open the site with ?test=1 to stop sending events from this browser; ?test=0 turns them back on.',
+  'about.device': 'This device remembers which objects you have seen, so your next game shows new ones, and the name you add to a shared link. Neither is sent anywhere; anyone with a link you share sees the name in it.',
   'confirmNew.title': 'Start over?',
   'confirmNew.body': 'Your score will be lost.',
   'confirmNew.yes': 'Start over',

@@ -12,7 +12,9 @@ export const EVENTS = {
   gameCompleted: 'game_completed',
   clientError: 'client_error',
   feedback: 'feedback',
-  resultCopied: 'result_copied',
+  resultShared: 'result_shared',
+  challengeOpened: 'challenge_opened',
+  challengeCompleted: 'challenge_completed',
   tourEnded: 'tour_ended',
 } as const;
 
@@ -44,7 +46,9 @@ export interface EventProps {
   game_completed: { src: string; total: number; answered_count: number };
   client_error: { name: string; message: string; frame: string };
   feedback: { src: string; q: FeedbackQ; a: string };
-  result_copied: { src: string; total: number; method: 'clipboard' | 'manual' };
+  result_shared: { src: string; total: number; method: 'native' | 'whatsapp' | 'x' | 'copy' | 'manual'; kind: 'challenge' | 'reply'; first_in_game: boolean };
+  challenge_opened: { src: string; valid: boolean; has_score: boolean; own_deck: boolean };
+  challenge_completed: { src: string; beat: boolean | null };
   tour_ended: { src: string; outcome: 'done' | 'skipped'; step: number; replay: boolean };
 }
 
@@ -122,11 +126,25 @@ export const CATALOGUE: CatalogueEntry[] = [
     feeds: 'difficulty pulse',
   },
   {
-    name: EVENTS.resultCopied,
-    props: 'src; total; method: clipboard | manual',
-    fires: 'when the player copies the result text',
-    dedupe: 'none',
-    feeds: 'sharing interest',
+    name: EVENTS.resultShared,
+    props: 'src; total; method: native | whatsapp | x | copy | manual; kind: challenge | reply; first_in_game: the first share of this game (boolean)',
+    fires: 'when a share sheet completes or a share button opens its target (not when the sheet is cancelled)',
+    dedupe: 'none (first_in_game marks one per game)',
+    feeds: 'share rate per finished game',
+  },
+  {
+    name: EVENTS.challengeOpened,
+    props: 'src; valid: the link named 10 known objects (boolean); has_score: it carried a score (boolean); own_deck: the deck is the one this device just finished (boolean)',
+    fires: 'when a challenge link\'s screen first renders',
+    dedupe: 'once per challenge link in a tab session',
+    feeds: 'challenge funnel step 1',
+  },
+  {
+    name: EVENTS.challengeCompleted,
+    props: 'src; beat: the player beat the friend\'s score (true | false), or null when the link had no comparable score',
+    fires: 'when a challenge game ends',
+    dedupe: 'once per game',
+    feeds: 'challenge funnel step 2',
   },
   {
     name: EVENTS.tourEnded,

@@ -56,6 +56,7 @@ export function aboutPrivacy(opener: HTMLElement | null) {
   openDialog(t('about.title'), [
     h('p', {}, t('about.body')),
     h('ul', { class: 'about__events', 'data-test': 'events' }, ...CATALOGUE.map((e) => h('li', {}, h('code', {}, e.name), ': ', e.fires))),
+    h('p', {}, t('about.device')),
     h('p', {}, t('about.testMode')),
   ], opener);
 }

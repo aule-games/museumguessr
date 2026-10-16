@@ -37,7 +37,9 @@ export type Action =
   | { type: 'skip'; round: number }
   | { type: 'next'; round: number }
   | { type: 'pulse'; q: FeedbackQ; a: string }
-  | { type: 'copied'; method: 'clipboard' | 'manual'; total: number };
+  | { type: 'shared'; method: ShareMethod; kind: 'challenge' | 'reply' };
+
+export type ShareMethod = 'native' | 'whatsapp' | 'x' | 'copy' | 'manual';
 
 export type Effect =
   | { type: 'save' }
@@ -139,15 +141,16 @@ export function reduce(state: GameState | null, action: Action, keys: readonly A
 
   if (!state) return { state, effects };
 
-  // Feedback and copying also happen on the end screen, after the game finished.
+  // Feedback and sharing also happen on the end screen, after the game finished.
   if (action.type === 'pulse') return feedback(state, action, effects);
-  if (action.type === 'copied') {
-    return {
-      state,
-      effects: [
-        { type: 'track', name: EVENTS.resultCopied, props: { src: state.src, total: action.total, method: action.method } },
-      ],
-    };
+  if (action.type === 'shared') {
+    // Every share is sent; first_in_game marks one per game, for the share rate (V1-27).
+    const key = ledgerKey(state.game_id, EVENTS.resultShared);
+    const first = !state.sent.includes(key);
+    const props = { src: state.src, total: totalPoints(state), method: action.method, kind: action.kind, first_in_game: first };
+    effects.push({ type: 'track', name: EVENTS.resultShared, props });
+    if (!first) return { state, effects };
+    return { state: { ...state, rev: state.rev + 1, sent: [...state.sent, key] }, effects: [{ type: 'save' }, ...effects] };
   }
 
   if (state.finished) return { state, effects };
@@ -239,6 +242,13 @@ export function reduce(state: GameState | null, action: Action, keys: readonly A
         total: totalPoints(next),
         answered_count: answeredCount(next),
       });
+      if (next.deck_kind === 'challenge') {
+        const score = next.challenge?.score ?? null;
+        next = once(next, effects, ledgerKey(next.game_id, EVENTS.challengeCompleted), EVENTS.challengeCompleted, {
+          src: next.src,
+          beat: score === null ? null : totalPoints(next) > score,
+        });
+      }
       const snapshot: FinishedSnapshot = {
         state_version: next.state_version,
         scoring_version: next.scoring_version,

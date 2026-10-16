@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { CATALOGUE } from '../../src/analytics/events';
 import { confirm, enterYear, expect, placePin, playRound, start, test } from './fixtures';
 
 const items = JSON.parse(readFileSync(join(import.meta.dirname, '../../data/items.json'), 'utf8')).items as {
@@ -165,8 +166,8 @@ test.describe('[A1] [DS6] no answer before the reveal', () => {
   });
 });
 
-test.describe('[DS15] [V4] [DS7] [DS25] a full game', () => {
-  test('ten rounds end on the results screen; Copy result copies the template; replay starts over', async ({ page, context, recorder }) => {
+test.describe('[DS15] [V4] [DS7] [DS25] [V1-19] [V1-22] a full game', () => {
+  test('ten rounds end on the results screen; Copy link copies the challenge text; replay starts over', async ({ page, context, recorder }) => {
     await context.grantPermissions(['clipboard-read', 'clipboard-write']);
     await start(page);
     for (let r = 0; r < 10; r++) {
@@ -177,17 +178,32 @@ test.describe('[DS15] [V4] [DS7] [DS25] a full game', () => {
     }
     await expect(page.locator('[data-screen=end]')).toBeVisible();
     await expect(page.locator('[data-test=recap] li')).toHaveCount(10);
-    await page.locator('[data-test=copy]').click();
-    await expect(page.locator('[data-test=copied]')).toHaveText('Copied');
+    // the end screen order (V1-22)
+    const order = await page.locator('[data-screen=end] [data-test]').evaluateAll((els) => els.map((e) => e.getAttribute('data-test')));
+    const at = (k: string) => order.indexOf(k);
+    expect(at('end-total')).toBeLessThan(at('share'));
+    expect(at('share')).toBeLessThan(at('play-another'));
+    expect(at('play-another')).toBeLessThan(at('collection'));
+    expect(at('collection')).toBeLessThan(at('recap'));
+    expect(at('recap')).toBeLessThan(at('replay'));
+    await expect(page.locator('[data-test=collection]')).toHaveText('You have seen every object');
+
+    await page.locator('[data-test=copy-link]').click();
+    await expect(page.locator('[data-test=copied]')).toHaveText('Link copied');
     const text = await page.evaluate(() => navigator.clipboard.readText());
     const lines = text.split('\n');
-    expect(lines[0]).toMatch(/^MuseumGuessr [\d,]+\/30,000$/);
-    for (let r = 1; r <= 10; r++) expect(lines[r]).toMatch(new RegExp(`^R${r} [\\d,]+ · kept [\\d,]+ km · made [\\d,]+ km · [\\d,]+ yrs$`));
-    expect(lines[11]).toBe('Same 10 objects for everyone');
-    expect(lines[12]).toBe('https://aule-games.github.io/museumguessr/?utm_source=share&utm_medium=share');
+    expect(lines[0]).toMatch(/^Can you beat my [\d,]+\/30,000 on MuseumGuessr\?$/);
+    for (let r = 1; r <= 10; r++) expect(lines[r]).toMatch(new RegExp(`^R${r} [\\d,]+ · made [\\d,]+ km · [\\d,]+ yrs · kept [\\d,]+ km$`));
+    const link = new URL(lines[11] ?? '');
+    expect(link.searchParams.get('d')).toBe(items.map((it) => it.id).join('.'));
+    expect(link.searchParams.get('s')).toMatch(/^\d+$/);
+    expect(link.searchParams.get('h')).toMatch(/^[0-9a-f]{8}$/);
+    expect(link.searchParams.get('utm_source')).toBe('share');
+    expect(link.searchParams.get('utm_medium')).toBe('copy');
+    expect(link.searchParams.get('utm_campaign')).toBe('challenge');
     await recorder.idle(page);
     expect(recorder.of('game_completed')).toHaveLength(1);
-    expect(recorder.of('result_copied')[0]?.properties.method).toBe('clipboard');
+    expect(recorder.of('result_shared')[0]?.properties).toMatchObject({ method: 'copy', kind: 'challenge', first_in_game: true });
 
     await page.locator('[data-test=replay]').click();
     await expect(page.locator('[data-screen=round][data-round="1"]')).toBeVisible();
@@ -246,7 +262,7 @@ test.describe('[DS13] [ENG17] [DS27] overlays and history', () => {
     await expect(page.locator('[data-screen=round]')).toBeVisible();
   });
 
-  test('the menu opens How to play, Credits (one row per photo) and About & privacy', async ({ page }) => {
+  test('the menu opens How to play, Credits (the sample before any reveal, V1-24) and About & privacy', async ({ page }) => {
     await start(page);
     for (const [item, check] of [
       ['menu-how', 'How to play'],
@@ -256,8 +272,8 @@ test.describe('[DS13] [ENG17] [DS27] overlays and history', () => {
       await page.locator('[data-test=menu]').click();
       await page.locator(`[data-test=${item}]`).click();
       await expect(page.getByRole('dialog')).toContainText(check);
-      if (item === 'menu-credits') await expect(page.locator('[data-test=credits] li')).toHaveCount(11);
-      if (item === 'menu-about') await expect(page.locator('[data-test=events] li')).toHaveCount(11);
+      if (item === 'menu-credits') await expect(page.locator('[data-test=credits] li')).toHaveCount(1);
+      if (item === 'menu-about') await expect(page.locator('[data-test=events] li')).toHaveCount(CATALOGUE.length);
       await page.keyboard.press('Escape');
       await expect(page.getByRole('dialog')).toHaveCount(0);
     }

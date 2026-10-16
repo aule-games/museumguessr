@@ -132,3 +132,48 @@ describe('[V1-06] game ids', () => {
     expect(newGameId((n) => new Uint8Array(n).fill(255))).toBe('_____________________w');
   });
 });
+
+describe('[V1-27] share and challenge events from the reducer', () => {
+  const finish = (deck: Deck) => {
+    const actions: Action[] = [startWith(deck)];
+    deck.ids.forEach((id, round) => actions.push(...answerAt(round, keyOf(id)), { type: 'next', round }));
+    return play(actions, ANSWER_KEYS);
+  };
+  const tracked = (state: GameState, action: Action) => reduce(state, action, ANSWER_KEYS);
+
+  it('every share is sent, and first_in_game marks only the first of a game', () => {
+    const done = finish(deckOf([...ITEM_IDS]));
+    const a = tracked(done, { type: 'shared', method: 'native', kind: 'challenge' });
+    const b = tracked(a.state as GameState, { type: 'shared', method: 'copy', kind: 'challenge' });
+    const props = [...a.effects, ...b.effects].flatMap((e) => (e.type === 'track' ? [e.props] : []));
+    expect(props).toMatchObject([
+      { method: 'native', kind: 'challenge', first_in_game: true, total: 30000 },
+      { method: 'copy', first_in_game: false },
+    ]);
+  });
+
+  it('a challenge game ends with challenge_completed: beat true, false, or null without a score', () => {
+    const beat = (score: number | null) => {
+      const s = finish(deckOf([...ITEM_IDS], { kind: 'challenge', challenge: { score, name: 'Ali' } }));
+      return s.sent.includes(`${s.game_id}:challenge_completed::`);
+    };
+    expect(beat(18240)).toBe(true);
+    const ids = [...ITEM_IDS];
+    const effectsOf = (score: number | null) => {
+      const actions: Action[] = [startWith(deckOf(ids, { kind: 'challenge', challenge: { score, name: null } }))];
+      ids.forEach((id, round) => actions.push(...answerAt(round, keyOf(id)), { type: 'next', round }));
+      let state: GameState | null = null;
+      const props: Record<string, unknown>[] = [];
+      for (const a of actions) {
+        const r = reduce(state, a, ANSWER_KEYS);
+        state = r.state;
+        for (const e of r.effects) if (e.type === 'track' && e.name === 'challenge_completed') props.push(e.props);
+      }
+      return props;
+    };
+    expect(effectsOf(18240)).toEqual([{ src: 'webgames', beat: true }]);
+    expect(effectsOf(30000)).toEqual([{ src: 'webgames', beat: false }]);
+    expect(effectsOf(null)).toEqual([{ src: 'webgames', beat: null }]);
+    expect(finish(deckOf(ids)).sent.some((k) => k.includes('challenge_completed'))).toBe(false);
+  });
+});

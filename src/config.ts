@@ -12,5 +12,9 @@ export const ANALYTICS_HOSTS: readonly string[] = (import.meta.env.VITE_ANALYTIC
   .map((h) => h.trim())
   .filter(Boolean);
 
-/** Canonical public URL used by share text and meta tags. */
-export const SITE_URL = 'https://aule-games.github.io/museumguessr/';
+/**
+ * Canonical public URL used by share text and challenge links (V1-16). A
+ * build variable, so the custom-domain move is a configuration change; the
+ * meta tags in index.html move with it.
+ */
+export const SITE_URL: string = import.meta.env.VITE_SITE_URL || 'https://aule-games.github.io/museumguessr/';

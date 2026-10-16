@@ -188,9 +188,9 @@ try {
     await page.close();
     page = await context.newPage();
     await page.goto(`${url}?test=1`);
-    await expect(page.locator('[data-test=play-again]')).toBeVisible();
+    await expect(page.locator('[data-test=play-another]')).toBeVisible();
     await capture('start-finished-test-badge');
-    await page.locator('[data-test=play-again]').click();
+    await page.locator('[data-test=play-another]').click();
     await placePin(page, 41.9, 12.5);
     await confirm(page);
     await capture('when-test-badge');

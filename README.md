@@ -87,13 +87,17 @@ There is no sign-up and nothing identifies you. To learn whether the game is
 fun, the page sends anonymous play events to PostHog's EU servers in
 cookieless mode: `$pageview`, `game_start`, `round_started`, `step_completed`,
 `step_back`, `round_completed`, `game_completed`, `client_error`, `feedback`,
-`result_copied` and `tour_ended`. Each carries game facts (round, step, points, the channel tag
+`result_shared`, `challenge_opened`, `challenge_completed` and `tour_ended`. Each carries game facts (round, step, points, the channel tag
 from the link you followed) and the build id, plus the technical details
 PostHog's library adds to every event: browser and version, operating system,
 device type, screen and window size, language, time zone, the browser's
 user-agent string and the site that linked here. Page addresses are sent
 without their query string, except campaign tags (`utm_*` and `ref`). The full
 list is in [docs/analytics.md](docs/analytics.md#events).
+
+Your device remembers which objects you have seen, so your next game shows
+new ones, and the name you add to a shared link. Neither is sent anywhere;
+anyone with a link you share sees the name in it.
 
 Open the site with `?test=1` to stop sending events from your browser;
 `?test=0` turns them back on.
@@ -141,6 +145,10 @@ Authors) and Instrument Sans (© 2022 The Instrument Sans Project Authors) in
 the game; Barlow Condensed (© 2017 The Barlow Project Authors), IBM Plex Sans
 and IBM Plex Mono (© IBM Corp.) in the share image. All under the SIL Open
 Font License 1.1, self-hosted from the Fontsource packages.
+
+**Name filter:** a name in a challenge link is checked against the [List of
+Dirty, Naughty, Obscene, and Otherwise Bad Words](https://github.com/LDNOOBW/List-of-Dirty-Naughty-Obscene-and-Otherwise-Bad-Words)
+(its contributors, CC BY 4.0), so a crafted link cannot show an offensive name.
 
 **Code libraries:** MapLibre GL JS (BSD-3-Clause), PhotoSwipe (MIT),
 posthog-js (Apache-2.0 AND MIT). Their full licence texts, and the fonts'
