@@ -93,7 +93,9 @@ function runSteps() {
   return results;
 }
 
-const IDS = /\[([A-Z]+\d+[A-Z]?)\]/g;
+// Requirement ids: a capital prefix and a number (R2, DS12) or a
+// release-scoped number (V1-01).
+export const IDS = /\[([A-Z]+\d+(?:-\d+)?[A-Z]?)\]/g;
 const strip = (s) => s.replace(IDS, '').replace(/@\w+/g, '').replace(/\s+/g, ' ').trim();
 
 /** Rows from the unit (vitest JSON) and browser (Playwright JSON) reports. */
