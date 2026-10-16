@@ -204,6 +204,26 @@ try {
     await page.goto(`${url}?d=${[...last.item_ids].reverse().join('.')}&s=18240&n=Barış`);
     await expect(page.locator('[data-test=challenge-line]')).toContainText('Barış');
     await capture('challenge');
+    // A challenge game: "To beat" sits under the round total on the reveal.
+    await page.locator('[data-test=play-challenge]').click();
+    await placePin(page, 41.9, 12.5);
+    await confirm(page);
+    await enterYear(page, 1500);
+    await confirm(page);
+    await placePin(page, 48.86, 2.35);
+    await confirm(page);
+    await expect(page.locator('.map')).toHaveAttribute('data-reveal', 'drawn', { timeout: 8000 });
+    await expect(page.locator('[data-test=to-beat]')).toBeVisible();
+    await capture('reveal-to-beat');
+    // A finished challenge game: the result line and "Send your score back", with a Turkish name.
+    await page.evaluate((snap) => {
+      localStorage.removeItem('museumguessr:v1:save');
+      localStorage.setItem('museumguessr:v1:last', JSON.stringify({ ...snap, deck_kind: 'challenge', challenge: { score: 17000, name: 'İpek' } }));
+    }, last);
+    await page.goto(url);
+    await page.locator('[data-test=review]').click();
+    await expect(page.locator('[data-test=share]')).toHaveText('Send your score back');
+    await capture('end-send-back');
     await page.goto(`${url}?d=01.02`);
     await expect(page.locator('[data-test=challenge-line]')).toBeVisible();
     await capture('challenge-broken');
