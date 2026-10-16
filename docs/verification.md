@@ -8,15 +8,15 @@ Last run: 2026-10-16.
 
 | Step | Result |
 | --- | --- |
-| type check | passed (2 s) |
+| type check | passed (3 s) |
 | generated files are current | passed (0 s) |
 | item check | passed (0 s) |
-| unit tests | passed (10 s) |
+| unit tests | passed (12 s) |
 | design checks | passed (1 s) |
 | lint | passed (2 s) |
 | build | passed (1 s) |
 | build checks | passed (0 s) |
-| browser tests (5 viewports) | passed (100 s) |
+| browser tests (5 viewports) | passed (136 s) |
 | release scan (publish candidate) | passed (6 s) |
 
 ## Automated checks

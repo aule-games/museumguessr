@@ -1710,6 +1710,7 @@ p {
   margin-block: 0;
   padding: 0;
   display: grid;
+  container-type: inline-size;
 }
 
 .recap__row {
@@ -1751,6 +1752,20 @@ p {
   font-weight: 800;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
+}
+
+/* Measure reading room in the recap's own font size, so enlarged text gets
+   the full row before ordinary words are forced to break. The existing
+   overflow-wrap fallback still handles a string wider than the whole row. */
+@container (width < 20em) {
+  .recap__row {
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: start;
+  }
+
+  .recap__text {
+    width: 100%;
+  }
 }
 
 .end__note,
@@ -2594,10 +2609,18 @@ p {
   display: grid;
   grid-template:
     'photo' minmax(var(--layout-photo-min), 2fr)
-    'prompt' minmax(var(--layout-prompt), max-content)
+    'prompt' max-content
     'answer' minmax(var(--layout-map-min), 3fr)
     / minmax(0, 1fr);
   overflow-y: auto;
+  overflow-anchor: none;
+}
+
+/* A fixed minimum with a max-content maximum can still shrink the track.
+   Reserve the complete wrapped prompt and its padding before sizing the map. */
+.round--reflow .prompt {
+  min-height: max-content;
+  padding-block: var(--space-2);
 }
 
 .round--reflow .round__footer {
@@ -2623,7 +2646,7 @@ p {
     padding-top: var(--space-2);
     grid-template-rows:
       minmax(max(var(--layout-photo-min), calc(var(--layout-map-min) * 2 / 3)), 2fr)
-      minmax(var(--layout-prompt), max-content)
+      max-content
       minmax(var(--layout-map-min), 3fr);
   }
 
@@ -2657,7 +2680,7 @@ p {
 @media (width >= 900px), (orientation: landscape) and (height <= 500px) {
   .round--reflow .round__body {
     grid-template:
-      'photo prompt' auto
+      'photo prompt' max-content
       'photo answer' minmax(var(--layout-map-min), 1fr)
       / minmax(0, 55fr) minmax(0, 45fr);
   }
@@ -2668,6 +2691,22 @@ p {
 
   .round--reflow .actionbar {
     grid-column: 2;
+  }
+}
+
+/* In enlarged-text phone landscape the prompt and map can exceed the visible
+   body. Size the photo to the scrollport, not those overflowing grid tracks,
+   and keep the complete object visible while the answer scrolls. (DS19) */
+@media (width < 900px) and (orientation: landscape) and (height <= 500px) {
+  .round--reflow .round__body {
+    container-type: size;
+  }
+
+  .round--reflow .round__photo {
+    align-self: start;
+    position: sticky;
+    top: var(--space-2);
+    height: calc(100cqh - var(--space-2) - var(--space-3));
   }
 }
 
