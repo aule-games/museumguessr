@@ -195,7 +195,7 @@
     },
     {
       "id": "14",
-      "title": "Chocolate jar with iron-locked lid (Talavera poblana)",
+      "title": "Tibor chocolatero (Chocolate jar)",
       "difficulty": 2,
       "object_type": "vessel",
       "alt_neutral": "Tin-glazed earthenware jar painted dark blue on cream: birds and leafy scrolls in panels, swags at the shoulder; a hinged iron lid with a key standing on top",
@@ -224,17 +224,17 @@
       "when": {
         "start": 1725,
         "end": 1775,
-        "label": "1725-75",
+        "label": "1725–75",
         "source_url": "https://api.artic.edu/api/v1/artworks/10703"
       },
       "moved": true,
       "journey_fact": {
-        "text": "Earlier history not documented. Collected in Mexico City by Herbert Pickering Lewis (d. 1922); his widow Eva Lewis exported it from Mexico in Oct-Nov 1923 and gave it to the Art Institute of Chicago that December.",
+        "text": "Earlier history not documented. Owned in Mexico City by Herbert Pickering Lewis (d. 1922); his widow Eva Lewis exported it from Mexico in Oct-Nov 1923 and gave it to the Art Institute of Chicago that December.",
         "source_url": "https://www.artic.edu/artworks/10703"
       },
       "facts": [
         {
-          "text": "Its owners likely added the locking iron lid to protect valuables such as cacao beans, which were expensive at the time.",
+          "text": "Its iron cover, collar and lock suggest it held something valuable, such as cacao beans.",
           "source_url": "https://www.artic.edu/artworks/10703"
         },
         {
@@ -257,7 +257,7 @@
       "contested": false,
       "claimant_source": null,
       "heritage_image_law": false,
-      "retrieved": "2026-10-13"
+      "retrieved": "2026-10-16"
     },
     {
       "id": "15",
