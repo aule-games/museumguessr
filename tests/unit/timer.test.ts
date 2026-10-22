@@ -372,7 +372,8 @@ describe('reveal reached', () => {
     // 5 s before the pause and 5.4 s after it: 10.4 s usable, 49.6 s left
     expect(rc).toMatchObject({ game_ref: 'ref-g1-abcdef', timed_out: 0, seconds_left: 50, active_ms: 10_400, ready_ms: 800, skipped: false });
     const timedOut = run([...begin(), { type: 'expire', gameId: 'g1', round: 0, now: T0 + 60_000, away: false }, { type: 'revealShown', gameId: 'g1', round: 0, now: T0 + 61_000 }]);
-    expect(timedOut.tracked.find((e) => e.name === EVENTS.roundCompleted)?.props).toMatchObject({ timed_out: 3, seconds_left: 0, active_ms: 60_000, points: 0, skipped: false });
+    // a round with no answer at all is not an answered round (R7)
+    expect(timedOut.tracked.find((e) => e.name === EVENTS.roundCompleted)?.props).toMatchObject({ timed_out: 3, seconds_left: 0, active_ms: 60_000, points: 0, skipped: false, answered_count: 0 });
     // the board payload has no timing field at all
     const contract = readFileSync(join(ROOT, 'src/api/contract.ts'), 'utf8');
     for (const word of ['seconds_left', 'active_ms', 'ready_ms', 'deadline', 'remaining']) expect(contract).not.toContain(word);

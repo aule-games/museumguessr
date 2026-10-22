@@ -197,7 +197,7 @@ and there is only one score live region. (DS21)
 | Wall label | set straight on the gallery wall, no block; object title in the display face; made place and date → now in museum, city; title uses 20 px on phones and short landscape, 26 px on desktop | `reveal.madeKept`, or `reveal.sameArea` when made and held in the same area | title and identity remain complete; no truncation |
 | Journey | the sourced journey fact | `reveal.source` | wraps |
 | Map | answer pins (filled), guesses (hollow), one made→kept line, dashed guess links, the full-marks area for a region or country origin; a 78% veil in the map's own ground colour fades the base map, with its labels hidden; answer countries have 28% Kept/Made tints and opaque 2 px outlines; every pin has a map-ground keyline and a soft shadow; kept pins are rounded squares with a museum icon, made pins round teardrops with a paintbrush, guesses the same shapes outlined | `reveal.madeRegion`, `reveal.lineLabel` | fitted with measured pin-label/control/attribution clearance; controls hidden in phone portrait, only World at top-left in short landscape, with a reserved left column; credit resizing re-fits until the player moves the map; pinch, double-tap and keyboard zoom remain; long pin labels wrap at 192 px (DS22) |
-| Legend | raised caption rail under the map, normal line height; in the split layout map and legend fit the actual body height above the action bar, including feedback | `reveal.legend` | wraps; never reserved outside the map's available height |
+| Legend | raised caption rail under the map, normal line height; in the split layout map and legend fit the actual body height above the action bar, including feedback; without any guess pin (both map questions timed out) the guess entry goes | `reveal.legend`, `reveal.legendNoGuess` | wraps; never reserved outside the map's available height |
 | Score rows | Made / When / Kept (question order, DS35): glyph, name and disclosure chevron, the result (`result.km` / `result.years` with the difference in bold, or `reveal.spotOn`), a shared 88 px right-hand points column in large display-face numbers on the white rounded table (green when full marks); the round total row is a lime bar, navy text; on every viewport the name and points share the top line and the result runs full width below it; hover or keyboard focus (hover-capable devices) and tap cover the whole row (name, result and points) with the scoring explanation, white on ink, in the same place and with no heading; tap also opens the row's extras below (When's timeline, Made's place note) | `reveal.row.*`, `result.*`, `reveal.spotOn`, `reveal.kmCount`, `reveal.yearCount`, `reveal.yearOne`, `scoring.*` | each result stays on one line, its font stepping down to 11 px to fit, and only then wraps (never cut off or ellipsed); minimum 68 px rows; explanations scroll with the table, not over the action bar (DS31) |
 | Round total | the table's final row, a lime bar: label + points out of 3,000 in navy (announced) | `reveal.scoreLabel`, `reveal.score` | one line; focus ring remains outside the cell |
 | To beat (challenge games) | "To beat: 18,240" directly under the round total bar, never in the top bar (V1-21) | `reveal.toBeat` | one line |
@@ -357,14 +357,19 @@ Use a timer role with aria-live off. `timer.remaining` is hidden, non-live text
 updated every ten seconds. Announce `timer.warning` once at the threshold and
 `round.timeUp` once at expiry in the polite region. Never announce every tick.
 The 60-second limit uses the essential-timing exception to WCAG 2.2.1; this
-is not a blanket accessibility-conformance claim. Keyboard timing and keystrokes:
-**not measured yet**; step 2 records an automation floor, not human performance.
+is not a blanket accessibility-conformance claim. Keyboard timing and keystrokes,
+measured by the step-2 keyboard browser test (an automation floor, not human
+performance): three answers in about 0.5 s with 7 keystrokes for Made (Tab to the
+map, Enter drops the pin at the centre, Tab to Confirm, Enter), 11 for When (Tab
+to the year field, four digits, Tab to Confirm, Enter) and 8 for Kept, against
+the 60-second limit.
 [V12-77]
 
 ### Timed-out reveal and recap
 
 A timeout row has a clock glyph, `reveal.timedOut`, zero and
-`reason.timedOut`, with no guess pin, guess link or guess legend entry. A photo
+`reason.timedOut`, with no guess pin, guess link or guess legend entry
+(`reveal.legendNoGuess` when no guess pin is left). A photo
 skip retains its broken-image glyph. A draft or fallback counted on expiry
 shows `reveal.countedAtTimeUp`; the first timed-out reveal per device shows
 `reveal.timeUpTip` once. The recap adds `end.timedOut` with the unanswered count.

@@ -1,6 +1,10 @@
 -- KPI by channel: visitor-days with a page view, and how many of them reached a
 -- third answered round (round_completed with answered_count = 3) after that
 -- page view on the same day. Smoke traffic is excluded from both sides.
+-- From v1.2 round_completed is sent when a reveal visibly opens, timed out or
+-- not; answered_count counts rounds with at least one answer, so photo skips and
+-- wholly timed-out rounds never convert. completion.sql adds reveal reach and the
+-- time-out share beside it (R7).
 -- This is the SQL cross-check of the funnel insight in ../kpi-funnel.json; the
 -- funnel's 1-day conversion window can differ from "same day" near midnight.
 -- Replace __START__ with the launch time (UTC, 'YYYY-MM-DD HH:MM:SS').

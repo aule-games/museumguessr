@@ -72,12 +72,12 @@ implementation step; newly specified events do not fire in the step-0 build):
 | `challenge_opened` | `src`, `valid` (10 known objects), `has_score`, `own_deck` (the deck this device just finished) | a challenge link's screen first renders | challenge link and tab session |
 | `challenge_completed` | `game_ref`, `src`, `beat` (`true`, `false`, or `null` without a comparable score) | a challenge game ends | game |
 | `tour_ended` | `src`, `outcome` (`done`, `skipped`), `step` (last step shown, 1-7), `replay` (opened from the menu) | the game tour closes | every close |
+| `week_active` | `week`, `active_last_week`, `src` | a game first completes this ISO week (its round-10 reveal opens; sent from step 2) | device and week |
 
 Step-3 additions:
 
 | Event | Properties | Fires | Once per |
 | --- | --- | --- | --- |
-| `week_active` | `week`, `active_last_week`, `src` | a game first completes this ISO week | device and week |
 | `board_submitted` | `game_ref`, `reason`, `auto: true`, `src` | an automatic submission obtains a terminal or pending outcome | deduplicated outcome per game; retries must not inflate acceptance |
 | `board_viewed` | `src` | a deliberate See the board open | open |
 
@@ -201,6 +201,9 @@ cap the founder chooses between a billing limit, an upgrade, or dropping
 | [`spike.sql`](../analytics/queries/spike.sql) | hours where page views arrive without game starts |
 | [`errors-by-build.sql`](../analytics/queries/errors-by-build.sql) | `client_error` per build id and error name |
 | [`cap.sql`](../analytics/queries/cap.sql) | month-to-date events for the whole project vs the cap |
+| [`timer.sql`](../analytics/queries/timer.sql) | per round: median and 90th-percentile `active_ms`, readiness delay and the time-out share (round 1 on its own row) |
+| [`completion.sql`](../analytics/queries/completion.sql) | per `src`: reveal reach, answered completion and the time-out share, kept apart, with photo skips |
+| [`week2.sql`](../analytics/queries/week2.sql) | `week_active` devices per week and the week-2 return |
 
 How to run them: [ops.md](ops.md#running-a-query).
 
@@ -210,7 +213,9 @@ How to run them: [ops.md](ops.md#running-a-query).
 Step 1 measures active_ms (controls usable) and ready_ms (round opened until
 photo and controls usable), with per-game game_ref on round/game events. Store
 elapsed evidence across reloads without counting tours, map failures or own error
-screens as usable time. Step 2 adds timeout count and seconds_left. Percentiles
+screens as usable time. Step 2 adds timeout count and seconds_left. (Built
+together in step 2: active_ms is the time the round clock ran, which it does only
+while the answer controls are usable, so it survives reloads in the save.) Percentiles
 for rounds 1–3 use active_ms, not subtraction of event arrival timestamps.
 These timing properties never enter the public score payload. [V12-32] [V12-78]
 

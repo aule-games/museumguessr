@@ -127,8 +127,13 @@ export function roundClock(state: GameState): ClockSave | null {
   return state.clock && state.clock.round === state.round && state.phase === 'answering' ? state.clock : null;
 }
 
-export function answeredCount(state: Pick<GameState, 'results'>): number {
-  return state.results.filter((r) => r && !r.skipped).length;
+/**
+ * Rounds with at least one placed or confirmed answer: photo skips and rounds
+ * whose three questions all timed out do not count (the KPI's answered
+ * completion, R7).
+ */
+export function answeredCount(state: Pick<GameState, 'results'> & Partial<Pick<GameState, 'timed_out'>>): number {
+  return state.results.filter((r, i) => r && !r.skipped && (state.timed_out?.[i]?.questions.length ?? 0) < STEPS.length).length;
 }
 
 export function totalPoints(state: Pick<GameState, 'results'>): number {
