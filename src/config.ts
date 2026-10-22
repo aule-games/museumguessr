@@ -7,7 +7,7 @@ export const MAPLIBRE_URL = `${BASE_URL}maplibre/${typeof __MAPLIBRE_VERSION__ =
 export const POSTHOG_TOKEN: string = import.meta.env.VITE_POSTHOG_PROJECT_TOKEN ?? '';
 
 /** Hosts where analytics may run; the custom-domain move is a configuration change (DX12). */
-export const ANALYTICS_HOSTS: readonly string[] = (import.meta.env.VITE_ANALYTICS_HOSTS ?? 'aule-games.github.io')
+export const ANALYTICS_HOSTS: readonly string[] = (import.meta.env.VITE_ANALYTICS_HOSTS ?? 'museumguessr.com')
   .split(',')
   .map((h) => h.trim())
   .filter(Boolean);
@@ -17,4 +17,4 @@ export const ANALYTICS_HOSTS: readonly string[] = (import.meta.env.VITE_ANALYTIC
  * build variable, so the custom-domain move is a configuration change; the
  * meta tags in index.html move with it.
  */
-export const SITE_URL: string = import.meta.env.VITE_SITE_URL || 'https://aule-games.github.io/museumguessr/';
+export const SITE_URL: string = import.meta.env.VITE_SITE_URL || 'https://museumguessr.com/';

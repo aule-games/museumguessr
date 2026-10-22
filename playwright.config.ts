@@ -12,7 +12,7 @@ const chromium = {
   userAgent: CHROME_UA,
   launchOptions: {
     args: [
-      `--host-resolver-rules=MAP aule-games.github.io 127.0.0.1:${PORT}, MAP eu.i.posthog.com 127.0.0.1:9, MAP tiles.openfreemap.org 127.0.0.1:9`,
+      `--host-resolver-rules=MAP museumguessr.com 127.0.0.1:${PORT}, MAP eu.i.posthog.com 127.0.0.1:9, MAP tiles.openfreemap.org 127.0.0.1:9`,
       '--use-angle=swiftshader',
       '--enable-unsafe-swiftshader',
     ],
@@ -29,14 +29,14 @@ export default defineConfig({
   retries: 0,
   reporter: [['list'], ['json', { outputFile: 'test-results/e2e.json' }]],
   use: {
-    baseURL: 'https://aule-games.github.io/museumguessr/',
+    baseURL: 'https://museumguessr.com/',
     ignoreHTTPSErrors: true,
     reducedMotion: 'reduce',
     trace: 'retain-on-failure',
   },
   webServer: {
     command: 'node tests/e2e/serve.mjs',
-    url: `https://127.0.0.1:${PORT}/museumguessr/build.txt`,
+    url: `https://127.0.0.1:${PORT}/build.txt`,
     ignoreHTTPSErrors: true,
     reuseExistingServer: !process.env.CI,
     stdout: 'ignore',

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-// HTTPS static server for the built site under /museumguessr/ (PH9, DX28).
-// github.io is HSTS-preloaded in Chromium, so the production host mapped to
-// localhost must speak TLS; the certificate is a throwaway self-signed one.
+// HTTPS static server for the built site at the root (PH9, DX28). The
+// production host is mapped to localhost and the game runs on HTTPS there,
+// so the server speaks TLS; the certificate is a throwaway self-signed one.
 
 import { execFileSync } from 'node:child_process';
 import { existsSync, mkdtempSync, readFileSync, statSync } from 'node:fs';
@@ -13,10 +13,10 @@ import { fileURLToPath } from 'node:url';
 const ROOT = fileURLToPath(new URL('../..', import.meta.url));
 const DIST = process.env.E2E_DIST ? join(ROOT, process.env.E2E_DIST) : join(ROOT, 'dist');
 const PORT = Number(process.env.E2E_PORT ?? 4443);
-const BASE = '/museumguessr/';
+const BASE = '/';
 
 const dir = mkdtempSync(join(tmpdir(), 'mg-tls-'));
-execFileSync('openssl', ['req', '-x509', '-newkey', 'rsa:2048', '-nodes', '-days', '2', '-subj', '/CN=aule-games.github.io', '-keyout', join(dir, 'key.pem'), '-out', join(dir, 'cert.pem')], { stdio: 'ignore' });
+execFileSync('openssl', ['req', '-x509', '-newkey', 'rsa:2048', '-nodes', '-days', '2', '-subj', '/CN=museumguessr.com', '-keyout', join(dir, 'key.pem'), '-out', join(dir, 'cert.pem')], { stdio: 'ignore' });
 
 const TYPES = {
   '.html': 'text/html; charset=utf-8',

@@ -16,7 +16,7 @@ describe('[ENG7] denylist matcher', () => {
   });
   it('masks the approved exemptions', () => {
     const m = buildMatcher(['mert', 'aktas']);
-    expect(m('https://aule-games.github.io/museumguessr/ and 1+mert-aktas@users.noreply.github.com')).toEqual([]);
+    expect(m('https://museumguessr.com/ and 1+mert-aktas@users.noreply.github.com')).toEqual([]);
     expect(m('mert')).toEqual([{ term: 1, line: 1 }]);
   });
   it('a term written as =word matches whole words only', () => {

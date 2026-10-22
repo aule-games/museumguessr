@@ -3,7 +3,7 @@
 Look at a real museum object, then guess where it is kept today, where it was
 made, and when. A new ten every game.
 
-**Play:** <https://aule-games.github.io/museumguessr/>
+**Play:** <https://museumguessr.com/>
 
 [Run it](#run-it-locally) · [Change content](docs/content.md) ·
 [Debug](#debugging) · [Release](docs/release.md) ·
@@ -190,7 +190,7 @@ Needs Node 24 (see `.nvmrc`).
 
 ```sh
 npm ci            # installs dependencies and the git hooks
-npm run dev       # prints the local URL, under /museumguessr/
+npm run dev       # prints the local URL (the game runs at the root path)
 ```
 
 | Command | What it does |

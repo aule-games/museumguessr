@@ -16,7 +16,7 @@ import { printProblems } from './lib/report.mjs';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const DIST = join(ROOT, process.argv[2] ?? 'dist');
-const BASE = process.env.BASE_PATH ?? '/museumguessr/';
+const BASE = process.env.BASE_PATH ?? '/';
 const DOCS = 'docs/release.md#build-checks';
 const problems = [];
 const fail = (where, problem, why, id, fix) => problems.push({ where, problem, why, id, fix, docs: DOCS });
@@ -90,7 +90,7 @@ const buildMeta = html.match(/<meta name="build-id" content="([^"]+)"/)?.[1];
 const buildTxt = existsSync(join(DIST, 'build.txt')) ? readFileSync(join(DIST, 'build.txt'), 'utf8').trim() : null;
 if (!buildMeta || buildMeta !== buildTxt) fail('index.html / build.txt', `build ids differ (${buildMeta} vs ${buildTxt})`, 'DEP1 compares the live build id with the published commit', 'DX8', 'check VITE_BUILD_ID');
 for (const m of html.matchAll(/(?:src|href)="(\/[^"]*)"/g)) {
-  if (!m[1].startsWith(BASE)) fail('index.html', `asset URL ${m[1]} is outside ${BASE}`, 'GitHub Pages serves the site under the base path', 'DX12', 'use Vite base / import.meta.env.BASE_URL');
+  if (!m[1].startsWith(BASE)) fail('index.html', `asset URL ${m[1]} is outside ${BASE}`, 'the Worker serves the site under the base path', 'DX12', 'use Vite base / import.meta.env.BASE_URL');
 }
 
 // Text scans of shipped files

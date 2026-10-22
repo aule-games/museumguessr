@@ -67,7 +67,7 @@ describe('[V1-16] challenge links', () => {
   });
 
   it('builds a tagged link that parses back to the same challenge', () => {
-    const url = challengeUrl('https://aule-games.github.io/museumguessr/', { ids: IDS, score: 18240, name: 'Barış', hash: '35ca1219' }, 'whatsapp', 'reply');
+    const url = challengeUrl('https://museumguessr.com/', { ids: IDS, score: 18240, name: 'Barış', hash: '35ca1219' }, 'whatsapp', 'reply');
     const q = new URL(url).searchParams;
     expect(q.get('utm_source')).toBe('share');
     expect(q.get('utm_medium')).toBe('whatsapp');
@@ -76,14 +76,14 @@ describe('[V1-16] challenge links', () => {
   });
 
   it('drops the challenge parameters from the address bar but keeps the rest', () => {
-    expect(cleanedUrl(new URL(`https://x.io/museumguessr/?d=${IDS.join('.')}&s=1&n=A&h=1&utm_source=share#a`))).toBe('/museumguessr/?utm_source=share#a');
-    expect(cleanedUrl(new URL('https://x.io/museumguessr/?d=1'))).toBe('/museumguessr/');
-    expect(cleanedUrl(new URL('https://x.io/museumguessr/?utm_source=share'))).toBeNull();
+    expect(cleanedUrl(new URL(`https://x.io/?d=${IDS.join('.')}&s=1&n=A&h=1&utm_source=share#a`))).toBe('/?utm_source=share#a');
+    expect(cleanedUrl(new URL('https://x.io/play/?d=1'))).toBe('/play/');
+    expect(cleanedUrl(new URL('https://x.io/?utm_source=share'))).toBeNull();
   });
 });
 
 describe('[V1-19] share text', () => {
-  const url = 'https://aule-games.github.io/museumguessr/?d=01.02.03.04.05.06.07.08.09.10&s=10840&n=Ali&h=35ca1219&utm_source=share&utm_medium=x&utm_campaign=challenge';
+  const url = 'https://museumguessr.com/?d=01.02.03.04.05.06.07.08.09.10&s=10840&n=Ali&h=35ca1219&utm_source=share&utm_medium=x&utm_campaign=challenge';
 
   it('the share text is the hook and the link only, with no round-by-round answers', () => {
     const text = shareText({ total: 10840, url, replay: false, kind: 'challenge' });

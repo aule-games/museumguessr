@@ -149,7 +149,7 @@ museums, dates or distances. The phone's share sheet, WhatsApp and X get the
 hook and the challenge link; Copy link copies the link alone (V1-19):
 
 ```text
-Can you beat my 21,480/30,000 on MuseumGuessr? https://aule-games.github.io/museumguessr/?d=…&s=21480&h=…
+Can you beat my 21,480/30,000 on MuseumGuessr? https://museumguessr.com/?d=…&s=21480&h=…
 ```
 
 After a replay the hook reads "21,480/30,000 (replay)".

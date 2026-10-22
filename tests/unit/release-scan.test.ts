@@ -75,7 +75,7 @@ describe('[DX10] [DX22] [ENG7] release scan', () => {
   });
 
   it('passes a clean repository, with the exempt username and site URL, and prints the local-only line', () => {
-    commit({ 'README.md': 'Play at https://aule-games.github.io/museumguessr/ (by mert-aktas).\n' }, 'clean');
+    commit({ 'README.md': 'Play at https://museumguessr.com/ (by mert-aktas).\n' }, 'clean');
     const r = scan(['aktas']);
     expect(r.code).toBe(0);
     expect(r.out).toMatch(/denylist check \(local only, GitHub not scanned\): 1 terms, 0 hits \(commit [0-9a-f]{7}\)/);

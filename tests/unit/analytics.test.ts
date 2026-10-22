@@ -38,11 +38,11 @@ function env(over: Partial<AnalyticsEnv> = {}): AnalyticsEnv & { lines: string[]
   const { provider } = fakeProvider();
   return {
     token: 'phc_test',
-    hosts: ['aule-games.github.io'],
+    hosts: ['museumguessr.com'],
     buildId: 'abc1234',
     dev: false,
-    hostname: 'aule-games.github.io',
-    href: 'https://aule-games.github.io/museumguessr/?utm_source=webgames&test=1&x=y',
+    hostname: 'museumguessr.com',
+    href: 'https://museumguessr.com/?utm_source=webgames&test=1&x=y',
     testParam: null,
     webdriver: false,
     storage: guarded(memoryStore),
@@ -178,15 +178,15 @@ describe('[DX29] test-mode inspector', () => {
     expect(payloads[0]?.props).toMatchObject({
       project_id: 'museumguessr',
       src: 'webgames',
-      $current_url: 'https://aule-games.github.io/museumguessr/?utm_source=webgames',
+      $current_url: 'https://museumguessr.com/?utm_source=webgames',
     });
   });
 });
 
 describe('[PH2] URL sanitiser', () => {
   it('keeps only utm_* and ref', () => {
-    expect(sanitizeUrl('https://x.io/museumguessr/?utm_source=webgames&test=1&x=y#frag')).toBe(
-      'https://x.io/museumguessr/?utm_source=webgames',
+    expect(sanitizeUrl('https://x.io/play/?utm_source=webgames&test=1&x=y#frag')).toBe(
+      'https://x.io/play/?utm_source=webgames',
     );
     expect(sanitizeUrl('https://x.io/?ref=abc&dev=round')).toBe('https://x.io/?ref=abc');
   });

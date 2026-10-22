@@ -10,7 +10,7 @@ const MAPLIBRE_DIR = dirname(require.resolve('maplibre-gl/package.json'));
 const MAPLIBRE_VERSION: string = JSON.parse(readFileSync(join(MAPLIBRE_DIR, 'package.json'), 'utf8')).version;
 const MAPLIBRE_FILES = ['maplibre-gl.mjs', 'maplibre-gl-shared.mjs', 'maplibre-gl-worker.mjs', 'maplibre-gl.css'];
 
-const BASE = process.env.BASE_PATH ?? '/museumguessr/';
+const BASE = process.env.BASE_PATH ?? '/';
 const BUILD_ID = process.env.VITE_BUILD_ID || 'dev';
 const TOKEN = process.env.VITE_POSTHOG_PROJECT_TOKEN ?? '';
 const THEME_COLOR: string = JSON.parse(readFileSync(new URL('./src/design/tokens.json', import.meta.url), 'utf8')).color.bg;

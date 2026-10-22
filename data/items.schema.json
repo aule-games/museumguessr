@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://aule-games.github.io/museumguessr/items.schema.json",
+  "$id": "https://museumguessr.com/items.schema.json",
   "title": "ItemsFile",
   "description": "MuseumGuessr content. Fields are grouped by question: kept, made, when. See docs/content.md.",
   "type": "object",

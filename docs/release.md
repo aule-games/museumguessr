@@ -43,7 +43,9 @@ never committed or pasted anywhere.
 - A hit prints only "term #k of N" and a location, never the term.
 - Matching ignores case and accents, and also finds the term written with
   spaces, hyphens, underscores, joined, or URL-encoded.
-- The GitHub username and the Pages URL are approved exemptions.
+- The GitHub username and the public address (https://museumguessr.com/) are
+  approved exemptions; the old Pages address stays exempt because the
+  requirement ledger quotes it.
 - A term written as `=word` matches only as a whole word, for short names that
   also occur inside unrelated words (a city name, a package name).
 
@@ -51,7 +53,7 @@ never committed or pasted anywhere.
 
 `npm run check:build` inspects the built site in `dist/`: only the expected
 files deploy (no tests, scripts, reserve data, dev fixtures or source maps),
-asset URLs sit under `/museumguessr/`, the Content-Security-Policy allows only
+asset URLs sit under the base path `/`, the Content-Security-Policy allows only
 the map tiles and the EU PostHog host, the build id in the page matches
 `build.txt`, the PostHog chunk keeps its `posthog-` prefix, the main bundle
 stays within its gzip budget (`scripts/lib/budget.mjs`: its size when the v1

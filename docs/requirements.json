@@ -183,7 +183,12 @@
         "ENG16"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/address.test.ts",
+          "title": "everything that names the address uses https://museumguessr.com/ at the root path"
+        }
+      ]
     },
     {
       "id": "V12-12",
@@ -463,7 +468,20 @@
         "W1"
       ],
       "replaces": "The GitHub Pages address https://aule-games.github.io/museumguessr/ and BASE_PATH /museumguessr/.",
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/address.test.ts",
+          "title": "everything that names the address uses https://museumguessr.com/ at the root path"
+        },
+        {
+          "file": "tests/unit/address.test.ts",
+          "title": "the old Pages address survives only where the ledger quotes the replaced rule"
+        },
+        {
+          "file": "tests/unit/address.test.ts",
+          "title": "docs/ops.md lists what a domain move changes and leaves the PostHog setting to the founder"
+        }
+      ]
     },
     {
       "id": "V12-40",

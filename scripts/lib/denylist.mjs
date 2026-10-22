@@ -5,9 +5,12 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-// Approved exemptions (founder decision): the GitHub username and the Pages
-// URL may appear. They are masked before matching.
+// Approved exemptions (founder decision): the GitHub username and the public
+// address may appear. They are masked before matching. The old Pages address
+// stays exempt because the requirement ledger quotes it as a replaced rule.
 export const EXEMPT = [
+  'https://museumguessr.com/',
+  'museumguessr.com',
   'https://aule-games.github.io/museumguessr/',
   'aule-games.github.io',
   'mert-aktas',

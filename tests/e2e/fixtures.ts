@@ -65,7 +65,7 @@ export function decodeBody(req: Request): Captured[] {
   }));
 }
 
-const LOCAL_HOST = 'aule-games.github.io';
+const LOCAL_HOST = 'museumguessr.com';
 
 const TEXT_TOKENS = (JSON.parse(readFileSync(join(import.meta.dirname, '../../src/design/tokens.json'), 'utf8')) as { text: Record<string, string> }).text;
 

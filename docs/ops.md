@@ -80,7 +80,7 @@ never compose SQL with untrusted arguments. [V12-28] [V12-110]
 | BOARD_MODE | One D1 settings row / operator | missing row off; local loop dark | Public ranking off/dark/on | board commands; persists across deploy and rollback |
 | BOARD_FORCE_OFF | Worker secret / operator | unset | Force off even if D1 cannot be read | Secret operation; D1-failure test |
 | ?test= | Browser / tester | off; explicit flag lasts 24 hours | Analytics suppressed; games retain test provenance | ?test=1 or ?test=0; expiry and provenance tests |
-| BASE_PATH | Public profile / developer | local legacy path until step 1; deploy / | Asset routing | Profile commit; URL build test |
+| BASE_PATH | Public profile / developer | / in every profile | Asset routing | Profile commit; URL build test |
 | VITE_SITE_URL | Public profile / developer | deploy https://museumguessr.com/ | Canonical and share origin | Profile commit; URL hygiene test |
 
 Public tokens, hosts, site key, base path and purpose come from one committed

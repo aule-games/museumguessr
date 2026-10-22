@@ -25,7 +25,7 @@ keep it free of private names.
 | Command | Use it to | Needs |
 | --- | --- | --- |
 | `npm ci` | install dependencies and the git hooks | Node 24 |
-| `npm run dev` | play locally under `/museumguessr/` | — |
+| `npm run dev` | play locally at the root path | — |
 | `npm test` | type check, generated-file checks, item check, unit and design tests | offline |
 | `npm run lint` | ESLint and Stylelint | — |
 | `npm run build` | build `dist/` | — |
