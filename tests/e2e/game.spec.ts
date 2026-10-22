@@ -41,19 +41,19 @@ test.describe('[E6] [DS8] [ENG14] resume', () => {
     expect(pv[1]?.properties.landing).toBe(false);
   });
 
-  test('a later visit sees Continue on the start screen; New game starts over [DS24]', async ({ context, page }) => {
+  test('a later visit with no running round clock sees Continue on the start screen; the tabs hand the game over [DS24]', async ({ context, page }) => {
+    // the reveal is untimed, so a later visit gets Continue (a round with time left reopens directly, R1)
     await start(page);
     await playRound(page);
-    await page.locator('[data-test=next]').click();
     const later = await context.newPage();
     await later.goto('./');
-    await expect(later.locator('[data-test=continue]')).toHaveText('Continue · Round 2 of 10');
+    await expect(later.locator('[data-test=continue]')).toHaveText('Continue · Round 1 of 10');
     await later.locator('[data-test=continue]').click();
-    await expect(later.locator('[data-screen=round][data-round="2"]')).toBeVisible();
+    await expect(later.locator('[data-screen=reveal][data-round="1"]')).toBeVisible();
     // the first tab lost the writer lock (ENG30)
     await expect(page.locator('[data-screen=frozen]')).toBeVisible();
     await page.locator('[data-test=take-over]').click();
-    await expect(page.locator('[data-screen=round][data-round="2"]')).toBeVisible();
+    await expect(page.locator('[data-screen=reveal][data-round="1"]')).toBeVisible();
     await expect(later.locator('[data-screen=frozen]')).toBeVisible();
   });
 
