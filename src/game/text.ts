@@ -3,12 +3,17 @@
 // against the scoring config.
 
 import { formatNumber, t } from '../copy.ts';
-import { DISTANCE, MAX_POINTS } from '../scoring/config.ts';
+import { DISTANCE, MAX_POINTS, SLIDER } from '../scoring/config.ts';
 import type { Step } from '../analytics/events.ts';
 import { madeFullMarksKm, yearTolerance } from '../scoring/score.ts';
-import { formatRange } from '../scoring/years.ts';
+import { formatRange, formatYear } from '../scoring/years.ts';
 import type { RoundResult } from '../state/schema.ts';
 import type { Item } from '../types/item.ts';
+
+/** A stored answer year as the player sees it: "1450 CE", or "4000 BCE or earlier" for the early stop (W5, D11). */
+export function formatAnswerYear(year: number): string {
+  return year === SLIDER.earlyStop ? t('year.earlyStop') : formatYear(year);
+}
 
 /** Beyond the full-marks radius, the distance over which points halve, rounded for display. */
 export function halfDistanceKm(): number {
@@ -41,13 +46,18 @@ export function rowResult(step: Step, item: Item, r: RoundResult): { text: strin
   return { text: t('result.km', { distance, place }), value: distance };
 }
 
-/** How a row's points were computed, with this round's numbers (the hover and tap explanation). */
-export function howText(step: Step, item: Item, r: RoundResult): string {
+/**
+ * How a row's points were computed, with this round's numbers (the hover and
+ * tap explanation). With the early stop on an object younger than 4000 BCE,
+ * the When explanation adds that the distance is measured from 4000 BCE (D11).
+ */
+export function howText(step: Step, item: Item, r: RoundResult, guess: number | null = null): string {
   if (r.skipped) return t('reason.skipped');
   if (step === 'when') {
     const range = formatRange(item.when.start, item.when.end);
     if (r.when.points === MAX_POINTS) return t('scoring.whenFull', { range });
-    return t('scoring.when', { range, half: formatNumber(halfYears(item)), years: yearCount(r.when.yearsOff), points: formatNumber(r.when.points) });
+    const how = t('scoring.when', { range, half: formatNumber(halfYears(item)), years: yearCount(r.when.yearsOff), points: formatNumber(r.when.points) });
+    return guess === SLIDER.earlyStop ? `${how} ${t('year.earlyDistance')}.` : how;
   }
   const kept = step === 'kept';
   const radius = kept ? DISTANCE.keptFullMarksKm : madeRadius(item);

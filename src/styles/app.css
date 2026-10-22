@@ -1114,9 +1114,64 @@ p {
   min-height: 0;
 }
 
+/* The early stop is a separate end cap left of the scale, past a small gap
+   (D11); the ticks belong to the scale. */
 .year__slider {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: var(--space-3);
+  align-items: start;
+}
+
+.year__scale {
   position: relative;
   padding-bottom: var(--space-6);
+}
+
+.year__cap {
+  display: grid;
+  place-items: center;
+  min-width: var(--layout-tap);
+  min-height: var(--layout-tap);
+  padding: 0 var(--space-2);
+  border: 1.5px solid var(--color-line);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-raised);
+  color: var(--color-ink);
+  font-family: var(--font-numeric);
+  font-size: var(--text-xs);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--leading-tight);
+  white-space: nowrap;
+  touch-action: none;
+  cursor: pointer;
+}
+
+/* selected: the cap takes the handle's place, so the state never rests on colour alone */
+.year__cap[data-selected='true'] {
+  border-color: var(--color-ink);
+  background: var(--color-accent);
+  color: var(--color-accent-ink);
+  box-shadow: 0 0 0 3px var(--color-surface), var(--shadow-1);
+}
+
+.year__track[data-stop='true'] .year__thumb,
+.year__track[data-stop='true'] .year__fill {
+  opacity: 0;
+}
+
+.year__era-suffix {
+  font-weight: var(--font-weight-medium);
+}
+
+/* the range sentence is the field's and the slider's accessible description */
+.year__range {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 .year__track {
@@ -1582,6 +1637,14 @@ p {
 
 .timeline__guess {
   fill: var(--color-guess);
+}
+
+/* dates before 4000 BCE: a broken axis between the range and the control's scale (D11) */
+.timeline__break {
+  fill: none;
+  stroke: var(--color-ink-muted);
+  stroke-width: 2;
+  stroke-linecap: round;
 }
 
 /* a disputed-ownership note sits in a warm tint, not behind a side stripe */

@@ -175,7 +175,6 @@ export const COPY = {
   'year.caption': 'Recent centuries get more room',
   'year.noZero': "There's no year 0. Try 1 BCE or 1 CE.",
   'year.notNumber': 'Type a whole year, like 1450.',
-  'year.outOfRange': 'Pick a year between 4000 BCE and 2025 CE.',
 
   // reveal
   'reveal.scoreLabel': 'Round total',

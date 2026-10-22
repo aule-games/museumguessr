@@ -7,11 +7,11 @@
 import { FEEDBACK, type Step } from '../../analytics/events.ts';
 import { formatNumber, t, type CopyKey } from '../../copy.ts';
 import tokens from '../../design/tokens.json';
-import { howText, rowResult } from '../../game/text.ts';
+import { formatAnswerYear, howText, rowResult } from '../../game/text.ts';
 import type { GameMap } from '../../map/map.ts';
-import { MAX_POINTS } from '../../scoring/config.ts';
+import { MAX_POINTS, SLIDER } from '../../scoring/config.ts';
 import { madeFullMarksKm } from '../../scoring/score.ts';
-import { formatRange, formatYear } from '../../scoring/years.ts';
+import { formatRange, yearToPosition } from '../../scoring/years.ts';
 import type { RoundAnswers, RoundResult } from '../../state/schema.ts';
 import type { Item } from '../../types/item.ts';
 import { ext, h, reducedMotion, s, scoreText } from '../dom.ts';
@@ -41,26 +41,68 @@ export function wallLabel(item: Item): string {
   return t('reveal.madeKept', { made: item.made.place, date, museum: item.kept.museum, city: item.kept.city });
 }
 
-function timeline(item: Item, guess: number | null): SVGSVGElement {
+const timelineLabel = (item: Item, guess: number | null) => `${formatRange(item.when.start, item.when.end)}${guess != null ? `, ${formatAnswerYear(guess)}` : ''}`;
+
+/** The When row's timeline: a local window around the date range, with the guess (the early stop plots at 4000 BCE). */
+export function timeline(item: Item, guess: number | null): SVGSVGElement {
+  if (item.when.start < SLIDER.min) return brokenTimeline(item, guess);
+  const g = guess === SLIDER.earlyStop ? SLIDER.min : guess;
   // a local window around the range so the band is visible
-  const span = Math.max(50, (item.when.end - item.when.start) * 3, guess != null ? Math.abs(guess - item.when.start) * 1.3 : 0);
+  const span = Math.max(50, (item.when.end - item.when.start) * 3, g != null ? Math.abs(g - item.when.start) * 1.3 : 0);
   const mid = (item.when.start + item.when.end) / 2;
   const lo = mid - span;
   const hi = mid + span;
   const x = (y: number) => 8 + ((y - lo) / (hi - lo)) * 284;
   return s(
     'svg',
-    { class: 'timeline', viewBox: '0 0 300 36', role: 'img', 'aria-label': `${formatRange(item.when.start, item.when.end)}${guess != null ? `, ${formatYear(guess)}` : ''}` },
+    { class: 'timeline', viewBox: '0 0 300 36', role: 'img', 'aria-label': timelineLabel(item, guess) },
     s('line', { class: 'timeline__axis', x1: 8, x2: 292, y1: 18, y2: 18 }),
     s('rect', { class: 'timeline__band', x: x(item.when.start) - 2, y: 10, width: Math.max(4, x(item.when.end) - x(item.when.start) + 4), height: 16, rx: 3 }),
-    guess != null && s('circle', { class: 'timeline__guess', cx: Math.min(292, Math.max(8, x(guess))), cy: 18, r: 5 }),
+    g != null && s('circle', { class: 'timeline__guess', cx: Math.min(292, Math.max(8, x(g))), cy: 18, r: 5 }),
   );
 }
 
-/** The When row's details: the museum's own date caveat, if any, then the timeline. */
+/**
+ * A date range that begins before 4000 BCE (D11): a broken axis. The left
+ * part is a local window around the range; past the break, the right part
+ * is the year control's own scale from 4000 BCE to 2025 CE. The early stop
+ * sits at the near end of an older range (it scored full marks), or at
+ * 4000 BCE for a younger one.
+ */
+function brokenTimeline(item: Item, guess: number | null): SVGSVGElement {
+  const { start, end } = item.when;
+  const early = Math.min(end, SLIDER.min);
+  const pad = Math.max(50, (early - start) * 0.5);
+  const lo = start - pad;
+  const hi = early + pad;
+  const xa = (y: number) => 8 + ((y - lo) / (hi - lo)) * 128;
+  const xb = (y: number) => 164 + yearToPosition(y) * 128;
+  const guessX = guess == null ? null : guess === SLIDER.earlyStop ? (end < SLIDER.min ? xa(end) : xb(SLIDER.min)) : xb(guess);
+  return s(
+    'svg',
+    { class: 'timeline timeline--broken', viewBox: '0 0 300 36', role: 'img', 'aria-label': timelineLabel(item, guess), 'data-test': 'timeline-broken' },
+    s('line', { class: 'timeline__axis', x1: 8, x2: 136, y1: 18, y2: 18 }),
+    s('line', { class: 'timeline__axis', x1: 164, x2: 292, y1: 18, y2: 18 }),
+    s('path', { class: 'timeline__break', d: 'M142 26 L148 10 M152 26 L158 10' }),
+    s('rect', { class: 'timeline__band', x: xa(start) - 2, y: 10, width: Math.max(4, xa(early) - xa(start) + 4), height: 16, rx: 3 }),
+    end > SLIDER.min && s('rect', { class: 'timeline__band', x: 162, y: 10, width: Math.max(4, xb(end) - 164 + 4), height: 16, rx: 3 }),
+    guessX != null && s('circle', { class: 'timeline__guess', cx: guessX, cy: 18, r: 5 }),
+  );
+}
+
+/**
+ * The When row's details: the museum's own date caveat, if any, then the
+ * timeline; for the early stop on a younger object, that its distance is
+ * measured from 4000 BCE (D11).
+ */
 function whenExtra(item: Item, guess: number | null): Node {
   const line = timeline(item, guess);
-  return item.when.note ? h('div', { class: 'score__extra' }, h('p', { class: 'score__note' }, item.when.note), line) : line;
+  const fromStop = guess === SLIDER.earlyStop && item.when.end >= SLIDER.min;
+  const notes = [
+    item.when.note ? h('p', { class: 'score__note' }, item.when.note) : null,
+    fromStop ? h('p', { class: 'score__note', 'data-test': 'early-distance' }, t('year.earlyDistance')) : null,
+  ].filter((n) => n !== null);
+  return notes.length ? h('div', { class: 'score__extra' }, ...notes, line) : line;
 }
 
 let rowIds = 0;
@@ -167,7 +209,7 @@ export function revealScreen(p: RevealProps): RevealView {
     { class: 'scores', 'data-test': 'scores' },
     // rows follow the question order (DS35)
     scoreRow('made', r.made.points, rowResult('made', item, r), howText('made', item, r), madeNote),
-    scoreRow('when', r.when.points, rowResult('when', item, r), howText('when', item, r), whenExtra(item, p.answers.when)),
+    scoreRow('when', r.when.points, rowResult('when', item, r), howText('when', item, r, p.answers.when), whenExtra(item, p.answers.when)),
     scoreRow('kept', r.kept.points, rowResult('kept', item, r), howText('kept', item, r)),
     h(
       'li',

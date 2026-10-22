@@ -114,8 +114,9 @@ States:
 | Back pressed (DS36) | the previous question of the same round opens with its answer in place (pin, or year) as the draft; Confirm is enabled; a changed answer replaces the old one. Back is absent on the first question and gone once Reveal answers opens the reveal |
 | Keyboard on the map | arrows pan, + / − zoom, Enter drops the pin at the centre crosshair, Escape leaves (`map.label`) |
 | Year empty | readout "—", the slider handle mid-track but no value, Confirm disabled (no default year is ever submitted) |
-| Year invalid | `year.noZero`, `year.notNumber` or `year.outOfRange` under the field; Confirm disabled |
+| Year invalid | `year.noZero`, `year.notNumber` or `year.rangeWithStop` (a CE year after 2025) under the field; Confirm disabled |
 | Year set | readout ("1200 BCE"), thumb shown, Confirm enabled |
+| Year stop | the end cap selected, readout `year.earlyStop`, the field shows 4000 and BCE adds `year.earlierSuffix`; Confirm enabled |
 | Confirm pressed twice | one answer is recorded |
 | First visit, round 1 Made | the tour opens over the screen (see Tour) |
 
