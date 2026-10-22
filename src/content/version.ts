@@ -2,7 +2,7 @@
 // and when answer fields only, computed from the bundled data, never typed by
 // hand. A fact typo fix leaves it unchanged; an answer change resets games.
 
-import type { CoreItem } from './items.ts';
+import type { CoreItem } from './core.ts';
 
 function fnv1a(text: string): string {
   let h = 0x811c9dc5;

@@ -11,16 +11,10 @@ import type { DeckItem } from '../deck/planner.ts';
 import { answerKey, type AnswerKey } from '../scoring/game.ts';
 import type { Pool } from '../state/schema.ts';
 import type { Item } from '../types/item.ts';
+import type { CoreItem } from './core.ts';
 import { itemsVersion } from './version.ts';
 
-/** The fields of an item the main bundle carries; a full `Item` is one too. */
-export interface CoreItem {
-  id: string;
-  difficulty: Item['difficulty'];
-  kept: Pick<Item['kept'], 'city' | 'lat' | 'lng'>;
-  made: Pick<Item['made'], 'lat' | 'lng' | 'precision' | 'full_marks_km'>;
-  when: Pick<Item['when'], 'start' | 'end'>;
-}
+export type { CoreItem } from './core.ts';
 
 const images = import.meta.glob('/images/*.jpg', { eager: true, query: '?url', import: 'default' }) as Record<
   string,

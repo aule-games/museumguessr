@@ -1,0 +1,26 @@
+// The museumguessr.com Worker (W1; docs/ops.md "Hosting and limits").
+// Workers static assets serve dist/; only /api/* runs the Worker first.
+// tests/unit/wrangler-config.test.ts guards every value below.
+{
+  "$schema": "worker/node_modules/wrangler/config-schema.json",
+  "name": "museumguessr",
+  "main": "worker/src/index.ts",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "run_worker_first": ["/api/*"],
+    "not_found_handling": "404-page"
+  },
+  // The game's only address; www redirects at the zone (docs/ops.md).
+  "routes": [{ "pattern": "museumguessr.com", "custom_domain": true }],
+  "workers_dev": false,
+  "preview_urls": false,
+  // No invocation logs (v1 privacy rule): only the explicit 5xx line, read through board:tail.
+  "observability": { "enabled": false, "logs": { "enabled": false, "invocation_logs": false } },
+  "upload_source_maps": false,
+  "send_metrics": false,
+  // npm run deploy sets the build's commit with --var WORKER_VERSION:<sha>.
+  "vars": { "WORKER_VERSION": "dev" }
+  // Step 3 adds the D1 binding, the rate-limit bindings and the Turnstile secret.
+}

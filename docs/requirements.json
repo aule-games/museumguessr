@@ -176,6 +176,26 @@
         {
           "file": "tests/unit/security-headers.test.ts",
           "title": "its text is the notFound copy, with the meta CSP, a link home and the built stylesheet"
+        },
+        {
+          "file": "worker/tests/worker.test.ts",
+          "title": "health reports the scoring version, the pool hash the page uses, the build SHA, the contract version and the board off"
+        },
+        {
+          "file": "worker/tests/worker.test.ts",
+          "title": "every other /api/ path answers the not_found envelope with status 404"
+        },
+        {
+          "file": "worker/tests/worker.test.ts",
+          "title": "a non-API path, as navigation or fetch, is answered by the assets binding, so an unknown path gets the 404 page and status 404"
+        },
+        {
+          "file": "worker/tests/worker.test.ts",
+          "title": "a failing API route answers the server envelope with a request id and logs only request_id, route and error_name"
+        },
+        {
+          "file": "tests/unit/wrangler-config.test.ts",
+          "title": "one Worker serves the built site as assets and runs code first only for /api/*, with the asset 404 page for unknown paths"
         }
       ]
     },
@@ -192,6 +212,10 @@
         {
           "file": "tests/unit/address.test.ts",
           "title": "everything that names the address uses https://museumguessr.com/ at the root path"
+        },
+        {
+          "file": "tests/unit/wrangler-config.test.ts",
+          "title": "the Worker answers only at the custom domain museumguessr.com"
         }
       ]
     },
@@ -203,7 +227,12 @@
         "W1"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/wrangler-config.test.ts",
+          "title": "workers.dev and preview URLs are disabled"
+        }
+      ]
     },
     {
       "id": "V12-13",
@@ -217,6 +246,10 @@
         {
           "file": "tests/unit/security-headers.test.ts",
           "title": "one source writes the header and the meta CSP, which differ only by the header-only frame-ancestors"
+        },
+        {
+          "file": "worker/tests/worker.test.ts",
+          "title": "every Worker response carries nosniff, a Referrer-Policy, a Permissions-Policy and the header CSP with frame-ancestors"
         }
       ]
     },
@@ -480,6 +513,10 @@
         {
           "file": "tests/unit/security-headers.test.ts",
           "title": "every path gets nosniff, a Referrer-Policy, a Permissions-Policy and the CSP, and the build check verifies the header file"
+        },
+        {
+          "file": "worker/tests/worker.test.ts",
+          "title": "every Worker response carries nosniff, a Referrer-Policy, a Permissions-Policy and the header CSP with frame-ancestors"
         }
       ]
     },

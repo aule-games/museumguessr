@@ -10,7 +10,7 @@ export const ITEMS_CORE_ID = 'virtual:museumguessr/items-core';
 const RESOLVED = `\0${ITEMS_CORE_ID}`;
 const ITEMS_FILE = fileURLToPath(new URL('../../data/items.json', import.meta.url));
 
-/** One record's core, in the shape `CoreItem` in src/content/items.ts declares. */
+/** One record's core, in the shape `CoreItem` in src/content/core.ts declares. */
 export function coreOf(it) {
   return {
     id: it.id,

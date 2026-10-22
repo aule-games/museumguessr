@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [itemsCore()],
   test: {
     environment: 'node',
-    include: ['tests/unit/**/*.test.ts'],
+    include: ['tests/unit/**/*.test.ts', 'worker/tests/**/*.test.ts'],
     exclude: ['node_modules/**', 'dist/**'],
   },
 });

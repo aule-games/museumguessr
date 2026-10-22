@@ -23,10 +23,10 @@ const SOURCE_RULES = [
 ];
 
 export default tseslint.config(
-  { ignores: ['dist/**', 'node_modules/**', 'test-results/**', 'playwright-report/**', 'src/types/item.ts'] },
+  { ignores: ['dist/**', 'node_modules/**', 'worker/node_modules/**', '.wrangler/**', 'test-results/**', 'playwright-report/**', 'src/types/item.ts'] },
   ...tseslint.configs.recommended,
   {
-    files: ['src/**/*.ts'],
+    files: ['src/**/*.ts', 'worker/src/**/*.ts'],
     rules: { 'no-restricted-syntax': ['error', ...SOURCE_RULES] },
   },
   {
@@ -58,7 +58,7 @@ export default tseslint.config(
     },
   },
   {
-    files: ['tests/**/*.ts', 'scripts/**/*.mjs'],
+    files: ['tests/**/*.ts', 'worker/tests/**/*.ts', 'scripts/**/*.mjs'],
     rules: { '@typescript-eslint/no-explicit-any': 'off' },
   },
 );
