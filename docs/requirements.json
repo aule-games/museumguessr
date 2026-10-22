@@ -2298,7 +2298,7 @@
     },
     {
       "id": "V12-132",
-      "step": 3,
+      "step": 2,
       "text": "A local last-active ISO-week marker emits week_active once per week with active_last_week; return measurement does not join daily cookieless identities.",
       "source": [
         "ENG6"
