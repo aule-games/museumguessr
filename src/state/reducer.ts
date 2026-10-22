@@ -7,6 +7,7 @@ import { DECK } from '../deck/config.ts';
 import { EVENTS, STEPS, type EventName, type FeedbackQ, type Step } from '../analytics/events.ts';
 import { scoreRound, skippedRound, type AnswerKey } from '../scoring/game.ts';
 import type { LatLng } from '../scoring/geo.ts';
+import { isAnswerYear } from '../scoring/years.ts';
 import {
   currentVersions,
   type Challenge,
@@ -190,7 +191,7 @@ export function reduce(state: GameState | null, action: Action, keys: readonly A
       if (!key) return { state, effects };
       const valid =
         action.step === 'when'
-          ? typeof action.value === 'number' && Number.isInteger(action.value) && action.value !== 0
+          ? isAnswerYear(action.value)
           : typeof action.value === 'object' && Number.isFinite(action.value.lat) && Number.isFinite(action.value.lng);
       if (!valid) return { state, effects };
 

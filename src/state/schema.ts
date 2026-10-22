@@ -6,6 +6,7 @@ import type { Step } from '../analytics/events.ts';
 import { DECK } from '../deck/config.ts';
 import { SCORING_VERSION } from '../scoring/config.ts';
 import type { RoundAnswers, RoundResult } from '../scoring/game.ts';
+import { isAnswerYear } from '../scoring/years.ts';
 
 export type { RoundAnswers, RoundResult } from '../scoring/game.ts';
 
@@ -131,7 +132,7 @@ function answersOk(a: unknown, n: number): a is RoundAnswers[] {
         isObj(r) &&
         isLatLngOrNull(r.kept) &&
         isLatLngOrNull(r.made) &&
-        (r.when === null || Number.isInteger(r.when)),
+        (r.when === null || isAnswerYear(r.when)),
     )
   );
 }

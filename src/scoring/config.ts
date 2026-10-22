@@ -4,8 +4,11 @@
 
 export type Precision = 'city' | 'region' | 'country';
 
-/** Bump when a change alters scores, so saved games from older rules reset. */
-export const SCORING_VERSION = 2;
+/**
+ * Bump when a change alters scores, so saved games from older rules reset
+ * (3: the "4000 BCE or earlier" year stop, W5).
+ */
+export const SCORING_VERSION = 3;
 
 export const MAX_POINTS = 1000;
 
@@ -27,13 +30,32 @@ export const YEARS = {
   tolerancePerYearOfAge: 0.17,
 } as const;
 
-/** Year control bounds and piecewise scale (DS5, DS28): each segment gets an equal share. */
+/**
+ * Year control bounds and piecewise scale (DS5, DS28): each segment gets an
+ * equal share. Every year at or below `min` is the one leftmost stop
+ * "4000 BCE or earlier", stored, saved and sent as the sentinel `earlyStop`
+ * (W5, ENG10); the scale's own years run from `min + 1` to `max`.
+ */
 export const SLIDER = {
+  earlyStop: -4001,
   min: -4000,
   max: 2025,
   breakpoints: [-4000, 1, 1000, 2025],
   ticks: [-4000, -2000, 1, 500, 1000, 1500, 2025],
 } as const;
+
+/**
+ * Object dates (W5, W7): a date range may begin as early as `floor`, and at
+ * most `maxBeforeStop` pool objects may begin before the year control's
+ * early stop (SLIDER.min), so the stop rarely pays.
+ */
+export const DATES = {
+  floor: -40000,
+  maxBeforeStop: 3,
+} as const;
+
+/** A difficulty-3 round scoring at least this many points is a "hard one nailed" (W4, D12); it never multiplies points. */
+export const HARD_NAILED = 2400;
 
 /** Total-score tiers for the end screen (DS7, DS25); lower bound inclusive. */
 export const TIERS = [

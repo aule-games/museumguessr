@@ -42,10 +42,11 @@ export function bestConstantPlace(targets: readonly PlaceTarget[], stepDeg = 2):
   return best;
 }
 
+/** Tries the early stop and every year on the slider (W5): the stop must not pay either. */
 export function bestConstantYear(ranges: readonly { start: number; end: number }[]): Baseline<number> {
   let best: Baseline<number> = { best: 1, points: -1, share: 0 };
-  for (let y: number = SLIDER.min; y <= SLIDER.max; y++) {
-    if (y === 0) continue;
+  for (let y: number = SLIDER.earlyStop; y <= SLIDER.max; y++) {
+    if (y === 0 || y === SLIDER.min) continue;
     let points = 0;
     for (const r of ranges) points += scoreYear(y, r.start, r.end).points;
     if (points > best.points) best = { best: y, points, share: points / (MAX_POINTS * ranges.length) };

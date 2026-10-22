@@ -19,6 +19,28 @@ export function isValidYear(year: number): boolean {
   return Number.isInteger(year) && year !== 0;
 }
 
+/**
+ * The one shared answer-year validator (W5, ENG10), used by the page, the
+ * save parser and the board server: every year at or below 4000 BCE becomes
+ * the early stop (SLIDER.earlyStop, -4001); a year above 4000 BCE up to the
+ * slider's last year is kept; year 0, fractions, later years and non-numbers
+ * give null.
+ */
+export function normalizeAnswerYear(year: unknown): number | null {
+  if (typeof year !== 'number' || !isValidYear(year)) return null;
+  if (year <= SLIDER.min) return SLIDER.earlyStop;
+  return year <= SLIDER.max ? year : null;
+}
+
+/** A year in its canonical stored form: the early stop, or a year from 3999 BCE to the slider's last year without 0. */
+export function isAnswerYear(year: unknown): year is number {
+  return typeof year === 'number' && normalizeAnswerYear(year) === year;
+}
+
+export function isEarlyStop(year: number | null | undefined): boolean {
+  return year === SLIDER.earlyStop;
+}
+
 /** Years between two historical years, never counting a year 0. */
 export function yearsBetween(a: number, b: number): number {
   return Math.abs(toAstronomical(a) - toAstronomical(b));

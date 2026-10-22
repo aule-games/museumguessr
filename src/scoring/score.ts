@@ -1,9 +1,9 @@
 // Scoring rules (README "Scoring"). Every answer scores 0-1000 and is rounded
 // to a whole number before rounds and games are summed (ENG12).
 
-import { DISTANCE, MAX_POINTS, TIERS, YEARS, type Precision } from './config.ts';
+import { DISTANCE, MAX_POINTS, SLIDER, TIERS, YEARS, type Precision } from './config.ts';
 import { distanceKm, isValidLatLng, type LatLng } from './geo.ts';
-import { toAstronomical, yearsOutside, isValidYear } from './years.ts';
+import { normalizeAnswerYear, toAstronomical, yearsOutside } from './years.ts';
 
 export interface DistanceResult {
   points: number;
@@ -47,10 +47,17 @@ export function yearPoints(yearsOff: number, tolerance: number): number {
   return Math.round(MAX_POINTS * Math.exp(-yearsOff / tolerance));
 }
 
+/**
+ * Score a year guess against a date range. The early stop ("4000 BCE or
+ * earlier") earns full marks when the whole range ends before 4000 BCE;
+ * for any younger object it scores as a guess of 4000 BCE (W5, ENG10).
+ */
 export function scoreYear(guess: number | null, start: number, end: number): YearResult {
   const toleranceYears = yearTolerance(start, end);
-  if (guess == null || !isValidYear(guess)) return { points: 0, yearsOff: NaN, toleranceYears };
-  const yearsOff = yearsOutside(guess, start, end);
+  const year = normalizeAnswerYear(guess);
+  if (year === null) return { points: 0, yearsOff: NaN, toleranceYears };
+  if (year === SLIDER.earlyStop && end < SLIDER.min) return { points: MAX_POINTS, yearsOff: 0, toleranceYears };
+  const yearsOff = yearsOutside(year === SLIDER.earlyStop ? SLIDER.min : year, start, end);
   return { points: yearPoints(yearsOff, toleranceYears), yearsOff, toleranceYears };
 }
 
