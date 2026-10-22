@@ -2,6 +2,7 @@
   "name": "museumguessr-worker",
   "version": "0.0.0",
   "private": true,
+  "type": "module",
   "description": "Worker tooling for museumguessr.com, installed separately from the game (npm ci --prefix worker).",
   "engines": {
     "node": ">=24 <25"

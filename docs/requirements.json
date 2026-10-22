@@ -196,6 +196,14 @@
         {
           "file": "tests/unit/wrangler-config.test.ts",
           "title": "one Worker serves the built site as assets and runs code first only for /api/*, with the asset 404 page for unknown paths"
+        },
+        {
+          "file": "worker/tests/wrangler-dev.smoke.ts",
+          "title": "/wp-login.php and an unknown path, as navigation and as fetch, get the 404 page with status 404 and the security headers"
+        },
+        {
+          "file": "worker/tests/wrangler-dev.smoke.ts",
+          "title": "every other API path answers the not_found envelope with status 404 and the security headers"
         }
       ]
     },
@@ -254,6 +262,10 @@
         {
           "file": "worker/tests/worker.test.ts",
           "title": "every Worker response carries nosniff, a Referrer-Policy, a Permissions-Policy and the header CSP with frame-ancestors"
+        },
+        {
+          "file": "worker/tests/wrangler-dev.smoke.ts",
+          "title": "the page and its assets carry the _headers values, and the header CSP equals the meta CSP plus frame-ancestors"
         }
       ]
     },
@@ -584,7 +596,24 @@
         "N12"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/verify-steps.test.ts",
+          "title": "runs the Worker type check and unit tests and the wrangler dev suite, and a missing required prerequisite fails the run"
+        },
+        {
+          "file": "tests/unit/verify-steps.test.ts",
+          "title": "installs the pinned Worker dependencies when they are missing and reports a failed install"
+        },
+        {
+          "file": "worker/tests/wrangler-dev.smoke.ts",
+          "title": "health over the Workers runtime reports this build: scoring version, pool hash, contract, board off and the build id"
+        },
+        {
+          "file": "worker/tests/wrangler-dev.smoke.ts",
+          "title": "/wp-login.php and an unknown path, as navigation and as fetch, get the 404 page with status 404 and the security headers"
+        }
+      ]
     },
     {
       "id": "V12-32",
@@ -632,6 +661,14 @@
         {
           "file": "worker/tests/worker.test.ts",
           "title": "every Worker response carries nosniff, a Referrer-Policy, a Permissions-Policy and the header CSP with frame-ancestors"
+        },
+        {
+          "file": "worker/tests/wrangler-dev.smoke.ts",
+          "title": "/wp-login.php and an unknown path, as navigation and as fetch, get the 404 page with status 404 and the security headers"
+        },
+        {
+          "file": "worker/tests/wrangler-dev.smoke.ts",
+          "title": "the page and its assets carry the _headers values, and the header CSP equals the meta CSP plus frame-ancestors"
         }
       ]
     },

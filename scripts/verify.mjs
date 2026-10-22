@@ -12,6 +12,7 @@ import { spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { cleanEnv } from './lib/ops.mjs';
 import { requirementLedger, renderRequirementLedger } from './lib/requirements.mjs';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
@@ -19,6 +20,7 @@ const ROOT = fileURLToPath(new URL('..', import.meta.url));
 // outputs (the unit report, the moved source maps) in an ignored cache.
 const CACHE = join(ROOT, 'node_modules/.cache/verify');
 const UNIT_JSON = join(CACHE, 'unit.json');
+const WORKER_DEV_JSON = join(CACHE, 'worker-dev.json');
 const E2E_JSON = join(ROOT, 'test-results/e2e.json');
 const INDEX = join(ROOT, 'docs/verification.md');
 const REQUIREMENTS = join(ROOT, 'docs/requirements.json');
@@ -36,7 +38,8 @@ export const MANUAL = [
   { id: 'AUDIT', rule: 'Content, game, visual and release audits pass (no open P0/P1)', owner: 'design agent', how: 'notes under docs/audits/' },
 ];
 
-const sh = (cmd, args) => spawnSync(cmd, args, { cwd: ROOT, stdio: 'inherit', env: process.env });
+// Children never see a CLOUDFLARE_* value (N6, V12-23).
+const sh = (cmd, args) => spawnSync(cmd, args, { cwd: ROOT, stdio: 'inherit', env: cleanEnv(process.env) });
 const has = (cmd, args) => {
   const r = spawnSync(cmd, args, { cwd: ROOT, stdio: 'ignore' });
   return !r.error && r.status === 0;
@@ -56,7 +59,15 @@ function moveSourceMaps() {
   return { status: 0 };
 }
 
-const STEPS = [
+/** The Worker's exact locked dependencies, installed when missing (they are not part of the game's npm ci). */
+export function workerDepsProblem(root = ROOT, install = () => sh('npm', ['ci', '--prefix', 'worker', '--ignore-scripts', '--no-audit', '--no-fund']).status) {
+  const read = (p) => (existsSync(join(root, p)) ? JSON.parse(readFileSync(join(root, p), 'utf8')) : null);
+  const pinned = read('worker/package.json')?.devDependencies?.wrangler;
+  if (read('worker/node_modules/wrangler/package.json')?.version === pinned) return null;
+  return install() === 0 ? null : `the Worker dependencies could not be installed (npm ci --prefix worker; wrangler ${pinned})`;
+}
+
+export const STEPS = [
   { name: 'type check', run: () => sh('npm', ['run', '-s', 'typecheck']) },
   { name: 'generated files are current', run: () => sh('node', ['scripts/types.mjs', '--check']).status || sh('node', ['scripts/tokens.mjs', '--check']) },
   { name: 'item check', run: () => sh('node', ['scripts/items.mjs', 'check']) },
@@ -65,6 +76,14 @@ const STEPS = [
   { name: 'lint', run: () => sh('npm', ['run', '-s', 'lint']) },
   { name: 'build', run: () => sh('npm', ['run', '-s', 'build:e2e']) },
   { name: 'build checks', needs: 'build', run: () => moveSourceMaps().status || sh('node', ['scripts/check-build.mjs']) },
+  {
+    // ENG17, V12-31: the real Workers runtime serves dist/ with wrangler.jsonc.
+    name: 'Worker routing suite (wrangler dev)',
+    needs: 'build checks',
+    required: true,
+    skip: () => workerDepsProblem(),
+    run: () => sh('npx', ['vitest', 'run', '--config', 'worker/vitest.smoke.config.ts', '--reporter=default', '--reporter=json', `--outputFile.json=${WORKER_DEV_JSON}`]),
+  },
   { name: 'browser tests (5 viewports)', needs: 'build', run: () => sh('npx', ['playwright', 'test']) },
   {
     name: 'release scan (publish candidate)',
@@ -75,21 +94,44 @@ const STEPS = [
     },
     run: () => sh('node', ['scripts/release-scan.mjs', '--candidate']),
   },
+  {
+    // ENG21, V12-29: the built output on its own; npm run deploy repeats it on the exact deploy build.
+    name: 'release scan (built output)',
+    needs: 'build checks',
+    skip: () => {
+      if (!existsSync(process.env.MG_DENYLIST || join(ROOT, '.denylist'))) return 'no denylist';
+      if (!has(process.env.MG_EXIFTOOL || 'exiftool', ['-ver'])) return 'exiftool missing';
+      return null;
+    },
+    run: () => sh('node', ['scripts/release-scan.mjs', '--dist', 'dist']),
+  },
 ];
 
 /** A failed/blocked runner must not borrow a previous run's passing report. */
-export function clearReports(paths = [UNIT_JSON, E2E_JSON]) {
+export function clearReports(paths = [UNIT_JSON, WORKER_DEV_JSON, E2E_JSON]) {
   for (const path of paths) rmSync(path, { force: true });
+}
+
+/**
+ * A step that cannot run: SKIPPED when it waits on a failed step or is
+ * optional (the release scan without a denylist); a missing prerequisite of
+ * a required step fails the run, in CI and locally (N12, V12-31).
+ */
+export function notRun(step, results) {
+  const dep = step.needs && results.find((r) => r.name === step.needs);
+  if (dep && dep.status !== 'passed') return { status: 'skipped', note: `${step.needs} did not pass` };
+  const reason = step.skip?.();
+  if (!reason) return null;
+  return { status: step.required ? 'failed' : 'skipped', note: step.required ? `missing prerequisite: ${reason}` : reason };
 }
 
 function runSteps() {
   clearReports();
   const results = [];
   for (const step of STEPS) {
-    const dep = step.needs && results.find((r) => r.name === step.needs);
-    const reason = dep && dep.status !== 'passed' ? `${step.needs} did not pass` : step.skip?.();
-    if (reason) {
-      results.push({ name: step.name, status: 'skipped', note: reason, ms: 0 });
+    const blocked = notRun(step, results);
+    if (blocked) {
+      results.push({ name: step.name, ...blocked, ms: 0 });
       continue;
     }
     process.stdout.write(`\n▶ ${step.name}\n`);
@@ -130,10 +172,16 @@ export function collectRows(unit, e2e) {
 }
 
 const read = (p) => (existsSync(p) ? JSON.parse(readFileSync(p, 'utf8')) : null);
+
+/** The unit report and the wrangler dev suite's report, as one vitest report. */
+export function mergeUnitReports(...reports) {
+  const present = reports.filter(Boolean);
+  return present.length ? { testResults: present.flatMap((r) => r.testResults ?? []) } : null;
+}
 const cell = (s) => String(s).replace(/\|/g, '\\|');
 
 function writeIndex(steps) {
-  const rows = collectRows(read(UNIT_JSON), read(E2E_JSON));
+  const rows = collectRows(mergeUnitReports(read(UNIT_JSON), read(WORKER_DEV_JSON)), read(E2E_JSON));
   const byId = new Map();
   for (const r of rows) for (const id of r.ids.length ? r.ids : ['(none)']) byId.set(id, [...(byId.get(id) ?? []), r]);
   const order = [...byId.keys()].sort((a, b) => a.localeCompare(b, 'en', { numeric: true }));
@@ -147,7 +195,7 @@ function writeIndex(steps) {
   ];
   if (steps) {
     lines.push('## Run', '', '| Step | Result |', '| --- | --- |');
-    for (const s of steps) lines.push(`| ${s.name} | ${s.status === 'skipped' ? `SKIPPED (${s.note})` : s.status}${s.ms ? ` (${Math.round(s.ms / 1000)} s)` : ''} |`);
+    for (const s of steps) lines.push(`| ${s.name} | ${s.status === 'skipped' ? `SKIPPED (${s.note})` : s.note ? `${s.status} (${s.note})` : s.status}${s.ms ? ` (${Math.round(s.ms / 1000)} s)` : ''} |`);
     lines.push('');
   } else lines.push('Rebuilt from existing reports; this command did not run any checks.', '');
   const passed = rows.filter((r) => r.status === 'passed').length;
@@ -158,14 +206,14 @@ function writeIndex(steps) {
   lines.push('', '## Manual and founder checks', '', 'These stay pending until their owner records a dated result.', '', '| ID | Rule | Owner | How | Result |', '| --- | --- | --- | --- | --- |');
   for (const m of MANUAL) lines.push(`| ${m.id} | ${cell(m.rule)} | ${m.owner} | ${cell(m.how)} | ${cell(m.result ?? 'pending')} |`);
   writeFileSync(INDEX, `${lines.join('\n')}\n`);
-  return { rows: rows.length, passed, ids: byId.size, failed: rows.some(r => r.status === 'failed' || r.status === 'timedOut'), missingReports: !existsSync(UNIT_JSON) || !existsSync(E2E_JSON), uncovered: ledger.filter(r => r.blocking).map(r => r.id) };
+  return { rows: rows.length, passed, ids: byId.size, failed: rows.some(r => r.status === 'failed' || r.status === 'timedOut'), missingReports: [UNIT_JSON, WORKER_DEV_JSON, E2E_JSON].some((p) => !existsSync(p)), uncovered: ledger.filter(r => r.blocking).map(r => r.id) };
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const steps = process.argv.includes('--index-only') ? null : runSteps();
   const summary = writeIndex(steps);
   process.stdout.write('\nverify summary\n');
-  for (const s of steps ?? []) process.stdout.write(`  ${s.status === 'passed' ? '✓' : s.status === 'failed' ? '✖' : '-'} ${s.name}${s.status === 'skipped' ? `: SKIPPED (${s.note})` : s.status === 'failed' ? ': FAILED' : ''}\n`);
+  for (const s of steps ?? []) process.stdout.write(`  ${s.status === 'passed' ? '✓' : s.status === 'failed' ? '✖' : '-'} ${s.name}${s.status === 'skipped' ? `: SKIPPED (${s.note})` : s.status === 'failed' ? `: FAILED${s.note ? ` (${s.note})` : ''}` : ''}\n`);
   const pending = MANUAL.filter((m) => !m.result).length;
   process.stdout.write(`  ${summary.rows} tests (${summary.passed} passed) across ${summary.ids} requirement IDs; ${pending} manual rows pending\n  index: docs/verification.md\n`);
   if (summary.uncovered.length) process.stderr.write(`  FAILED requirement evidence: ${summary.uncovered.join(', ')}\n`);
