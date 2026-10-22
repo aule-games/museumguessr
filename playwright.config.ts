@@ -3,7 +3,7 @@ import { defineConfig, devices } from '@playwright/test';
 // E2E runs against the production build (ENG3, PH9). The production host is
 // mapped to a local HTTPS server; PostHog and tile hosts are mapped to a
 // closed port so a missed route can never reach them.
-const PORT = 4443;
+const PORT = Number(process.env.E2E_PORT ?? 4443);
 export const CHROME_UA =
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36';
 
