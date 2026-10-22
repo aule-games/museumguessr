@@ -664,7 +664,7 @@
     },
     {
       "id": "V12-32",
-      "step": 1,
+      "step": 2,
       "text": "Round and game events carry an unlinked per-game reference; completed rounds measure active control time and readiness delay from the untimed baseline onward.",
       "source": [
         "ENG9"

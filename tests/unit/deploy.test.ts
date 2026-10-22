@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { deploy } from '../../scripts/deploy.mjs';
 // @ts-expect-error plain ESM helper without types
 import { runMain } from '../../scripts/lib/ops.mjs';
+import { TOKEN_PLACEHOLDER } from '../../scripts/lib/profile.mjs';
 import { type Rule, sink, stubRunner } from './helpers/ops-stubs';
 
 const REPO = join(import.meta.dirname, '../..');
@@ -119,7 +120,7 @@ describe('npm run deploy', () => {
     expect(failedCheck.out).toContain('check-build failed on the deploy build');
     expect(remote(failedCheck.lines)).toEqual([]);
 
-    const placeholder = JSON.parse(readFileSync(join(REPO, 'deploy/profile.json'), 'utf8'));
+    const placeholder = { ...JSON.parse(readFileSync(join(REPO, 'deploy/profile.json'), 'utf8')), VITE_POSTHOG_PROJECT_TOKEN: TOKEN_PLACEHOLDER };
     writeFileSync(join(root, 'deploy/profile.json'), JSON.stringify(placeholder));
     const notReady = await attempt(['--yes']);
     expect(notReady.code).toBe(6);
