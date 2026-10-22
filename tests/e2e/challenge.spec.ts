@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { Page } from '@playwright/test';
+import { RULES_VERSION } from '../../src/challenge/link';
 import { SCORING_VERSION } from '../../src/scoring/config';
 import { confirm, expect, largeText, placePin, playRound, start, test } from './fixtures';
 
@@ -38,7 +39,12 @@ async function seedFinished(page: Page, opts: { total?: number; kind?: 'random' 
   await page.reload();
 }
 
-const link = (q: Record<string, string>) => `./?${new URLSearchParams(q).toString()}`;
+/** A challenge link made under this page's rules (ENG11); `r: ''` leaves the rules version out. */
+const link = (q: Record<string, string>) => {
+  const p = new URLSearchParams({ r: RULES_VERSION, ...q });
+  if (!p.get('r')) p.delete('r');
+  return `./?${p.toString()}`;
+};
 
 /** Replace the browser's share sheet: resolve, cancel, refuse, or be absent. Calls are recorded in `__shares`. */
 async function shareSheet(page: Page, mode: 'resolve' | 'abort' | 'refuse' | 'absent') {

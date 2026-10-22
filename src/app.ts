@@ -5,7 +5,7 @@
 import type { Analytics } from './analytics/core.ts';
 import { EVENTS, STEPS, type FeedbackQ } from './analytics/events.ts';
 import { ANSWER_KEYS, DECK_ITEMS, ITEMS_VERSION, ITEM_IDS, POOL, SAMPLE, deckItems, hasItem, imageUrl, itemsLoaded, loadItems } from './content/items.ts';
-import { challengeUrl, parseChallenge, type ChallengeLink, type ParsedChallenge, type ShareKind } from './challenge/link.ts';
+import { challengeUrl, parseChallenge, scoreToBeat, type ChallengeLink, type ParsedChallenge, type ShareKind } from './challenge/link.ts';
 import { SITE_URL } from './config.ts';
 import { formatNumber, t } from './copy.ts';
 import { drawDeck, seededRng } from './deck/planner.ts';
@@ -211,9 +211,9 @@ export class App {
     return this.checkedNames.has(name) ? (this.checkedNames.get(name) ?? null) : undefined;
   }
 
-  /** The friend's score, unless the answers of that deck changed since the link was made (V1-16). */
+  /** The friend's score, unless the deck's answers or the rules changed since the link was made (V1-16, ENG11). */
   private comparableScore(link: ChallengeLink): number | null {
-    return link.hash === null || link.hash === POOL.deckHash(link.ids) ? link.score : null;
+    return scoreToBeat(link, POOL.deckHash(link.ids)).score;
   }
 
   private challengeDeck(link: ChallengeLink): Deck {
@@ -522,7 +522,9 @@ export class App {
         const ever = this.seenLists.ever();
         const seen = link.ids.filter((id) => ever.has(id)).length;
         const notes: string[] = [];
-        if (link.hash !== null && score === null && link.score !== null) notes.push(t('challenge.changed'));
+        const beat = scoreToBeat(link, POOL.deckHash(link.ids));
+        if (beat.rulesChanged) notes.push(t('challenge.rulesChanged'));
+        if (beat.answersChanged) notes.push(t('challenge.changed'));
         if (seen > 0) notes.push(t('challenge.seenSome', { count: seen }));
         mode = {
           kind: 'challenge',

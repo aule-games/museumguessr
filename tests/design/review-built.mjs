@@ -4,6 +4,7 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { chromium, expect } from '@playwright/test';
 import { preview } from 'vite';
 import { placePin, enterYear, confirm, largeText } from '../e2e/fixtures.ts';
+import { RULES_VERSION } from '../../src/challenge/link.ts';
 import { flowGeometryIssues, measureFlow } from './flow-geometry.mjs';
 import { phoneGeometryIssues } from './phone-geometry.mjs';
 import { creditFixtures } from './map-credit-fixtures.mjs';
@@ -199,10 +200,10 @@ try {
     await page.keyboard.press('Escape');
     const last = await page.evaluate(() => JSON.parse(localStorage.getItem('museumguessr:v1:last') ?? '{}'));
     const deck = last.item_ids.join('.');
-    await page.goto(`${url}?d=${deck}&s=19000&n=Bea&h=${last.deck_hash}`);
+    await page.goto(`${url}?d=${deck}&s=19000&n=Bea&h=${last.deck_hash}&r=${RULES_VERSION}`);
     await expect(page.locator('[data-test=challenge-line]')).toContainText('Bea');
     await capture('challenge-reply');
-    await page.goto(`${url}?d=${[...last.item_ids].reverse().join('.')}&s=18240&n=Barış`);
+    await page.goto(`${url}?d=${[...last.item_ids].reverse().join('.')}&s=18240&n=Barış&r=${RULES_VERSION}`);
     await expect(page.locator('[data-test=challenge-line]')).toContainText('Barış');
     await capture('challenge');
     // A challenge game: "To beat" sits under the round total on the reveal.
@@ -255,7 +256,7 @@ try {
     await page.goto(url);
     await expect(page.locator('[data-test=start]')).toBeEnabled();
     await capture('start-new-text200');
-    await page.goto(`${url}?d=${[...last.item_ids].reverse().join('.')}&s=18240&n=Barış`);
+    await page.goto(`${url}?d=${[...last.item_ids].reverse().join('.')}&s=18240&n=Barış&r=${RULES_VERSION}`);
     await expect(page.locator('[data-test=challenge-line]')).toContainText('Barış');
     await capture('challenge-text200');
     await page.locator('[data-test=play-challenge]').click();
@@ -284,7 +285,7 @@ try {
       localStorage.setItem('museumguessr:v1:last', JSON.stringify(s));
     }, snap);
     await finish(last);
-    await page.goto(`${url}?d=${last.item_ids.join('.')}&s=19000&n=Bea&h=${last.deck_hash}`);
+    await page.goto(`${url}?d=${last.item_ids.join('.')}&s=19000&n=Bea&h=${last.deck_hash}&r=${RULES_VERSION}`);
     await expect(page.locator('[data-test=challenge-line]')).toContainText('Bea');
     await capture('challenge-reply-text200');
     await finish(last);

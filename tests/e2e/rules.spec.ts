@@ -139,3 +139,25 @@ test.describe('hard ones nailed', () => {
     expect(calls[0]?.text).toBe('Can you beat my 14,600/30,000 on MuseumGuessr? · 2 hard ones nailed ⭐');
   });
 });
+
+test.describe('challenge rules versions', () => {
+  test('a legacy link without a rules version plays the same 10 but shows no score to beat [V12-72]', async ({ page }) => {
+    await page.goto(`./?d=${IDS.join('.')}&s=18240&n=Ali&h=${HASH}`);
+    await expect(page.locator('[data-test=challenge-line]')).toHaveText('Play the same 10 your friend played');
+    await expect(page.locator('[data-test=challenge-note]').first()).toHaveText('Rules changed since this link was made');
+    await expect(page.locator('[data-test=play-challenge]')).toBeEnabled({ timeout: 10000 });
+    await page.locator('[data-test=play-challenge]').click();
+    await expect(page.locator('[data-screen=round][data-round="1"]')).toBeVisible();
+    const save = await page.evaluate(() => JSON.parse(localStorage.getItem('museumguessr:v1:save') ?? '{}'));
+    expect(save.item_ids).toEqual(IDS);
+    expect(save.deck_kind).toBe('challenge');
+    expect(save.challenge.score).toBeNull();
+  });
+
+  test('a link from other rules shows no score to beat and leaves the address bar clean [V12-72]', async ({ page }) => {
+    await page.goto(`./?d=${IDS.join('.')}&s=18240&n=Ali&h=${HASH}&r=2.60.60.10`);
+    await expect(page.locator('[data-test=challenge-line]')).toHaveText('Play the same 10 your friend played');
+    await expect(page.locator('[data-test=challenge-note]').first()).toHaveText('Rules changed since this link was made');
+    expect(new URL(page.url()).search).toBe('');
+  });
+});

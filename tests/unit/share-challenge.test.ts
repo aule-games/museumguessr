@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { challengeUrl, parseChallenge } from '../../src/challenge/link';
+import { RULES_VERSION, challengeUrl, parseChallenge } from '../../src/challenge/link';
 import { cleanedUrl } from '../../src/game/session';
 import { cleanName, isListed } from '../../src/game/names';
 import { X_LIMIT, shareText, xLength } from '../../src/game/text';
@@ -49,7 +49,7 @@ describe('[V1-20] player names', () => {
 
 describe('[V1-16] challenge links', () => {
   it('reads ten known ids, a score, a name and a deck hash', () => {
-    expect(parse(`d=${IDS.join('.')}&s=18240&n=Ali&h=35ca1219`)).toEqual({ kind: 'ok', link: { ids: IDS, score: 18240, name: 'Ali', hash: '35ca1219' } });
+    expect(parse(`d=${IDS.join('.')}&s=18240&n=Ali&h=35ca1219&r=${RULES_VERSION}`)).toEqual({ kind: 'ok', link: { ids: IDS, score: 18240, name: 'Ali', hash: '35ca1219', rules: RULES_VERSION } });
   });
 
   it('a link without d is no challenge; bad d is a broken link', () => {
@@ -61,7 +61,7 @@ describe('[V1-16] challenge links', () => {
 
   it('ignores a bad score, name or hash but keeps the deck', () => {
     const r = parse(`d=${IDS.join('.')}&s=99999&n=%3Cb%3E&h=zz`);
-    expect(r).toEqual({ kind: 'ok', link: { ids: IDS, score: null, name: null, hash: null } });
+    expect(r).toEqual({ kind: 'ok', link: { ids: IDS, score: null, name: null, hash: null, rules: null } });
     expect(parse(`d=${IDS.join('.')}&s=-5`)).toMatchObject({ link: { score: null } });
     expect(parse(`d=${IDS.join('.')}&s=30000`)).toMatchObject({ link: { score: 30000 } });
   });
@@ -72,7 +72,7 @@ describe('[V1-16] challenge links', () => {
     expect(q.get('utm_source')).toBe('share');
     expect(q.get('utm_medium')).toBe('whatsapp');
     expect(q.get('utm_campaign')).toBe('reply');
-    expect(parse(q.toString())).toEqual({ kind: 'ok', link: { ids: IDS, score: 18240, name: 'Barış', hash: '35ca1219' } });
+    expect(parse(q.toString())).toEqual({ kind: 'ok', link: { ids: IDS, score: 18240, name: 'Barış', hash: '35ca1219', rules: RULES_VERSION } });
   });
 
   it('drops the challenge parameters from the address bar but keeps the rest', () => {
