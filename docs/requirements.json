@@ -670,7 +670,16 @@
         "ENG9"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/timer.test.ts",
+          "title": "round and game events carry a per-game reference that a new game never reuses"
+        },
+        {
+          "file": "tests/e2e/timer.spec.ts",
+          "title": "round_completed carries the timer evidence and the per-game reference"
+        }
+      ]
     },
     {
       "id": "V12-33",
@@ -776,7 +785,20 @@
         "M4"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/timer.test.ts",
+          "title": "one configuration sets 60-second rounds, round 1 included, a 10-second warning, and the copy derives from it"
+        },
+        {
+          "file": "tests/unit/timer.test.ts",
+          "title": "flipping each constant changes the copy and the behaviour, and a null first round leaves round 1 untimed"
+        },
+        {
+          "file": "tests/unit/clock-runner.test.ts",
+          "title": "flipping the constants changes the behaviour: an untimed first round shows no clock and never expires"
+        }
+      ]
     },
     {
       "id": "V12-41",
@@ -787,7 +809,24 @@
         "D4"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/timer.test.ts",
+          "title": "the clock starts only once the photo is ready and the active control takes answers"
+        },
+        {
+          "file": "tests/unit/timer.test.ts",
+          "title": "reveals are untimed: the clock ends with the round and the next round starts without one"
+        },
+        {
+          "file": "tests/unit/clock-runner.test.ts",
+          "title": "starts the clock only once the photo is ready and the map takes answers, and records the readiness time"
+        },
+        {
+          "file": "tests/e2e/timer.spec.ts",
+          "title": "the clock starts when the photo and map are ready; the line runs and pauses with the map; the failed map says so"
+        }
+      ]
     },
     {
       "id": "V12-42",
@@ -799,7 +838,24 @@
         "N8"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/timer.test.ts",
+          "title": "pause causes form a set of the automatic tour, an unusable active map and our error screen; play resumes only when all clear"
+        },
+        {
+          "file": "tests/unit/clock-runner.test.ts",
+          "title": "pauses for the automatic tour and an unusable map, resumes only when both clear, and a takeover derives causes again"
+        },
+        {
+          "file": "tests/unit/clock-runner.test.ts",
+          "title": "a frozen tab stops the clock face and writes nothing"
+        },
+        {
+          "file": "tests/e2e/timer.spec.ts",
+          "title": "the clock starts when the photo and map are ready; the line runs and pauses with the map; the failed map says so"
+        }
+      ]
     },
     {
       "id": "V12-43",
@@ -810,7 +866,24 @@
         "D4"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/timer.test.ts",
+          "title": "Back, a hidden tab, the replayed tour and open overlays are no pause causes"
+        },
+        {
+          "file": "tests/unit/timer.test.ts",
+          "title": "Back keeps the clock running"
+        },
+        {
+          "file": "tests/unit/clock-runner.test.ts",
+          "title": "a hidden tab does not pause the clock, and its expiry counts as away"
+        },
+        {
+          "file": "tests/e2e/timer.spec.ts",
+          "title": "a hidden tab keeps the clock running; returning after the deadline skips the hold and says time ran out while away"
+        }
+      ]
     },
     {
       "id": "V12-44",
@@ -821,7 +894,20 @@
         "E21"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/timer.test.ts",
+          "title": "the saved wall-clock deadline is authoritative; a clock moved backwards cannot add time and a non-finite time expires"
+        },
+        {
+          "file": "tests/unit/clock-runner.test.ts",
+          "title": "the saved deadline is re-checked: a wall clock moved backwards is re-anchored to the monotonic time, and a clock read after a reload is clamped"
+        },
+        {
+          "file": "tests/e2e/timer.spec.ts",
+          "title": "focus and pageshow re-check the saved deadline"
+        }
+      ]
     },
     {
       "id": "V12-45",
@@ -832,7 +918,16 @@
         "N8"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/timer.test.ts",
+          "title": "remaining time clamps to the round length after a reload or clock change; a paused clock holds remaining time, not a deadline"
+        },
+        {
+          "file": "tests/unit/clock-runner.test.ts",
+          "title": "the saved deadline is re-checked: a wall clock moved backwards is re-anchored to the monotonic time, and a clock read after a reload is clamped"
+        }
+      ]
     },
     {
       "id": "V12-46",
@@ -842,7 +937,20 @@
         "ENG7"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/timer.test.ts",
+          "title": "expiry is idempotent and wins over a Confirm just after the deadline, in either order"
+        },
+        {
+          "file": "tests/unit/timer.test.ts",
+          "title": "the expiry is saved with its results before anything is presented, and late Back, draft and resume lose to it"
+        },
+        {
+          "file": "tests/unit/clock-runner.test.ts",
+          "title": "at time-up the pending draft is saved first, then the one expiry, then the presentation; a visible expiry is announced once"
+        }
+      ]
     },
     {
       "id": "V12-47",
@@ -852,7 +960,28 @@
         "ENG7"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/timer.test.ts",
+          "title": "timer callbacks act only for the game, round and generation that queued them"
+        },
+        {
+          "file": "tests/unit/timer.test.ts",
+          "title": "drafts, including empty and invalid edits, are saved as they change and survive a reload"
+        },
+        {
+          "file": "tests/unit/clock-runner.test.ts",
+          "title": "a stopped interval tick and a stale release token are ignored"
+        },
+        {
+          "file": "tests/unit/clock-runner.test.ts",
+          "title": "edits, including empty ones, are saved throttled with the time they were made, and flushed on demand"
+        },
+        {
+          "file": "tests/e2e/timer.spec.ts",
+          "title": "an invalid year edit shows the previous answer, which counts at time-up"
+        }
+      ]
     },
     {
       "id": "V12-48",
@@ -862,7 +991,24 @@
         "D8"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/timer.test.ts",
+          "title": "a valid draft wins, an empty or invalid draft falls back to the confirmed answer, and a question with neither times out at zero"
+        },
+        {
+          "file": "tests/unit/timer.test.ts",
+          "title": "a placed but unconfirmed pin is scored at time-up and marked as counted"
+        },
+        {
+          "file": "tests/e2e/timer.spec.ts",
+          "title": "time-up closes the menu and ends a pin drag; the placed pin counts and history keeps no overlay entry"
+        },
+        {
+          "file": "tests/e2e/timer.spec.ts",
+          "title": "an invalid year edit shows the previous answer, which counts at time-up"
+        }
+      ]
     },
     {
       "id": "V12-49",
@@ -872,7 +1018,24 @@
         "D2"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/overlay.test.ts",
+          "title": "a forced close at time-up cancels a continuation queued between closeDialog and its popstate, and leaves no overlay entry"
+        },
+        {
+          "file": "tests/unit/overlay.test.ts",
+          "title": "closes several open overlays with one history step back each"
+        },
+        {
+          "file": "tests/e2e/timer.spec.ts",
+          "title": "time-up closes the photo viewer through history, holds \"Time's up\", then focuses the reveal score; the viewer shows the cue before 0"
+        },
+        {
+          "file": "tests/e2e/timer.spec.ts",
+          "title": "time-up closes the menu and ends a pin drag; the placed pin counts and history keeps no overlay entry"
+        }
+      ]
     },
     {
       "id": "V12-50",
@@ -883,7 +1046,16 @@
         "R1"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/timer.test.ts",
+          "title": "an expiry noticed in a hidden tab or well after the deadline happened while the player was away"
+        },
+        {
+          "file": "tests/e2e/timer.spec.ts",
+          "title": "a hidden tab keeps the clock running; returning after the deadline skips the hold and says time ran out while away"
+        }
+      ]
     },
     {
       "id": "V12-51",
@@ -893,7 +1065,16 @@
         "N5"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/timer.test.ts",
+          "title": "a persisted expiry is not a completed round: only the reveal opening sends round_completed, once"
+        },
+        {
+          "file": "tests/e2e/timer.spec.ts",
+          "title": "a hidden tab keeps the clock running; returning after the deadline skips the hold and says time ran out while away"
+        }
+      ]
     },
     {
       "id": "V12-52",
@@ -903,7 +1084,12 @@
         "R1"
       ],
       "replaces": "Every mid-round reload opens Start.",
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/e2e/timer.spec.ts",
+          "title": "a reload with 30 s left reopens the round with about 30 s; a reload after the deadline lands on Start, whose Continue opens the reveal"
+        }
+      ]
     },
     {
       "id": "V12-53",
@@ -913,7 +1099,16 @@
         "N9"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/timer.test.ts",
+          "title": "a photo failure after the start stops the clock for good, so the round can only follow the photo-failure path"
+        },
+        {
+          "file": "tests/unit/timer.test.ts",
+          "title": "a photo failure after the start stops the clock and the round is skipped, not timed out"
+        }
+      ]
     },
     {
       "id": "V12-54",
@@ -924,7 +1119,16 @@
         "N10"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/timer.test.ts",
+          "title": "state version 4 validates every timer, draft, time-up, provenance and completion field; a corrupt field resets the save"
+        },
+        {
+          "file": "tests/unit/timer.test.ts",
+          "title": "a newer-version save is left untouched, an older one gains the new fields"
+        }
+      ]
     },
     {
       "id": "V12-55",
@@ -934,7 +1138,16 @@
         "ENG5"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/timer.test.ts",
+          "title": "test assistance sticks to the game and its snapshot through test starts, timer controls and jump-to-end"
+        },
+        {
+          "file": "tests/e2e/timer.spec.ts",
+          "title": "one test surface sets ten seconds, pauses and ends the round, marks the game, and the first time-up reveal shows the tip once"
+        }
+      ]
     },
     {
       "id": "V12-56",
@@ -948,6 +1161,10 @@
         {
           "file": "tests/unit/challenge-rules.test.ts",
           "title": "share and challenge links omit test, fixture and clock parameters"
+        },
+        {
+          "file": "tests/unit/analytics.test.ts",
+          "title": "the browser test flag expires after 24 hours, while a flag set before v1.2 starts its 24 hours now"
         }
       ]
     },
@@ -959,7 +1176,16 @@
         "M4"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/e2e/timer.spec.ts",
+          "title": "one test surface sets ten seconds, pauses and ends the round, marks the game, and the first time-up reveal shows the tip once"
+        },
+        {
+          "file": "tests/e2e/timer.spec.ts",
+          "title": "the development untimed switch is compiled out of the built site"
+        }
+      ]
     },
     {
       "id": "V12-58",
@@ -969,7 +1195,16 @@
         "R2"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/timer.test.ts",
+          "title": "the line drains linearly, steps by whole seconds under reduced motion, and the cue counts whole seconds"
+        },
+        {
+          "file": "tests/unit/clock-ui.test.ts",
+          "title": "the line is full and static before the start, drains while running, turns to the warning colour at ten seconds and freezes at 40% while paused"
+        }
+      ]
     },
     {
       "id": "V12-59",
@@ -980,7 +1215,20 @@
         "D3"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/clock-runner.test.ts",
+          "title": "reduced motion moves the line in whole-second steps"
+        },
+        {
+          "file": "tests/unit/clock-ui.test.ts",
+          "title": "reduced motion moves the line in whole seconds without a transition, and dialogs mirror the line and the cue"
+        },
+        {
+          "file": "tests/e2e/timer.spec.ts",
+          "title": "time-up closes the photo viewer through history, holds \"Time's up\", then focuses the reveal score; the viewer shows the cue before 0"
+        }
+      ]
     },
     {
       "id": "V12-60",
@@ -991,7 +1239,24 @@
         "D7"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/timer.test.ts",
+          "title": "the hidden time text changes only every ten seconds"
+        },
+        {
+          "file": "tests/unit/clock-runner.test.ts",
+          "title": "at time-up the pending draft is saved first, then the one expiry, then the presentation; a visible expiry is announced once"
+        },
+        {
+          "file": "tests/unit/clock-ui.test.ts",
+          "title": "the cue replaces the counter text in the same slot; the timer text is not live and changes every ten seconds; announcements go to one polite region"
+        },
+        {
+          "file": "tests/e2e/timer.spec.ts",
+          "title": "the cue replaces the counter text in its slot without moving the bar"
+        }
+      ]
     },
     {
       "id": "V12-61",
@@ -1024,7 +1289,12 @@
         "D2"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/clock-ui.test.ts",
+          "title": "timed-out rows differ from photo skips, explain their zero and show no guess; drafts counted at time-up are tagged"
+        }
+      ]
     },
     {
       "id": "V12-63",
@@ -1034,7 +1304,16 @@
         "D2"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/clock-ui.test.ts",
+          "title": "the recap counts timed-out questions, and the tip shows on the reveal it is given to"
+        },
+        {
+          "file": "tests/e2e/timer.spec.ts",
+          "title": "one test surface sets ten seconds, pauses and ends the round, marks the game, and the first time-up reveal shows the tip once"
+        }
+      ]
     },
     {
       "id": "V12-64",
@@ -1373,7 +1652,12 @@
         "E22"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/timer.test.ts",
+          "title": "timer logic lives in its own module without the page; the screen controller only connects it"
+        }
+      ]
     },
     {
       "id": "V12-76",
@@ -1385,7 +1669,16 @@
         "R8"
       ],
       "replaces": "Automatic timer fallback and novice observation sessions.",
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/analytics-queries.test.ts",
+          "title": "the timer query gives active-time percentiles per round and the time-out share, with round 1 on its own row and no automatic timer change"
+        },
+        {
+          "file": "tests/unit/analytics-queries.test.ts",
+          "title": "the completion query keeps reveal reach, answered completion and the time-out share apart"
+        }
+      ]
     },
     {
       "id": "V12-77",
@@ -1397,7 +1690,12 @@
         "N19"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/e2e/timer.spec.ts",
+          "title": "a keyboard-only round finishes well inside 60 s; time and keystrokes are recorded as an automation floor"
+        }
+      ]
     },
     {
       "id": "V12-78",
@@ -1408,7 +1706,16 @@
         "ENG9"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/timer.test.ts",
+          "title": "round completion records timed-out questions, seconds left, active and readiness time"
+        },
+        {
+          "file": "tests/e2e/timer.spec.ts",
+          "title": "round_completed carries the timer evidence and the per-game reference"
+        }
+      ]
     },
     {
       "id": "V12-79",
@@ -1418,7 +1725,12 @@
         "N4"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/timer.test.ts",
+          "title": "the round-10 reveal records finished_at and keeps a null board week, never a week from the device clock"
+        }
+      ]
     },
     {
       "id": "V12-80",
@@ -1988,7 +2300,20 @@
         "ENG6"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/week.test.ts",
+          "title": "ISO weeks run Monday to Sunday in UTC, and the new year starts in the week of its first Thursday"
+        },
+        {
+          "file": "tests/unit/week.test.ts",
+          "title": "is sent once per device and week, true only when the device also completed a game the week before"
+        },
+        {
+          "file": "tests/unit/analytics-queries.test.ts",
+          "title": "the week-2 query divides the next week's returns by the week's week_active devices, never joining ids"
+        }
+      ]
     },
     {
       "id": "V12-133",
