@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { initOverlayHistory } from '../../src/ui/overlay';
+import { closeAllOverlays, initOverlayHistory, isOpen, pushOverlay } from '../../src/ui/overlay';
 import { openMenu } from '../../src/ui/screens/misc';
 import type { Item } from '../../src/types/item';
 
@@ -21,9 +21,13 @@ function slowHistory(delayMs: number) {
       entries[index] = state;
     },
     back() {
+      this.go(-1);
+    },
+    go(delta: number) {
       setTimeout(() => {
-        if (index === 0) return;
-        index -= 1;
+        const to = Math.max(0, index + delta);
+        if (to === index) return;
+        index = to;
         window.dispatchEvent(new PopStateEvent('popstate', { state: entries[index] }));
       }, delayMs);
     },
@@ -59,5 +63,44 @@ describe('[DS13] [ENG17] menu → New game with a slow history', () => {
     await vi.advanceTimersByTimeAsync(100);
     expect(openDialogs()).toEqual([]);
     expect(onNewGame).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('[D2] time-up closes overlays through history', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.stubGlobal('history', slowHistory(30));
+    initOverlayHistory();
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+    document.body.replaceChildren();
+  });
+
+  it('a forced close at time-up cancels a continuation queued between closeDialog and its popstate, and leaves no overlay entry [V12-49]', async () => {
+    const onNewGame = vi.fn();
+    const opener = document.body.appendChild(document.createElement('button'));
+    openMenu(opener, { items: [], sample: {} as Item, inGame: true, onNewGame });
+    click('menu-new'); // queues "Start over?" behind the menu's history pop
+    let closed = false;
+    void closeAllOverlays().then(() => (closed = true)); // time runs out before the pop lands
+    await vi.advanceTimersByTimeAsync(200);
+    expect(closed).toBe(true);
+    expect(openDialogs()).toEqual([]);
+    expect(isOpen()).toBe(false);
+    expect(history.state).toBeNull();
+  });
+
+  it('closes several open overlays with one history step back each [V12-49]', async () => {
+    const closes: string[] = [];
+    pushOverlay(() => closes.push('lightbox'));
+    pushOverlay(() => closes.push('dialog'));
+    const done = closeAllOverlays();
+    await vi.advanceTimersByTimeAsync(100);
+    await done;
+    expect(closes).toEqual(['dialog', 'lightbox']);
+    expect(history.state).toBeNull();
+    await expect(closeAllOverlays()).resolves.toBeUndefined();
   });
 });
