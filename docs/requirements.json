@@ -359,7 +359,16 @@
         "N10"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/rollback.test.ts",
+          "title": "defaults to the previous deployment, prints the exact URL, needs --yes and warns with a required --force across a state, scoring or contract change"
+        },
+        {
+          "file": "tests/unit/rollback.test.ts",
+          "title": "accepts only a version that was deployed before, and no rollback without a yes even within one version"
+        }
+      ]
     },
     {
       "id": "V12-20",
@@ -492,6 +501,10 @@
         {
           "file": "tests/unit/live-check.test.ts",
           "title": "a failed check exits with the live class and names the rollback command"
+        },
+        {
+          "file": "tests/unit/rollback.test.ts",
+          "title": "refusals carry the class exit code, the fix and the runbook anchor"
         }
       ]
     },
