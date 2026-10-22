@@ -117,8 +117,8 @@ export function yearControl(initial: number | null, onChange: (year: number | nu
   const ticks = h(
     'div',
     { class: 'year__ticks', 'aria-hidden': 'true' },
-    ...SLIDER.ticks.map((y) => {
-      // The scale starts at 3999 BCE; its first tick still reads 4000.
+    // The end cap names 4000 BCE, so the scale's own ticks start after it.
+    ...SLIDER.ticks.filter((y) => y > SLIDER.min).map((y) => {
       const { value, era: e } = splitYear(y);
       const era = y === 1 || e === 'BCE' ? h('span', { class: 'year__tick-era' }, e) : null;
       const tick = h('span', { class: 'year__tick' }, String(value), era);

@@ -1286,11 +1286,6 @@ p {
   display: block;
 }
 
-.year__tick:first-child {
-  transform: none;
-  text-align: left;
-}
-
 .year__tick:last-child {
   transform: translateX(-100%);
   text-align: right;
