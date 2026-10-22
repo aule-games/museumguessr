@@ -35,7 +35,7 @@ describe('the tracked public profile (H1)', () => {
   });
 
   it('the deploy profile refuses shell overrides, a placeholder token and invalid switch combinations [V12-18]', () => {
-    const over = resolveBuild({ profile, buildId: 'abc1234', shellEnv: { BASE_PATH: '/museumguessr/', VITE_POSTHOG_PROJECT_TOKEN: 'phc_other' } });
+    const over = resolveBuild({ profile, buildId: 'abc1234', shellEnv: { BASE_PATH: '/game/', VITE_POSTHOG_PROJECT_TOKEN: 'phc_other' } });
     expect(keys(over.problems)).toEqual(['BASE_PATH', 'VITE_POSTHOG_PROJECT_TOKEN']);
     expect(over.problems[1]!.problem).not.toContain('phc_other');
     expect(resolveBuild({ profile, buildId: 'abc1234', shellEnv: { BASE_PATH: '/' } }).problems).toEqual([]);
@@ -47,7 +47,7 @@ describe('the tracked public profile (H1)', () => {
     expect(switchProblems({ VITE_BOARD_UI: 'true', VITE_TURNSTILE_SITEKEY: '1x00000000000000000000AA', VITE_BUILD_PURPOSE: 'board-test' })).toEqual([]);
     expect(keys(switchProblems({ VITE_POSTHOG_PROJECT_TOKEN: 'phx_personal' }))).toEqual(['VITE_POSTHOG_PROJECT_TOKEN']);
     expect(keys(switchProblems({ VITE_BOARD_UI: 'yes', VITE_BUILD_PURPOSE: 'prod' }))).toEqual(['VITE_BOARD_UI', 'VITE_BUILD_PURPOSE']);
-    expect(keys(switchProblems({ BASE_PATH: 'museumguessr', VITE_SITE_URL: 'http://museumguessr.com/' }))).toEqual(['BASE_PATH', 'VITE_SITE_URL', 'VITE_SITE_URL']);
+    expect(keys(switchProblems({ BASE_PATH: 'game', VITE_SITE_URL: 'http://museumguessr.com/' }))).toEqual(['BASE_PATH', 'VITE_SITE_URL', 'VITE_SITE_URL']);
     expect(keys(switchProblems({ VITE_POSTHOG_PROJECT_TOKEN: 'phc_x', VITE_ANALYTICS_HOSTS: 'example.org' }))).toEqual(['VITE_ANALYTICS_HOSTS']);
   });
 
