@@ -3,12 +3,29 @@
 // reveal; "holds", never "owns", in hints.
 
 import type { Step } from './analytics/events.ts';
+import { TIMER } from './game/timer-config.ts';
+
+/** Fill `{name}` placeholders; unknown names stay as they are. */
+function fill(text: string, vars: Record<string, string | number>): string {
+  return text.replace(/\{(\w+)\}/g, (_, k: string) => (k in vars ? String(vars[k]) : `{${k}}`));
+}
+
+// The round clock's disclosure (D1, M4): every sentence that names a number
+// of seconds is filled from the timer constants here, then composed into the
+// start and challenge lines, How to play and the welcome tour.
+const TIMER_DISCLOSURE = '{seconds} seconds per object';
+const TIMER_HELP =
+  "You have {seconds} seconds for each object's three questions. A thin line shows the time running down, the seconds show for the last {warning}, and answers you have placed count when time runs out.";
+const TIMER_OVERLAY_HELP = 'Time keeps running while help or the photo viewer is open.';
+const TIMER_VARS = { seconds: TIMER.roundSeconds, warning: TIMER.warnSeconds };
+const DISCLOSURE = fill(TIMER_DISCLOSURE, TIMER_VARS);
+const HELP = fill(TIMER_HELP, TIMER_VARS);
 
 export const COPY = {
   // v1.2 copy contract. These keys become visible as their implementation step lands.
-  'timer.disclosure': '{seconds} seconds per object',
-  'timer.help': "You have {seconds} seconds for each object's three questions. A thin line shows the time running down, the seconds show for the last {warning}, and answers you have placed count when time runs out.",
-  'timer.overlayHelp': 'Time keeps running while help or the photo viewer is open.',
+  'timer.disclosure': TIMER_DISCLOSURE,
+  'timer.help': TIMER_HELP,
+  'timer.overlayHelp': TIMER_OVERLAY_HELP,
   'timer.remaining': 'About {seconds} seconds left',
   'timer.warning': '{seconds} seconds left',
   'timer.hurry': 'Hurry up · {seconds}',
@@ -127,7 +144,7 @@ export const COPY = {
   'start.loading': 'Loading…',
   'start.continue': 'Continue · Round {round} of 10',
   'start.new': 'New game',
-  'start.meta': 'Ten objects from a collection of {total}, a new set every game · about 10 min · real, credited museum photos',
+  'start.meta': `Ten objects from a collection of {total}, a new set every game · ${DISCLOSURE} · about 10 min · real, credited museum photos`,
   'start.privacy': 'No cookies. Anonymous play counts via PostHog (EU).',
   'start.privacyLink': 'About & privacy',
   'start.finished': 'You scored {total} / 30,000',
@@ -245,8 +262,8 @@ export const COPY = {
   'challenge.line': '{name} scored {score} on these 10. Can you beat it?',
   'challenge.lineNoScore': 'Play the same 10 your friend played',
   'challenge.play': 'Play the same 10',
-  'challenge.meta': 'The same 10 objects {name} played · about 10 min',
-  'challenge.metaFriend': 'The same 10 objects your friend played · about 10 min',
+  'challenge.meta': `The same 10 objects {name} played · ${DISCLOSURE} · about 10 min`,
+  'challenge.metaFriend': `The same 10 objects your friend played · ${DISCLOSURE} · about 10 min`,
   'challenge.changed': "The answers for these objects changed since your friend played, so the scores can't be compared",
   'challenge.seenSome': 'You have seen {count} of these 10',
   'challenge.broken': "This challenge link doesn't work any more",
@@ -268,8 +285,7 @@ export const COPY = {
 
   // menu overlays
   'how.title': 'How to play',
-  'how.body':
-    'Each round shows a real museum photo. Pin where the object was made, type or slide the year it was made, then pin where it is kept today. Back lets you change an earlier answer until you confirm the last one. Each answer scores up to 1,000 points.',
+  'how.body': `Each round shows a real museum photo. Pin where the object was made, type or slide the year it was made, then pin where it is kept today. Back lets you change an earlier answer until you confirm the last one. Each answer scores up to 1,000 points. ${HELP} ${TIMER_OVERLAY_HELP}`,
   'credits.title': 'Credits',
   'credits.row': '{title}: {author}, {licence}',
   'credits.map': 'Map data © OpenStreetMap contributors, tiles by OpenFreeMap; fallback map from Natural Earth (public domain).',
@@ -300,7 +316,7 @@ export const COPY = {
   'tour.skip': 'Skip tour',
   'tour.start': 'Let’s start',
   'tour.welcome.title': 'Welcome to MuseumGuessr',
-  'tour.welcome.body': 'Ten real objects from museums around the world. For each one you answer three questions. Here is a quick tour.',
+  'tour.welcome.body': `Ten real objects from museums around the world. For each one you answer three questions. ${HELP} Here is a quick tour.`,
   'tour.photo.title': 'The object',
   'tour.photo.body': 'Study the photo: material, style and any writing are your clues. Tap it to see it larger.',
   'tour.questions.title': 'Made, When, Kept',
@@ -319,7 +335,7 @@ export type CopyKey = keyof typeof COPY;
 
 /** Look up a string and fill `{name}` placeholders. */
 export function t(key: CopyKey, vars: Record<string, string | number> = {}): string {
-  return COPY[key].replace(/\{(\w+)\}/g, (_, k: string) => (k in vars ? String(vars[k]) : `{${k}}`));
+  return fill(COPY[key], vars);
 }
 
 export const QUESTION: Record<Step, CopyKey> = { kept: 'q.kept', made: 'q.made', when: 'q.when' };
