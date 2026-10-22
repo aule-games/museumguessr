@@ -114,4 +114,29 @@ describe('[DX10] [DX22] [ENG7] release scan', () => {
     expect(r.code).toBe(2);
     expect(r.out).toContain('no denylist');
   });
+
+  it('scans the built output separately: a term present only in generated files fails, and the repository scan cannot see it [V12-29]', () => {
+    commit({ 'README.md': 'clean\n' }, 'clean');
+    const dist = join(dir, 'dist');
+    mkdirSync(join(dist, 'assets'), { recursive: true });
+    writeFileSync(join(dist, 'index.html'), '<html>ok</html>\n');
+    writeFileSync(join(dist, 'assets/index-AbCd1234.js'), 'const a = 1;\nconst b = "made by zebra holdings";\n');
+    writeFileSync(join(dist, 'og.png'), Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0, 0, 0, 0]), Buffer.from('tEXtAuthor\0Zebra-Holdings')]));
+    const denylist = join(dir, 'denylist');
+    writeFileSync(denylist, 'zebra holdings\n');
+    const run = (target: string) => spawnSync('node', [SCRIPT, '--dist', target, '--denylist', denylist], { encoding: 'utf8', env: { ...process.env, MG_EXIFTOOL: fakeExif } });
+    const r = run(dist);
+    const out = `${r.stdout}${r.stderr}`;
+    expect(r.status).toBe(1);
+    expect(out).toContain('built output: assets/index-AbCd1234.js:2');
+    expect(out).toContain('built output metadata: og.png');
+    expect(out.toLowerCase()).not.toContain('zebra');
+    expect(scan(['zebra holdings']).code).toBe(0);
+    rmSync(join(dist, 'assets/index-AbCd1234.js'));
+    rmSync(join(dist, 'og.png'));
+    const clean = run(dist);
+    expect(clean.status).toBe(0);
+    expect(clean.stdout).toMatch(/denylist check \(built output .*dist\): 1 terms, 0 hits/);
+    expect(run(join(dir, 'missing')).status).toBe(2);
+  });
 });

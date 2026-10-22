@@ -558,6 +558,10 @@
         {
           "file": "tests/unit/deploy.test.ts",
           "title": "a confidential term in the built output stops the deploy before any remote write"
+        },
+        {
+          "file": "tests/unit/release-scan.test.ts",
+          "title": "scans the built output separately: a term present only in generated files fails, and the repository scan cannot see it"
         }
       ]
     },

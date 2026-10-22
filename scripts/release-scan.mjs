@@ -12,6 +12,9 @@
 //   node scripts/release-scan.mjs --local [--repo <dir>]   local history only (pre-publish)
 //   node scripts/release-scan.mjs --candidate             a single-commit export of HEAD: what
 //                                                          the fresh public repository will hold
+//   node scripts/release-scan.mjs --dist <dir>            the built output only (ENG21, V12-29):
+//                                                          every file's text, name and metadata;
+//                                                          npm run deploy runs it on the exact output
 //   options: --denylist <path> (default .denylist or $MG_DENYLIST)
 //
 // Prerequisites: git, exiftool ($MG_EXIFTOOL overrides the path) and, unless
@@ -20,9 +23,9 @@
 // unreadable object); no zero-hit line is printed then.
 
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { buildMatcher, loadDenylist } from './lib/denylist.mjs';
 import { printProblems } from './lib/report.mjs';
@@ -38,7 +41,8 @@ const opt = (name) => {
   return i >= 0 ? args[i + 1] : undefined;
 };
 const candidate = args.includes('--candidate');
-const local = candidate || args.includes('--local');
+const distDir = opt('--dist');
+const local = candidate || !!distDir || args.includes('--local');
 const repoDir = opt('--repo') ?? ROOT;
 if (opt('--denylist')) process.env.MG_DENYLIST = opt('--denylist');
 const exiftool = process.env.MG_EXIFTOOL || 'exiftool';
@@ -102,6 +106,38 @@ try {
   const scan = (stage, where, text, lineSuffix = true) => {
     for (const h of match(text)) hit(stage, lineSuffix ? `${where}:${h.line}` : where, h.term);
   };
+
+  // ---- built output (ENG21): scanned on its own, separately from the repository
+  if (distDir) {
+    const dist = resolve(ROOT, distDir);
+    if (!existsSync(dist) || !statSync(dist).isDirectory()) throw new Incomplete('built output', `${distDir} is not a directory`, 'build first (npm run build:deploy), then rerun');
+    const walk = (d) => readdirSync(d).flatMap((n) => (statSync(join(d, n)).isDirectory() ? walk(join(d, n)) : [join(d, n)]));
+    const files = walk(dist);
+    if (!files.length) throw new Incomplete('built output', `${distDir} is empty`, 'build first, then rerun');
+    // Binaries are copied to a neutral temporary name first, as the repository
+    // scan does, so exiftool's file-system lines never show local paths.
+    const work = mkdtempSync(join(tmpdir(), 'release-scan-dist-'));
+    try {
+      files.forEach((file, i) => {
+        const rel = relative(dist, file);
+        scan('built output', rel, rel, false);
+        const buf = readFileSync(file);
+        if (buf.subarray(0, 8000).includes(0) || /\.(png|jpe?g|webp|gif|ico|woff2?|ttf|otf)$/i.test(rel)) {
+          const copy = join(work, String(i));
+          writeFileSync(copy, buf);
+          scan('built output metadata', rel, run(exiftool, ['-a', '-G1', '-s', '-q', copy], { stage: 'metadata', fix: 'check that exiftool can read the file' }), false);
+          rmSync(copy);
+        } else {
+          for (const h of match(buf.toString('utf8'))) hit('built output', `${rel}:${h.line}`, h.term);
+        }
+      });
+    } finally {
+      rmSync(work, { recursive: true, force: true });
+    }
+    say(`scanned: ${files.length} files in ${distDir}`);
+    result = problems.length ? [1, `denylist check (built output ${distDir}): ${N} terms, ${problems.length} problem(s)`] : [0, `denylist check (built output ${distDir}): ${N} terms, 0 hits`];
+    finish(...result);
+  }
 
   // ---- stage 2: the repository to scan (a mirror of GitHub, or the local one)
   let dir = repoDir;
