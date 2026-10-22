@@ -23,7 +23,7 @@ import sharp from 'sharp';
 import { poolRules } from './lib/pool-rules.mjs';
 import { printProblems } from './lib/report.mjs';
 import { DECK } from '../src/deck/config.ts';
-import { CONSTANTS_LOCKED, DISTANCE, SLIDER } from '../src/scoring/config.ts';
+import { CONSTANTS_LOCKED, DATES, DISTANCE, SLIDER } from '../src/scoring/config.ts';
 import { distanceKm } from '../src/scoring/geo.ts';
 import { madeFullMarksKm } from '../src/scoring/score.ts';
 import { BASELINE_LIMIT, bestConstantPlace, bestConstantYear } from '../src/scoring/fairness.ts';
@@ -110,14 +110,14 @@ function checkRecord(item, index, kind, problems, warnings) {
     problems.push(problem(where('when'), `start (${w.start}) is after end (${w.end})`, 'a date range runs from start to end', 'ENG27', 'swap the two years', 'dates'));
   }
   for (const k of ['start', 'end']) {
-    if (Number.isInteger(w[k]) && (w[k] < SLIDER.min || w[k] > SLIDER.max)) {
+    if (Number.isInteger(w[k]) && (w[k] < DATES.floor || w[k] > SLIDER.max)) {
       problems.push(
         problem(
           where(`when.${k}`),
-          `${w[k]} is outside the year slider (${SLIDER.min}..${SLIDER.max})`,
-          'players could not reach the answer with the year control',
-          'DS5',
-          'pick another item, or change SLIDER in src/scoring/config.ts',
+          `${w[k]} is outside the allowed dates (${DATES.floor}..${SLIDER.max})`,
+          'players answer with the year control, whose early stop covers every date before 4000 BCE',
+          'V12-144',
+          'check the museum record; dates run from 40000 BCE to 2025 CE',
           'dates',
         ),
       );

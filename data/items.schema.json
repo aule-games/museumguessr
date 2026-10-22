@@ -162,13 +162,18 @@
       ],
       "properties": {
         "start": {
+          "description": "First year of the range. From -40000 (W5); at most three pool objects may begin before -4000, the year control's early stop.",
           "type": "integer",
+          "minimum": -40000,
+          "maximum": 2025,
           "not": {
             "const": 0
           }
         },
         "end": {
           "type": "integer",
+          "minimum": -40000,
+          "maximum": 2025,
           "not": {
             "const": 0
           }

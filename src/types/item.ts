@@ -155,6 +155,9 @@ export interface Made {
  * via the `definition` "When".
  */
 export interface When {
+  /**
+   * First year of the range. From -40000 (W5); at most three pool objects may begin before -4000, the year control's early stop.
+   */
   start: number;
   end: number;
   /**

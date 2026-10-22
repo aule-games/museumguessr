@@ -1,6 +1,8 @@
 // The "4000 BCE or earlier" year stop (W5, D11, ENG10): one shared answer-year
 // validator for the page, the save parser and the board server, and the
 // scorer's rule for the stop.
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { EARLY_YEAR } from '../../src/api/contract';
 import { MAX_POINTS, SCORING_VERSION, SLIDER } from '../../src/scoring/config';
@@ -113,5 +115,14 @@ describe('scoring the year stop', () => {
     expect(best.share).toBeLessThan(BASELINE_LIMIT);
     const stopShare = [...early, ...rest].reduce((sum, d) => sum + scoreYear(SLIDER.earlyStop, d.start, d.end).points, 0) / (MAX_POINTS * 30);
     expect(stopShare).toBeLessThan(BASELINE_LIMIT);
+  });
+});
+
+describe('README scoring names the year stop', () => {
+  it('README explains that the stop pays only for objects older than 4000 BCE [V12-69]', () => {
+    const readme = readFileSync(join(import.meta.dirname, '../../README.md'), 'utf8').replace(/\s+/g, ' ');
+    expect(readme).toContain('"4000 BCE or earlier", scores full marks when the object\'s whole date range ends before 4000 BCE; for any younger object it counts as a guess of 4000 BCE.');
+    expect(scoreYear(SLIDER.earlyStop, -5000, -4500).points).toBe(MAX_POINTS);
+    expect(scoreYear(SLIDER.earlyStop, -3000, -2900).yearsOff).toBe(scoreYear(-4000 + 1, -3000, -2900).yearsOff + 1);
   });
 });

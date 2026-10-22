@@ -62,6 +62,14 @@ describe('[V1-12] the pool rules in items:check', () => {
     expect(t).toMatch(/century 16: holds 30 objects/);
   });
 
+  it('allows at most three pool objects that begin before 4000 BCE [V12-144]', () => {
+    const pool = validPool();
+    for (const i of [0, 1, 2]) pool[i] = { ...pool[i], when: { start: -30000 + i * 1000, end: -25000 } };
+    expect(texts(run(pool))).toBe('');
+    pool[3] = { ...pool[3], when: { start: -4001, end: -3000 } };
+    expect(texts(run(pool))).toMatch(/data\/items.json: 4 objects begin before 4000 BCE \(20, 21, 22, 23\), more than 3/);
+  });
+
   it('allows at most half the pool to be paintings', () => {
     const pool = validPool().map((it) => ({ ...it, object_type: 'painting' }));
     expect(texts(run(pool))).toMatch(/30 of 30 objects are paintings/);

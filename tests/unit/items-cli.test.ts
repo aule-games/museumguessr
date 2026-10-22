@@ -100,6 +100,13 @@ describe('[E7] [DX5] items:check', () => {
     expect(await problemsOf()).toEqual([]);
   });
 
+  it('accepts an object dated as early as 40000 BCE [V12-144]', async () => {
+    const data = read('data/items.json');
+    data.items[5].when = { ...data.items[5].when, start: -40000, end: -38000 };
+    write('data/items.json', data);
+    expect(await problemsOf()).toEqual([]);
+  });
+
   it('names the item id and field for a missing field, with why, fix and docs', async () => {
     const data = read('data/items.json');
     delete data.items[3].kept.source_url;
@@ -114,7 +121,8 @@ describe('[E7] [DX5] items:check', () => {
 
   it.each([
     ['year 0', (d: any) => (d.items[5].when.start = 0), 'item 06 · when.start'],
-    ['date outside the slider', (d: any) => (d.items[5].when.start = -5000), 'item 06 · when.start'],
+    ['[V12-144] a date before 40000 BCE', (d: any) => (d.items[5].when.start = -40001), 'item 06 · when.start'],
+    ['[V12-144] a date after 2025 CE', (d: any) => (d.items[5].when.end = 2026), 'item 06 · when.end'],
     ['start after end', (d: any) => (d.items[5].when = { ...d.items[5].when, start: 900, end: 800 }), 'item 06 · when'],
     ['http URL', (d: any) => (d.items[1].record_url = 'http://example.org'), 'item 02 · record_url'],
     ['bad licence', (d: any) => (d.items[1].photo.licence = 'CC BY-NC 4.0'), 'item 02 · photo.licence'],

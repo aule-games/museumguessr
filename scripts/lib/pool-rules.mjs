@@ -5,9 +5,10 @@
 
 import { DECK } from '../../src/deck/config.ts';
 import { poolSplits } from '../../src/deck/planner.ts';
+import { DATES, SLIDER } from '../../src/scoring/config.ts';
 
 const FIXED = DECK.size;
-export const ANCHOR = { pool: 'pool', difficulty: 'difficulty', spread: 'spread', ids: 'ids' };
+export const ANCHOR = { pool: 'pool', difficulty: 'difficulty', spread: 'spread', ids: 'ids', dates: 'dates' };
 
 /** The midpoint century of a date range (1 = 1-100 CE, 0 = 100 BCE-1 BCE, -1 = 200-101 BCE ...). */
 function century(when) {
@@ -49,6 +50,12 @@ export function poolRules(items, others, regions, retired, problem) {
       const c = it?.[side]?.country;
       if (c && !regions?.countries?.[c]) problems.push(problem(`${kind} ${it.id} · ${side}.country`, `"${c}" is not in data/regions.json`, 'the spread rules count continents and sub-regions', 'V1-12', `add "${c}" with its continent and UN M49 sub-region to data/regions.json`, ANCHOR.spread));
     }
+  }
+
+  // The year control answers every date before 4000 BCE with one stop, so few objects may begin there (W5).
+  const early = items.filter((it) => Number.isInteger(it?.when?.start) && it.when.start < SLIDER.min);
+  if (early.length > DATES.maxBeforeStop) {
+    problems.push(problem('data/items.json', `${early.length} objects begin before 4000 BCE (${early.map((it) => it.id).join(', ')}), more than ${DATES.maxBeforeStop}`, 'the "4000 BCE or earlier" stop would pay too often', 'V12-144', 'keep the strongest and swap the rest for later objects', ANCHOR.dates));
   }
 
   // Retired ids are never reused.

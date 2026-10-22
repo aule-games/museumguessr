@@ -15,6 +15,7 @@ Each round shows a photo of one object. Answer three questions in order:
 
 1. **Made:** pin where it was made, not what it shows or where it was dug up.
 2. **When:** type or slide the year it was made (BCE or CE; there is no year 0).
+   Anything older is the leftmost stop, "4000 BCE or earlier".
 3. **Kept:** pin the city of the museum that holds it today.
 
 Back reopens an earlier answer of the same round; nothing is revealed until you
@@ -65,6 +66,10 @@ a country (an object may set a smaller radius).
 margin = 45 + 0.17 × age        age = 2000 − middle of the date range, in years
 points = round(1000 × e^(−years outside / margin))
 ```
+
+The year control's leftmost stop, "4000 BCE or earlier", scores full marks
+when the object's whole date range ends before 4000 BCE; for any younger
+object it counts as a guess of 4000 BCE.
 
 Worked examples:
 
