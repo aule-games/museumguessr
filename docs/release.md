@@ -60,17 +60,20 @@ deck work began plus 25%), the item records stay in their own lazy chunk
 `scripts/lib/items-core.mjs`), and no personal API key or dated tile URL is
 present.
 
-## CI and deploy
+## CI
 
-The `verify-and-deploy` workflow runs on every push: commit identity and
-paths, `npm test`, lint, build, build checks and the browser tests on the
-built artifact. After a force push, whose replaced commit no ref holds any
-more, the identity and path check covers every commit on the branch. Source maps are kept as a CI artifact, never deployed.
+The `verify` workflow runs on every push: the commit identity and path
+check, then `npm run verify` (type checks, unit and Worker tests, lint, the
+build and its checks, the local Worker suite and the browser tests). After a
+force push, whose replaced commit no ref holds any more, the identity and path
+check covers every commit on the branch. A missing prerequisite fails the run;
+only the release scan may show SKIPPED there, because CI has no denylist.
 
-Deploys run only for `main`, and only when the repository variable
-`PAGES_LIVE` is `true` or someone runs the workflow by hand with the exact
-commit SHA to publish. Every action is pinned to a full commit SHA; the verify
-job can only read the repository and the deploy job can only write Pages.
+No workflow deploys: there is no manual dispatch, no Pages job and no
+Cloudflare secret in GitHub. Deploys run from the founder's machine with
+`npm run deploy`, which refuses unless this check is green for the exact
+commit ([docs/ops.md](ops.md#deploy-and-rollback)). Every action is pinned to
+a full commit SHA and the job can only read the repository.
 
 ## Release scan
 

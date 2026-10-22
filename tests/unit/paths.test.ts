@@ -12,7 +12,7 @@ describe('[ENG20] [ENG36] tracked-path allowlist', () => {
     'tests/unit/x.test.ts',
     'docs/analytics.md',
     'analytics/queries/kpi.sql',
-    '.github/workflows/pages.yml',
+    '.github/workflows/verify.yml',
     '.githooks/pre-commit',
     'index.html',
     'vite.config.ts',

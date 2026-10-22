@@ -226,6 +226,7 @@ Visual system: [DESIGN.md](DESIGN.md).
   also pass the analytics unit tests and the E2E analytics tests (they decode
   the real requests); a MapLibre update must pass the map and fallback-map E2E
   tests. Commit the lockfile with the change.
-- **Redeploy an earlier commit:** `gh workflow run pages.yml --ref main -f sha=<sha>`
-  verifies, builds and deploys exactly that commit. Fix forward on `main`
-  afterwards.
+- **Deploy and roll back** from the founder's machine only, with
+  `npm run deploy` and `npm run rollback`
+  ([docs/ops.md](docs/ops.md#deploy-and-rollback)); CI only verifies. Fix
+  forward on `main` after a rollback.

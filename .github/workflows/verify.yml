@@ -1,0 +1,43 @@
+# Verify every push (N12, V12-14): the commit identity and path check, then
+# `npm run verify` (type checks, unit and Worker tests, lint, the build and
+# its checks, the local Worker suite and the browser tests). No workflow
+# deploys and none takes a commit by hand: deploys run from the founder's
+# machine with `npm run deploy` after this check is green for that exact
+# commit (docs/ops.md#deploy-and-rollback).
+name: verify
+
+on:
+  push:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Pushed commits use the noreply identity and allowlisted paths
+        run: node scripts/ci-commits.mjs "${{ github.event.before }}" "${{ github.sha }}"
+
+      - name: Set up Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Install the E2E browser
+        run: npx playwright install --with-deps chromium
+
+      - name: Verify
+        run: npm run verify
