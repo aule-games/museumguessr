@@ -54,8 +54,8 @@ export function poolOf(items: readonly CoreItem[]): Pool {
 
 export const POOL: Pool = poolOf(CORE);
 
-/** The pool as the deck planner sees it: difficulty and Kept city per object (V1-08). */
-export const DECK_ITEMS: readonly DeckItem[] = CORE.map((it) => ({ id: it.id, difficulty: it.difficulty, kept: it.kept.city }));
+/** The pool as the deck planner sees it: difficulty, Kept city and country of making per object (V1-08, ENG12). */
+export const DECK_ITEMS: readonly DeckItem[] = CORE.map((it) => ({ id: it.id, difficulty: it.difficulty, kept: it.kept.city, made_country: it.made.country }));
 
 // ----- full records (lazy) -----
 

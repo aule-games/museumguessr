@@ -14,6 +14,15 @@
 //   greedy draw that keeps, in order, the difficulty rule, the Kept-city
 //   rule and unseen-first, dropping the weakest until 10 fit; never fails
 //
+// Then the Made-country cap (E14, ENG12): when some country of making
+// appears more than twice (in any deck of a split's plan, or in the one
+// deck of the later stages), the whole draw runs again with fresh random
+// tie-breaks, up to 20 more times (sharing one step budget; a deck that
+// comes back unchanged three times in a row is forced, which ends the
+// retries), and the draw with the fewest repeats is kept;
+// `countryCapMissed` records a deck that still breaks the cap. Unseen-first
+// always wins over the cap.
+//
 // A valid deck: 10 distinct objects; rounds 1-3 difficulty 1; rounds 4-10
 // difficulty 2 or 3 (difficulty 1 there only when nothing else fits); at most
 // 3 of difficulty 3; no Kept city twice. Below the pool minimum the deck is
@@ -26,6 +35,8 @@ export interface DeckItem {
   difficulty: Difficulty;
   /** The Kept city, as a comparable key. */
   kept: string;
+  /** The country of making, as a comparable key (ENG12). */
+  made_country: string;
 }
 
 export type Rng = () => number;
@@ -49,6 +60,8 @@ export interface DrawResult {
   fresh: boolean;
   /** Which stage found the deck. */
   via: 'fixed' | 'split' | 'best' | 'greedy';
+  /** Some Made country appears more than DECK.maxPerMadeCountry times even after the retries; game_start records it (ENG12). */
+  countryCapMissed: boolean;
 }
 
 const LATE = DECK.size - DECK.easyRounds;
@@ -293,9 +306,54 @@ function greedy(pool: readonly DeckItem[], seen: ReadonlySet<string>, rng: Rng):
   return fallback;
 }
 
-function finish(b: Built, seen: ReadonlySet<string>, rng: Rng, via: DrawResult['via']): DrawResult {
+type Draw = Omit<DrawResult, 'countryCapMissed'> & {
+  /** Country excess of this deck. */
+  excess: number;
+  /** Country excess over the whole plan: every deck of a split, else this deck alone. */
+  planExcess: number;
+};
+
+/** The better of two draws for the Made-country cap: this deck first, then the rest of its plan. */
+const better = (a: Draw, b: Draw) => a.excess < b.excess || (a.excess === b.excess && a.planExcess < b.planExcess);
+
+function finish(b: Built, seen: ReadonlySet<string>, rng: Rng, via: DrawResult['via'], pool: readonly DeckItem[], plan: readonly Built[] = [b]): Draw {
   const ids = [...shuffle(b.easy, rng), ...shuffle(b.late, rng)].map((it) => it.id);
-  return { ids, fresh: ids.every((id) => !seen.has(id)), via };
+  const planExcess = plan.reduce((n, d) => n + countryExcess([...d.easy, ...d.late].map((it) => it.id), pool), 0);
+  return { ids, fresh: ids.every((id) => !seen.has(id)), via, excess: countryExcess(ids, pool), planExcess };
+}
+
+/** How far a deck goes over the Made-country cap: the sum, over countries, of appearances beyond the cap (0 when it holds). */
+export function countryExcess(ids: readonly string[], pool: readonly DeckItem[]): number {
+  const country = new Map(pool.map((it) => [it.id, it.made_country]));
+  const counts = new Map<string, number>();
+  for (const id of ids) {
+    const c = country.get(id) ?? id;
+    counts.set(c, (counts.get(c) ?? 0) + 1);
+  }
+  let excess = 0;
+  for (const n of counts.values()) excess += Math.max(0, n - DECK.maxPerMadeCountry);
+  return excess;
+}
+
+/** One draw: split, else the exact best deck, else greedy. The step budget is shared across the country retries. */
+function drawOnce(pool: readonly DeckItem[], unseen: readonly DeckItem[], seen: ReadonlySet<string>, rng: Rng, steps: Budget): Draw {
+  // With room for two or more fresh decks, plan them together so taking this
+  // one never strands the rest; one fresh deck is the best stage's job.
+  if (unseen.length >= 2 * DECK.size) {
+    try {
+      for (const lateEasy of [false, true]) {
+        const parts = split(unseen, rng, steps, lateEasy);
+        if (parts) return finish(parts[0] as Built, seen, rng, 'split', pool, parts);
+      }
+    } catch (err) {
+      if (!(err instanceof Exhausted)) throw err;
+    }
+  }
+  for (const lateEasy of [false, true]) {
+    const b = best(pool, seen, rng, lateEasy);
+    if (b) return finish(b, seen, rng, 'best', pool);
+  }
+  return finish(greedy(pool, seen, rng), seen, rng, 'greedy', pool);
 }
 
 /**
@@ -305,27 +363,58 @@ function finish(b: Built, seen: ReadonlySet<string>, rng: Rng, via: DrawResult['
 export function drawDeck(pool: readonly DeckItem[], seen: ReadonlySet<string>, rng: Rng, budget: number = DECK.searchBudget): DrawResult {
   if (pool.length < DECK.poolMinimum) {
     const ids = pool.slice(0, DECK.size).map((it) => it.id);
-    return { ids, fresh: ids.every((id) => !seen.has(id)), via: 'fixed' };
+    return { ids, fresh: ids.every((id) => !seen.has(id)), via: 'fixed', countryCapMissed: countryExcess(ids, pool) > 0 };
   }
   const unseen = pool.filter((it) => !seen.has(it.id));
-  // With room for two or more fresh decks, plan them together so taking this
-  // one never strands the rest; one fresh deck is the best stage's job.
-  if (unseen.length >= 2 * DECK.size) {
-    const steps = new Budget(budget);
-    try {
-      for (const lateEasy of [false, true]) {
-        const parts = split(unseen, rng, steps, lateEasy);
-        if (parts) return finish(parts[0] as Built, seen, rng, 'split');
+  const steps = new Budget(budget);
+  // A split is judged by every deck it plans, so a later deck is not left
+  // holding three objects made in one country.
+  let kept = drawOnce(pool, unseen, seen, rng, steps);
+  // A forced deck (say, exactly ten unseen objects left) comes back unchanged
+  // however the ties break; three repeats in a row end the retries early.
+  const decks = new Set([deckKey(kept.ids)]);
+  for (let retry = 0, repeats = 0; retry < DECK.countryRetries && kept.planExcess > 0 && repeats < 3; retry++) {
+    const next = drawOnce(pool, unseen, seen, rng, steps);
+    const key = deckKey(next.ids);
+    repeats = decks.has(key) ? repeats + 1 : 0;
+    decks.add(key);
+    if (better(next, kept)) kept = next;
+  }
+  return { ids: kept.ids, fresh: kept.fresh, via: kept.via, countryCapMissed: kept.excess > 0 };
+}
+
+const deckKey = (ids: readonly string[]) => [...ids].sort().join('.');
+
+/**
+ * For the item check (ENG12): how many of `decks` seeded decks miss the
+ * Made-country cap. Seeded devices each draw decks one after another, as a
+ * player's history grows, until the pool runs out of fresh decks.
+ */
+export function countryCapMisses(pool: readonly DeckItem[], decks: number = DECK.countrySample, seed = 1): { drawn: number; missed: number; countries: Map<string, number> } {
+  let drawn = 0;
+  let missed = 0;
+  /** Per country: how many missed decks held it more than the cap allows. */
+  const countries = new Map<string, number>();
+  const country = new Map(pool.map((it) => [it.id, it.made_country]));
+  const perDevice = Math.max(1, Math.floor(pool.length / DECK.size));
+  for (let device = 0; drawn < decks; device++) {
+    const seen = new Set<string>();
+    for (let d = 0; d < perDevice && drawn < decks; d++) {
+      const deck = drawDeck(pool, seen, seededRng(Math.imul(seed + device, 0x9e3779b1) + d));
+      drawn++;
+      if (deck.countryCapMissed) {
+        missed++;
+        const counts = new Map<string, number>();
+        for (const id of deck.ids) {
+          const c = country.get(id) ?? id;
+          counts.set(c, (counts.get(c) ?? 0) + 1);
+        }
+        for (const [c, n] of counts) if (n > DECK.maxPerMadeCountry) countries.set(c, (countries.get(c) ?? 0) + 1);
       }
-    } catch (err) {
-      if (!(err instanceof Exhausted)) throw err;
+      for (const id of deck.ids) seen.add(id);
     }
   }
-  for (const lateEasy of [false, true]) {
-    const b = best(pool, seen, rng, lateEasy);
-    if (b) return finish(b, seen, rng, 'best');
-  }
-  return finish(greedy(pool, seen, rng), seen, rng, 'greedy');
+  return { drawn, missed, countries };
 }
 
 /**

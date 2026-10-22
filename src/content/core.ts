@@ -9,6 +9,6 @@ export interface CoreItem {
   id: string;
   difficulty: Item['difficulty'];
   kept: Pick<Item['kept'], 'city' | 'lat' | 'lng'>;
-  made: Pick<Item['made'], 'lat' | 'lng' | 'precision' | 'full_marks_km'>;
+  made: Pick<Item['made'], 'lat' | 'lng' | 'precision' | 'full_marks_km' | 'country'>;
   when: Pick<Item['when'], 'start' | 'end'>;
 }

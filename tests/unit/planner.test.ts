@@ -11,6 +11,7 @@ function validPool(n: number): DeckItem[] {
     id: String(i + 10),
     difficulty: (i < easy ? 1 : i < easy + hard ? 3 : 2) as Difficulty,
     kept: `city-${i % Math.ceil(n / perCity)}`,
+    made_country: `country-${i % 12}`,
   }));
 }
 
@@ -34,7 +35,7 @@ describe('[V1-08] [V1-09] the deck planner', () => {
       }
     }
     expect(plans).toBe(10_000);
-  });
+  }, 30_000);
 
   it('gives the same deck for the same pool, seen list and seed', () => {
     const pool = validPool(30);
@@ -60,7 +61,7 @@ describe('[V1-08] [V1-09] the deck planner', () => {
     const pool = validPool(30);
     // Leave unseen: two objects kept in the same city and eight hard ones (the hard cap is 3).
     const sameCity = pool.filter((it) => it.kept === 'city-5' && it.difficulty === 2).slice(0, 2);
-    const extraHard: DeckItem[] = Array.from({ length: 8 }, (_, i) => ({ id: `9${i}`, difficulty: 3, kept: `far-${i}` }));
+    const extraHard: DeckItem[] = Array.from({ length: 8 }, (_, i) => ({ id: `9${i}`, difficulty: 3, kept: `far-${i}`, made_country: `far-${i}` }));
     const grown = [...pool, ...extraHard];
     const unseen = new Set([...sameCity, ...extraHard].map((it) => it.id));
     const seen = new Set(grown.filter((it) => !unseen.has(it.id)).map((it) => it.id));
@@ -86,7 +87,7 @@ describe('[V1-08] [V1-09] the deck planner', () => {
 
   it('below the pool minimum a deck is the first 10 objects in file order', () => {
     const pool = validPool(30).slice(0, 12);
-    expect(drawDeck(pool, new Set(), seededRng(1))).toMatchObject({ ids: pool.slice(0, 10).map((it) => it.id), via: 'fixed', fresh: true });
+    expect(drawDeck(pool, new Set(), seededRng(1))).toMatchObject({ ids: pool.slice(0, 10).map((it) => it.id), via: 'fixed', fresh: true, countryCapMissed: false });
   });
 
   it('when the step budget runs out it still returns the best valid single deck', () => {
@@ -98,7 +99,7 @@ describe('[V1-08] [V1-09] the deck planner', () => {
   });
 
   it('never fails, even on a pool that breaks every rule', () => {
-    const pool: DeckItem[] = Array.from({ length: 30 }, (_, i) => ({ id: String(i + 10), difficulty: 3, kept: 'one-city' }));
+    const pool: DeckItem[] = Array.from({ length: 30 }, (_, i) => ({ id: String(i + 10), difficulty: 3, kept: 'one-city', made_country: 'one-country' }));
     const deck = drawDeck(pool, new Set(), seededRng(1));
     expect(new Set(deck.ids).size).toBe(10);
     expect(deck.via).toBe('greedy');

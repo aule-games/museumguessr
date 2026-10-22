@@ -1,5 +1,5 @@
 // The item core (V1-02): the fields the main bundle needs before a round is
-// shown (ids, difficulty, Kept city and every answer field), built from
+// shown (ids, difficulty, Kept city, country of making and every answer field), built from
 // data/items.json at build time. Titles, captions, facts and credits stay in
 // the full records, which load as a lazy chunk (src/content/items.ts).
 
@@ -16,7 +16,7 @@ export function coreOf(it) {
     id: it.id,
     difficulty: it.difficulty,
     kept: { city: it.kept.city, lat: it.kept.lat, lng: it.kept.lng },
-    made: { lat: it.made.lat, lng: it.made.lng, precision: it.made.precision, full_marks_km: it.made.full_marks_km ?? null },
+    made: { lat: it.made.lat, lng: it.made.lng, precision: it.made.precision, full_marks_km: it.made.full_marks_km ?? null, country: it.made.country },
     when: { start: it.when.start, end: it.when.end },
   };
 }

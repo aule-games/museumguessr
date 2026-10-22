@@ -3,8 +3,8 @@
 // DECK.poolMinimum objects, from which every game draws its own 10.
 // docs/content.md "Pool", "Difficulty" and "Spread" explain the rules.
 
-import { DECK } from '../../src/deck/config.ts';
-import { poolSplits } from '../../src/deck/planner.ts';
+import { DECK, cityCap as cityCapFor } from '../../src/deck/config.ts';
+import { countryCapMisses, poolSplits } from '../../src/deck/planner.ts';
 import { DATES, SLIDER } from '../../src/scoring/config.ts';
 
 const FIXED = DECK.size;
@@ -85,8 +85,16 @@ export function poolRules(items, others, regions, retired, problem) {
   };
   const why = 'a constant guess or a run of similar objects must not pay';
   const perCity = count((it) => it.kept?.city);
-  const cityCap = Math.min(4, Math.floor(n / 10));
-  for (const [c, k] of perCity) if (k > cityCap) problems.push(problem(`Kept city ${c}`, `holds ${k} objects, more than ${cityCap}`, why, 'V1-12', 'swap one for an object kept elsewhere', ANCHOR.spread));
+  const cityCap = cityCapFor(n);
+  for (const [c, k] of perCity) {
+    if (k <= cityCap) continue;
+    // Reserve records kept in a city with room are the swap candidates (V12-150).
+    const alternatives = others
+      .filter(([kind, it]) => kind === 'reserve' && it?.kept?.city && it.kept.city !== c && (perCity.get(it.kept.city) ?? 0) < cityCap)
+      .map(([, it]) => `${it.id} (${it.kept.city})`);
+    const fix = alternatives.length ? `swap one for an object kept elsewhere; reserve candidates: ${alternatives.join(', ')}` : 'swap one for an object kept elsewhere';
+    problems.push(problem(`Kept city ${c}`, `holds ${k} objects, more than ${cityCap} (the cap is max(${DECK.cityCapMin}, floor(${DECK.cityCapRatio} × N)) at N = ${n})`, why, 'V12-143', fix, ANCHOR.spread));
+  }
   const minCities = Math.max(10, Math.ceil(0.3 * n));
   if (perCity.size < minCities) problems.push(problem('data/items.json', `has ${perCity.size} Kept cities, fewer than ${minCities}`, why, 'V1-12', 'add objects kept in other cities', ANCHOR.spread));
   const continents = new Set(items.map((it) => regions?.countries?.[it.kept?.country]?.continent).filter(Boolean));
@@ -114,11 +122,20 @@ export function poolRules(items, others, regions, retired, problem) {
   if (easy < DECK.easyRounds * decks) problems.push(problem('deck split', `difficulty-1 count must be at least ${DECK.easyRounds} x ${decks} decks = ${DECK.easyRounds * decks}; it is ${easy}`, 'a new device should get every fresh deck the pool allows', 'V1-09', 'add or re-rate easy objects', ANCHOR.pool));
   for (const [c, k] of perCity) if (k > decks + spare) problems.push(problem('deck split', `Kept city ${c} holds ${k} > ${decks} decks + ${spare} spare objects`, 'no deck repeats a Kept city', 'V1-09', 'swap one for an object kept elsewhere', ANCHOR.pool));
   if (problems.length === before) {
-    const pool = items.map((it) => ({ id: it.id, difficulty: it.difficulty, kept: it.kept?.city ?? it.id }));
+    const pool = items.map((it) => ({ id: it.id, difficulty: it.difficulty, kept: it.kept?.city ?? it.id, made_country: it.made?.country ?? it.id }));
     const split = poolSplits(pool);
     if (split === 'no') problems.push(problem('deck split', `the pool has no split into ${decks} valid decks`, 'a new device should get every fresh deck the pool allows', 'V1-09', 'rebalance difficulty and Kept cities', ANCHOR.pool));
     else if (split === 'unknown') warnings.push(problem('deck split', 'the split search ran out of steps', 'the pool may not give every fresh deck', 'V1-09', 'rebalance difficulty and Kept cities, then rerun', ANCHOR.pool));
     else info.push(`pool: ${n} objects split into ${decks} fresh decks (${easy} easy, ${hard} hard, ${perCity.size} Kept cities)`);
+
+    // Made countries (E14, ENG12): seeded devices draw decks in a row; too many may not repeat a country more than twice.
+    const { drawn, missed, countries } = countryCapMisses(pool);
+    const share = missed / drawn;
+    const pct = Math.round(share * 1000) / 10;
+    if (share > DECK.countryMissShare) {
+      const worst = [...countries].sort((a, b) => b[1] - a[1]).slice(0, 3).map(([c, k]) => `${c} (${k} decks, ${count((it) => it.made?.country).get(c) ?? 0} objects)`);
+      problems.push(problem('deck split', `${missed} of ${drawn} seeded decks (${pct}%) hold a Made country more than ${DECK.maxPerMadeCountry} times, more than ${DECK.countryMissShare * 100}%; most often ${worst.join(', ')}`, 'a deck should not repeat a country of making more than twice', 'V12-74', 'swap objects made in those countries for objects made elsewhere', ANCHOR.pool));
+    } else info.push(`made countries: ${missed} of ${drawn} seeded decks (${pct}%) repeat one more than ${DECK.maxPerMadeCountry} times (limit ${DECK.countryMissShare * 100}%)`);
   }
   return { problems, warnings, info };
 }

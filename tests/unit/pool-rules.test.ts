@@ -2,9 +2,11 @@ import { describe, expect, it } from 'vitest';
 // @ts-expect-error plain ESM script without types
 import { poolRules } from '../../scripts/lib/pool-rules.mjs';
 import regions from '../../data/regions.json';
+import { cityCap } from '../../src/deck/config';
+import { deckProblems } from '../../src/deck/planner';
 
 type Rec = Record<string, any>;
-const problem = (where: string, p: string, why: string, id: string) => ({ where, problem: p, why, id });
+const problem = (where: string, p: string, why: string, id: string, fix?: string) => ({ where, problem: p, why, id, fix });
 
 const KEPT: [string, string][] = [
   ['Amsterdam', 'Netherlands'], ['New York', 'United States'], ['Paris', 'France'], ['London', 'United Kingdom'], ['Tokyo', 'Japan'],
@@ -46,10 +48,32 @@ describe('[V1-12] the pool rules in items:check', () => {
     expect(texts(run(validPool().slice(0, 12)))).toMatch(/has 12 items/);
   });
 
-  it('caps each Kept city at min(4, N / 10) objects', () => {
+  it('caps each Kept city at max(3, floor(0.08 × N)) objects: 3 at N = 30, 5 at N = 63 to 74, 6 at N = 75 [V12-143]', () => {
+    expect([30, 49, 50, 62, 63, 74, 75, 100].map(cityCap)).toEqual([3, 3, 4, 4, 5, 5, 6, 8]);
     const pool = validPool();
     pool[29] = { ...pool[29], kept: { city: 'Amsterdam', country: 'Netherlands' } };
-    expect(texts(run(pool))).toMatch(/Kept city Amsterdam: holds 4 objects, more than 3/);
+    const reserve: [string, Rec][] = [['reserve', { ...validPool()[1], id: '91', kept: { city: 'Oslo', country: 'Norway' } }], ['sample', { ...validPool()[1], id: '00', kept: { city: 'Rome', country: 'Italy' } }]];
+    const problems = run(pool, { others: reserve }).problems;
+    const amsterdam = problems.find((p) => p.where === 'Kept city Amsterdam');
+    expect(amsterdam?.problem).toBe('holds 4 objects, more than 3 (the cap is max(3, floor(0.08 × N)) at N = 30)');
+    expect(amsterdam?.fix).toBe('swap one for an object kept elsewhere; reserve candidates: 91 (Oslo)');
+  });
+
+  it('a deck still holds each Kept city at most once [V12-143]', () => {
+    const pool = validPool();
+    const ids = pool.slice(0, 10).map((it) => it.id);
+    const deckPool = pool.map((it) => ({ id: it.id, difficulty: it.difficulty, kept: it.kept.city, made_country: it.made.country }));
+    expect(deckProblems(ids, deckPool)).toEqual([]);
+    const twice = [...ids.slice(0, 9), pool[10]?.id as string];
+    expect(deckProblems(twice, deckPool)).toContain('a Kept city appears twice');
+  });
+
+  it('fails a pool where more than 5% of 1000 seeded decks repeat a Made country more than twice [V12-74]', () => {
+    const fair = run(validPool());
+    expect(texts(fair)).toBe('');
+    expect(fair.info.join('\n')).toMatch(/made countries: \d+ of 1000 seeded decks/);
+    const lopsided = validPool().map((it, i) => (i % 2 === 0 ? { ...it, made: { ...it.made, country: 'Italy' } } : it));
+    expect(texts(run(lopsided))).toMatch(/deck split: \d+ of 1000 seeded decks \(\d+(\.\d)?%\) hold a Made country more than 2 times, more than 5%; most often Italy \(\d+ decks, 15 objects\)/);
   });
 
   it('needs Kept museums on 4 continents, Made places in min(8, N / 5) sub-regions and a spread of dates', () => {
