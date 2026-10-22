@@ -205,7 +205,7 @@ describe('[V1-27] round and game events carry the object and the deck', () => {
       state = r.state;
       for (const e of r.effects) if (e.type === 'track') tracks.push({ name: e.name, props: e.props });
     }
-    expect(tracks.find((t) => t.name === 'game_start')?.props).toEqual({ game_ref: 'ref-of-g1', src: 'webgames', deck_kind: 'random', game_in_tab: '2', seen_before: '10-19' });
+    expect(tracks.find((t) => t.name === 'game_start')?.props).toEqual({ game_ref: 'ref-of-g1', src: 'webgames', deck_kind: 'random', country_cap_missed: false, game_in_tab: '2', seen_before: '10-19' });
     expect(tracks.find((t) => t.name === 'round_started')?.props).toMatchObject({ round: 1, item_id: ids[0] });
     expect(tracks.filter((t) => t.name === 'step_completed').every((t) => t.props.item_id === ids[0])).toBe(true);
     expect(tracks.find((t) => t.name === 'round_completed')?.props).toMatchObject({ item_id: ids[0], made_points: 1000, when_points: 1000, kept_points: 1000, first_seen: false });

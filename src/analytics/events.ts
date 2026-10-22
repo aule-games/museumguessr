@@ -39,7 +39,7 @@ export interface SuperProps {
 
 export interface EventProps {
   $pageview: { src: string; landing: boolean; resumed: boolean };
-  game_start: { game_ref: string; src: string; deck_kind: 'random' | 'challenge' | 'replay'; game_in_tab?: '1' | '2' | '3+'; seen_before?: '0' | '1-9' | '10-19' | '20-29' | '30+' };
+  game_start: { game_ref: string; src: string; deck_kind: 'random' | 'challenge' | 'replay'; country_cap_missed: boolean; game_in_tab?: '1' | '2' | '3+'; seen_before?: '0' | '1-9' | '10-19' | '20-29' | '30+' };
   round_started: { game_ref: string; src: string; round: number; item_id: string };
   step_completed: { src: string; round: number; step: Step; item_id: string };
   step_back: { src: string; round: number; from: Step };
@@ -93,7 +93,7 @@ export const CATALOGUE: CatalogueEntry[] = [
   },
   {
     name: EVENTS.gameStart,
-    props: 'game_ref: a random reference for this game only; src: channel captured at the start of the game; deck_kind: random | challenge | replay; game_in_tab: 1 | 2 | 3+ (games started in this tab session); seen_before: 0 | 1-9 | 10-19 | 20-29 | 30+ (a rough count of objects this device had seen)',
+    props: 'game_ref: a random reference for this game only; src: channel captured at the start of the game; deck_kind: random | challenge | replay; country_cap_missed: the drawn deck could not keep every country of making to two (boolean); game_in_tab: 1 | 2 | 3+ (games started in this tab session); seen_before: 0 | 1-9 | 10-19 | 20-29 | 30+ (a rough count of objects this device had seen)',
     fires: 'when a new game starts (Start, New game, Replay)',
     dedupe: 'once per game',
     feeds: 'share of visitors who start a game',

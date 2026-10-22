@@ -46,6 +46,8 @@ export interface Deck {
   /** Per round: the item was not on this device's seen list when the deck was committed. */
   firstSeen: boolean[];
   challenge: Challenge | null;
+  /** The planner could not keep every made country to two in this drawn deck (ENG12); false for a friend's or replayed deck. */
+  countryCapMissed?: boolean;
 }
 
 /** Device facts game_start carries (V1-27); the app reads them, the reducer stays pure. */
@@ -301,6 +303,7 @@ export function reduce(state: GameState | null, action: Action, keys: readonly A
       game_ref: next.game_ref,
       src: next.src,
       deck_kind: next.deck_kind,
+      country_cap_missed: deck.countryCapMissed === true,
       ...(action.context ? { game_in_tab: action.context.gameInTab, seen_before: action.context.seenBefore } : {}),
     });
     next = once(next, effects, ledgerKey(next.game_id, EVENTS.roundStarted, 1), EVENTS.roundStarted, {

@@ -367,6 +367,7 @@ export class App {
       hash: POOL.deckHash(draw.ids) ?? ITEMS_VERSION,
       firstSeen: draw.ids.map((id) => !ever.has(id)),
       challenge: null,
+      countryCapMissed: draw.countryCapMissed,
       restart: !draw.fresh,
     };
     return this.pending;
@@ -507,7 +508,7 @@ export class App {
       const first = deck.ids[0];
       if (first && offered?.ids[0] !== first) new Image().src = imageUrl(first);
       if (deck.restart) this.seenLists.restart(deck.ids);
-      const committed: Deck = { ids: deck.ids, kind: deck.kind, hash: deck.hash, firstSeen: deck.firstSeen, challenge: deck.challenge };
+      const committed: Deck = { ids: deck.ids, kind: deck.kind, hash: deck.hash, firstSeen: deck.firstSeen, challenge: deck.challenge, countryCapMissed: deck.countryCapMissed };
       this.begin(committed);
     });
   }

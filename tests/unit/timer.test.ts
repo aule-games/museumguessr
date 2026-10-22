@@ -379,6 +379,13 @@ describe('reveal reached', () => {
     for (const word of ['seconds_left', 'active_ms', 'ready_ms', 'deadline', 'remaining']) expect(contract).not.toContain(word);
   });
 
+  it('game_start says whether the drawn deck missed the made-country cap; a friend\'s or replayed deck never does [V12-73]', () => {
+    const started = (deck: Deck) => run([{ ...START, deck }]).tracked.find((e) => e.name === EVENTS.gameStart)?.props;
+    expect(started({ ...DECK, countryCapMissed: true })).toMatchObject({ country_cap_missed: true });
+    expect(started({ ...DECK, countryCapMissed: false })).toMatchObject({ country_cap_missed: false });
+    expect(started({ ...DECK, kind: 'challenge', challenge: { score: 100, name: null } })).toMatchObject({ country_cap_missed: false });
+  });
+
   it('round and game events carry a per-game reference that a new game never reuses [V12-32]', () => {
     const one = run([...begin(), { type: 'expire', gameId: 'g1', round: 0, now: T0 + 60_000, away: false }, { type: 'next', round: 0, now: T0 + 61_000 }]);
     for (const e of one.tracked.filter((x) => [EVENTS.gameStart, EVENTS.roundStarted, EVENTS.roundCompleted].includes(x.name as never))) {

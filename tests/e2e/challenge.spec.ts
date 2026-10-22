@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import type { Page } from '@playwright/test';
 import { RULES_VERSION } from '../../src/challenge/link';
 import { SCORING_VERSION } from '../../src/scoring/config';
+import { STATE_VERSION } from '../../src/state/schema';
 import { confirm, expect, largeText, placePin, playRound, start, test } from './fixtures';
 
 const items = JSON.parse(readFileSync(join(import.meta.dirname, '../../data/items.json'), 'utf8')).items as { id: string; title: string }[];
@@ -18,7 +19,7 @@ async function seedFinished(page: Page, opts: { total?: number; kind?: 'random' 
   const total = opts.total ?? 18240;
   const each = Math.floor(total / 10);
   const snapshot = {
-    state_version: 3,
+    state_version: STATE_VERSION,
     scoring_version: SCORING_VERSION,
     items_version: HASH,
     game_id: 'seeded-game-id-000000',
@@ -29,6 +30,10 @@ async function seedFinished(page: Page, opts: { total?: number; kind?: 'random' 
     answers: IDS.map(() => ({ kept: { lat: 0, lng: 0 }, made: { lat: 0, lng: 0 }, when: 1500 })),
     results: IDS.map((_, i) => row(i === 0 ? total - each * 9 : each)),
     total,
+    timed_out: IDS.map(() => null),
+    test_assisted: false,
+    finished_at: null,
+    board_week: null,
   };
   await page.goto('./');
   await page.evaluate((s) => {

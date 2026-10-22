@@ -33,6 +33,10 @@ async function seedFinished(page: Page, points: number[]) {
     answers: IDS.map(() => ({ kept: { lat: 0, lng: 0 }, made: { lat: 0, lng: 0 }, when: 1500 })),
     results: points.map(row),
     total: points.reduce((a, b) => a + b, 0),
+    timed_out: points.map(() => null),
+    test_assisted: false,
+    finished_at: null,
+    board_week: null,
   };
   await page.goto('./');
   await page.evaluate((s) => {
