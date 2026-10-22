@@ -14,6 +14,8 @@ export const ALLOWED_DIRS = [
   'analytics',
   '.github',
   '.githooks',
+  'worker',
+  'deploy',
 ];
 
 export const ALLOWED_ROOT_FILES = [
@@ -21,6 +23,7 @@ export const ALLOWED_ROOT_FILES = [
   'vite.config.ts',
   'vitest.config.ts',
   'playwright.config.ts',
+  'wrangler.jsonc',
   'eslint.config.mjs',
   'stylelint.config.mjs',
   'tsconfig.json',

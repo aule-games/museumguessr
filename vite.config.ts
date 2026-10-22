@@ -4,6 +4,9 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { defineConfig, type Plugin } from 'vite';
 import { itemsCore } from './scripts/lib/items-core.mjs';
+import { switchProblems, switchValues } from './scripts/lib/profile.mjs';
+import { notFoundHtml } from './src/not-found.ts';
+import { headersFile, META_CSP } from './src/security/headers.ts';
 
 const require = createRequire(import.meta.url);
 const MAPLIBRE_DIR = dirname(require.resolve('maplibre-gl/package.json'));
@@ -12,31 +15,21 @@ const MAPLIBRE_FILES = ['maplibre-gl.mjs', 'maplibre-gl-shared.mjs', 'maplibre-g
 
 const BASE = process.env.BASE_PATH ?? '/';
 const BUILD_ID = process.env.VITE_BUILD_ID || 'dev';
-const TOKEN = process.env.VITE_POSTHOG_PROJECT_TOKEN ?? '';
+const SWITCHES = switchValues(process.env);
+const PURPOSE = SWITCHES.VITE_BUILD_PURPOSE as string;
 const THEME_COLOR: string = JSON.parse(readFileSync(new URL('./src/design/tokens.json', import.meta.url), 'utf8')).color.bg;
 
-// DX30: only the public project token may enter the build, never a personal key.
-if (TOKEN && !TOKEN.startsWith('phc_')) {
+// DX30, M3: only the public project token may enter the build, never a
+// personal key, and invalid switch combinations stop the build.
+const SWITCH_PROBLEMS = switchProblems(SWITCHES);
+if (SWITCH_PROBLEMS.length) {
   throw new Error(
-    '✖ VITE_POSTHOG_PROJECT_TOKEN must be empty or start with phc_\n' +
-      '  why: only the public project token may ship in client code [DX30]\n' +
-      '  fix: set the repository variable to the project token (phc_...), never a personal API key (phx_...)\n' +
-      '  docs: docs/analytics.md#configuration',
+    SWITCH_PROBLEMS.map((p) => `✖ ${p.key} ${p.problem}\n  why: the build refuses invalid public switches [DX30] [M3]\n  fix: ${p.fix}\n  docs: docs/ops.md#switches`).join('\n'),
   );
 }
 
-export const CSP = [
-  "default-src 'self'",
-  "script-src 'self'",
-  "style-src 'self'",
-  "img-src 'self' data: blob:",
-  "font-src 'self'",
-  "connect-src 'self' https://tiles.openfreemap.org https://eu.i.posthog.com",
-  "worker-src 'self'",
-  "object-src 'none'",
-  "base-uri 'self'",
-  "form-action 'none'",
-].join('; ');
+/** The meta CSP; the header form in `_headers` adds frame-ancestors (src/security/headers.ts). */
+export const CSP = META_CSP;
 
 /** MapLibre's three ES modules are served unbundled from a versioned folder, so the page and the worker share one module (ENG32). */
 function maplibreFiles(): Plugin {
@@ -62,7 +55,7 @@ function maplibreFiles(): Plugin {
   };
 }
 
-/** Build id in a meta tag and build.txt (DX8); theme colour from the tokens (DX32); CSP meta in production builds only (ENG23). */
+/** Build id and purpose in meta tags, the id also in build.txt (DX8, M3); theme colour from the tokens (DX32); CSP meta in production builds only (ENG23). */
 function buildMeta(): Plugin {
   return {
     name: 'museumguessr:build-meta',
@@ -71,6 +64,7 @@ function buildMeta(): Plugin {
       handler(html, ctx) {
         const tags = [
           { tag: 'meta', attrs: { name: 'build-id', content: BUILD_ID }, injectTo: 'head-prepend' as const },
+          { tag: 'meta', attrs: { name: 'build-purpose', content: PURPOSE }, injectTo: 'head' as const },
           { tag: 'meta', attrs: { name: 'theme-color', content: THEME_COLOR }, injectTo: 'head' as const },
         ];
         if (!ctx.server) {
@@ -104,6 +98,33 @@ function licenceNotices(): Plugin {
   };
 }
 
+/** The assets `_headers` file: the security headers as real HTTP headers (V12-13, V12-170). */
+function securityHeaders(): Plugin {
+  return {
+    name: 'museumguessr:security-headers',
+    generateBundle() {
+      this.emitFile({ type: 'asset', fileName: '_headers', source: headersFile() });
+    },
+  };
+}
+
+/**
+ * The asset 404 page (ENG13, V12-10): the Worker and `not_found_handling`
+ * answer every unknown address with it. Its text is the notFound.* copy
+ * (src/not-found.ts); its stylesheet is tokens.css plus not-found.css.
+ */
+function notFoundPage(): Plugin {
+  return {
+    name: 'museumguessr:not-found-page',
+    generateBundle() {
+      const css = ['tokens.css', 'not-found.css'].map((f) => readFileSync(new URL(`./src/styles/${f}`, import.meta.url), 'utf8')).join('\n');
+      const ref = this.emitFile({ type: 'asset', name: '404.css', source: css });
+      const html = notFoundHtml({ base: BASE, csp: META_CSP, themeColor: THEME_COLOR, stylesheet: this.getFileName(ref) });
+      this.emitFile({ type: 'asset', fileName: '404.html', source: html });
+    },
+  };
+}
+
 /** The share raster exists only in the built artifact, never in source control. */
 function shareImage(): Plugin {
   return {
@@ -122,7 +143,7 @@ export default defineConfig({
     __BUILD_ID__: JSON.stringify(BUILD_ID),
     __MAPLIBRE_VERSION__: JSON.stringify(MAPLIBRE_VERSION),
   },
-  plugins: [itemsCore(), maplibreFiles(), buildMeta(), shareImage(), licenceNotices()],
+  plugins: [itemsCore(), maplibreFiles(), buildMeta(), securityHeaders(), notFoundPage(), shareImage(), licenceNotices()],
   server: { port: 5173, strictPort: false },
   preview: { port: 4173 },
   build: {

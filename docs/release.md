@@ -24,8 +24,9 @@ git commit --amend --reset-author --no-edit   # fix the last commit
 ## Path allowlist
 
 Only these paths may be tracked: `src/`, `data/`, `images/`, `public/`,
-`scripts/`, `tests/`, `docs/`, `analytics/`, `.github/`, `.githooks/` and the
-named root files listed in `scripts/lib/paths.mjs`. Private local directories
+`scripts/`, `tests/`, `docs/`, `analytics/`, `.github/`, `.githooks/`,
+`worker/`, `deploy/` and the named root files listed in
+`scripts/lib/paths.mjs` (among them `wrangler.jsonc`). Private local directories
 stay out of git. To add a new deliverable, add it to `scripts/lib/paths.mjs`
 and to the fixture in `tests/unit/paths.test.ts`.
 

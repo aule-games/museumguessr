@@ -1,0 +1,68 @@
+/* The asset 404 page (W1, ENG13): a small page in the game's look with a
+   link home. The build joins tokens.css and this file into one stylesheet
+   (vite.config.ts); its text comes from the notFound.* copy keys (src/not-found.ts). */
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  display: grid;
+  place-items: center;
+  padding: var(--space-5);
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: var(--text-md);
+  line-height: var(--leading-normal);
+}
+
+.not-found {
+  max-width: 32rem;
+  text-align: center;
+}
+
+.not-found__brand {
+  margin: 0 0 var(--space-5);
+  color: var(--color-accent);
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--tracking-tight);
+}
+
+.not-found h1 {
+  margin: 0 0 var(--space-3);
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+}
+
+.not-found p {
+  margin: 0 0 var(--space-6);
+  color: var(--color-ink-muted);
+}
+
+.not-found a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--layout-tap);
+  padding: 0 var(--space-5);
+  border-radius: var(--radius-pill);
+  background: var(--color-accent);
+  color: var(--color-accent-ink);
+  font-weight: var(--font-weight-bold);
+  text-decoration: none;
+}
+
+.not-found a:hover {
+  background: var(--color-accent-hover);
+}
+
+.not-found a:focus-visible {
+  outline: var(--focus-width) solid var(--color-focus);
+  outline-offset: var(--focus-offset);
+}

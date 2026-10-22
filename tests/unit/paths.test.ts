@@ -14,6 +14,10 @@ describe('[ENG20] [ENG36] tracked-path allowlist', () => {
     'analytics/queries/kpi.sql',
     '.github/workflows/verify.yml',
     '.githooks/pre-commit',
+    'worker/src/index.ts',
+    'worker/package.json',
+    'deploy/profile.json',
+    'wrangler.jsonc',
     'index.html',
     'vite.config.ts',
     'package.json',
@@ -23,7 +27,7 @@ describe('[ENG20] [ENG36] tracked-path allowlist', () => {
     'CLAUDE.md',
     'DESIGN.md',
   ])('accepts %s', (p) => expect(isAllowedPath(p)).toBe(true));
-  it.each(['plans/notes.md', '.tool/settings.json', '.cache-dir/x', '.denylist', 'AGENTS.local.md', '.writer', '.agent-clone/DESIGN.md', 'notes.txt'])(
+  it.each(['plans/notes.md', '.tool/settings.json', '.cache-dir/x', '.denylist', 'AGENTS.local.md', '.writer', '.agent-clone/DESIGN.md', 'notes.txt', '.wrangler/state/x', 'wrangler.toml', '.dev.vars'])(
     'rejects %s',
     (p) => expect(isAllowedPath(p)).toBe(false),
   );

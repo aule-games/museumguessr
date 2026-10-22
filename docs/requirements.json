@@ -172,7 +172,12 @@
         "ENG13"
       ],
       "replaces": "A separate API host and a guarantee that unknown paths never invoke code.",
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/security-headers.test.ts",
+          "title": "its text is the notFound copy, with the meta CSP, a link home and the built stylesheet"
+        }
+      ]
     },
     {
       "id": "V12-11",
@@ -208,7 +213,12 @@
         "W1"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/security-headers.test.ts",
+          "title": "one source writes the header and the meta CSP, which differ only by the header-only frame-ancestors"
+        }
+      ]
     },
     {
       "id": "V12-14",
@@ -269,7 +279,20 @@
         "M3"
       ],
       "replaces": "An empty VITE_API_HOST as the v1 board switch, and CI secrets for deployment.",
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/security-headers.test.ts",
+          "title": "a deploy-purpose build fails the build check when it ships development fixture code"
+        },
+        {
+          "file": "tests/unit/profile.test.ts",
+          "title": "one tracked file holds every public deploy value, and CI and deploy resolve identical values from it"
+        },
+        {
+          "file": "tests/unit/profile.test.ts",
+          "title": "the deploy profile refuses shell overrides, a placeholder token and invalid switch combinations"
+        }
+      ]
     },
     {
       "id": "V12-19",
@@ -322,7 +345,12 @@
         "N6"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/profile.test.ts",
+          "title": "build children never receive Cloudflare credentials"
+        }
+      ]
     },
     {
       "id": "V12-24",
@@ -448,7 +476,12 @@
         "W1"
       ],
       "replaces": "Security headers only as a meta CSP on GitHub Pages.",
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/security-headers.test.ts",
+          "title": "every path gets nosniff, a Referrer-Policy, a Permissions-Policy and the CSP, and the build check verifies the header file"
+        }
+      ]
     },
     {
       "id": "V12-171",

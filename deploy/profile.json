@@ -1,0 +1,10 @@
+{
+  "$comment": "Public deploy profile (H1, V12-18). Every value here ships in the page; never put a secret here. CI (npm run verify) and npm run deploy both build from this file through scripts/build.mjs, which refuses shell overrides. See docs/ops.md#switches.",
+  "BASE_PATH": "/",
+  "VITE_SITE_URL": "https://museumguessr.com/",
+  "VITE_ANALYTICS_HOSTS": "museumguessr.com",
+  "VITE_POSTHOG_PROJECT_TOKEN": "phc_placeholder_set_before_deploy",
+  "VITE_BOARD_UI": "false",
+  "VITE_TURNSTILE_SITEKEY": "",
+  "VITE_BUILD_PURPOSE": "deploy"
+}

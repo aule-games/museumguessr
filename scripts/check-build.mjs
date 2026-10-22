@@ -1,16 +1,18 @@
 #!/usr/bin/env node
-// Post-build checks on the artifact (S2, DX21, ENG23, ENG32, ENG34, DX31).
-// Only what the artifact itself can show: the deployed-file inventory, no
-// source maps, asset URLs under the base path, the CSP meta, the build id,
-// the PostHog chunk name, the main-bundle size budget, the lazy item
-// records chunk, no dated tile URLs
-// and no secret patterns.
+// Post-build checks on the artifact (S2, DX21, ENG23, ENG32, ENG34, DX31,
+// V12-13, V12-170, M3). Only what the artifact itself can show: the
+// deployed-file inventory, no source maps, asset URLs under the base path,
+// the CSP meta, the `_headers` file and its CSP against every page's meta
+// CSP, the 404 page, the build id and purpose, no test code in a deploy
+// build, the PostHog chunk name, the main-bundle size budget, the lazy item
+// records chunk, no dated tile URLs and no secret patterns.
 //
 // Usage: node scripts/check-build.mjs [distDir]
 
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { buildPurpose, deployMarkerProblems, headerProblems } from './lib/artifact.mjs';
 import { itemRecordsProblem, mainBundleProblem } from './lib/budget.mjs';
 import { printProblems } from './lib/report.mjs';
 
@@ -38,6 +40,8 @@ const files = walk(DIST);
 // Deployed-file inventory (S2, DX7, DX31)
 const ALLOWED = [
   /^index\.html$/,
+  /^404\.html$/,
+  /^_headers$/,
   /^build\.txt$/,
   /^favicon\.(svg|ico|png)$/,
   /^og\.png$/,
@@ -83,6 +87,25 @@ else {
   if (/posthog/.test(csp.replace(connect, ''))) fail('index.html CSP', 'lists PostHog outside connect-src', 'no PostHog script host is allowed', 'PH1', 'remove it');
   if (!/worker-src 'self'/.test(csp)) fail('index.html CSP', "lacks worker-src 'self'", 'the map worker is self-hosted', 'ENG32', 'add it');
 }
+// Security headers (V12-13, V12-170): `_headers` carries the one source's
+// values and its CSP equals each page's meta CSP apart from frame-ancestors.
+const notFound = existsSync(join(DIST, '404.html')) ? readFileSync(join(DIST, '404.html'), 'utf8') : null;
+if (!notFound) fail('404.html', 'the asset 404 page is missing', 'unknown addresses are answered with it, with status 404', 'V12-10', 'check the not-found-page plugin in vite.config.ts');
+else {
+  if (!notFound.includes(`<a href="${BASE}">`)) fail('404.html', `no link home to ${BASE}`, 'the 404 page leads back to the game', 'V12-10', 'check the not-found-page plugin in vite.config.ts');
+  for (const m of notFound.matchAll(/(?:src|href)="(\/[^"]*)"/g)) if (!m[1].startsWith(BASE)) fail('404.html', `URL ${m[1]} is outside ${BASE}`, 'the Worker serves the site under the base path', 'DX12', 'use the base path');
+}
+const headersText = existsSync(join(DIST, '_headers')) ? readFileSync(join(DIST, '_headers'), 'utf8') : null;
+for (const p of headerProblems(headersText, [['index.html', html], ...(notFound ? [['404.html', notFound]] : [])])) {
+  fail(p.where, p.problem, 'security headers come from one source as real HTTP headers; the meta CSP stays for local previews', 'V12-170', 'regenerate them from src/security/headers.ts (vite.config.ts writes both)');
+}
+// Build purpose (M3): a deploy build carries no test or development code.
+const purpose = buildPurpose(html);
+if (!purpose) fail('index.html', 'no build-purpose meta', 'the artifact names its build purpose', 'M3', 'check the build-meta plugin in vite.config.ts');
+for (const p of deployMarkerProblems(purpose, files, (f) => readFileSync(join(DIST, f), 'utf8'))) {
+  fail(p.where, p.problem, 'deploy builds never ship test-only code', p.id, 'compile it out of the deploy profile (import.meta.env checks)');
+}
+
 // Copy truthfulness (V1-14): every game draws its own 10, so the page never says they are the same for everyone.
 const sameForEveryone = new RegExp(['same', '(10 objects )?', 'for everyone'].join(' ?'), 'i');
 if (sameForEveryone.test(html)) fail('index.html', 'says the objects are the same for everyone', 'every game draws its own 10 objects', 'V1-14', 'say "a new ten every game"');
@@ -106,4 +129,4 @@ if (problems.length) {
   console.error(`check:build: ${problems.length} problem(s)`);
   process.exit(1);
 }
-console.log(`check:build: ${files.length} files OK (build ${buildMeta})`);
+console.log(`check:build: ${files.length} files OK (build ${buildMeta}, purpose ${purpose})`);
