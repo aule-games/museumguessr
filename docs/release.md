@@ -53,9 +53,14 @@ never committed or pasted anywhere.
 ## Build checks
 
 `npm run check:build` inspects the built site in `dist/`: only the expected
-files deploy (no tests, scripts, reserve data, dev fixtures or source maps),
-asset URLs sit under the base path `/`, the Content-Security-Policy allows only
-the map tiles and the EU PostHog host, the build id in the page matches
+files deploy (no tests, scripts, reserve data, dev fixtures or source maps;
+`_headers` and `404.html` are expected), asset URLs sit under the base path
+`/`, the Content-Security-Policy allows only the map tiles and the EU PostHog
+host, the `_headers` file carries exactly the values in
+`src/security/headers.ts` and its CSP equals the meta CSP of `index.html` and
+`404.html` apart from the header-only `frame-ancestors 'none'`, the 404 page
+links home, the page declares its build purpose and a deploy-purpose build
+ships no development fixture code, the build id in the page matches
 `build.txt`, the PostHog chunk keeps its `posthog-` prefix, the main bundle
 stays within its gzip budget (`scripts/lib/budget.mjs`: its size when the v1
 deck work began plus 25%), the item records stay in their own lazy chunk
@@ -102,9 +107,33 @@ the audit line:
 denylist check: N terms, 0 hits (commit <sha>, incl. PR refs)
 ```
 
+`node scripts/release-scan.mjs --dist <dir>` (or `npm run release:check --
+--dist dist`) scans a built output on its own: every file's name and text and
+every binary's metadata. `npm run deploy` runs it on the exact deploy build
+before anything remote changes, and `npm run verify` runs it on the verify
+build when the denylist is present.
+
 Before the repository exists on GitHub, `node scripts/release-scan.mjs --candidate`
 scans what the publish step will push: HEAD's tracked files as one fresh
 commit (no history). `--local` scans the full local history instead; earlier
 commits may still hold names that were removed since, which is why the public
 repository starts from a single fresh commit. `npm run verify` runs the
 candidate scan.
+
+## Dependency audit
+
+Recorded 2026-10-22 (`npm audit` at the repository root and in `worker/`):
+
+- `worker/` (wrangler 4.151.0): 0 vulnerabilities; every package carries a
+  verified registry signature.
+- Root: 7 high findings, all one advisory, GHSA-vfj7-8cjw-p6xm (`braces`
+  ≤ 3.0.3, stack exhaustion on deeply nested brace patterns). It reaches the
+  tree only through `stylelint` 17.16.0 (via `micromatch`, `fast-glob` and
+  `globby`), a development-only lint tool whose patterns come from this
+  repository's own config. No runtime dependency and nothing in the built site
+  includes it, so it is no risk to players. No fixed `braces` release exists;
+  the first `stylelint` without it is 18.0.0-next.0, a prerelease published
+  2026-10-22, which the 7-day minimum release age on this machine's npm blocks.
+  Recheck when a stable `stylelint` 18 is at least 7 days old, then update
+  `stylelint` and `stylelint-config-standard` together and run `npm run lint`.
+  A unit test keeps every `braces` copy in the lockfile development-only.

@@ -30,7 +30,8 @@ describe('the public address', () => {
   it('the old Pages address survives only where the ledger quotes the replaced rule [V12-172]', () => {
     const files = execFileSync('git', ['ls-files'], { cwd: ROOT, encoding: 'utf8' }).split('\n').filter(Boolean);
     const allowed = new Set(['docs/requirements.json', 'docs/verification.md', 'scripts/lib/denylist.mjs']);
-    const hits = files.filter((f) => !/\.(jpg|png|woff2?)$/.test(f) && !allowed.has(f) && OLD.test(read(f)));
+    // The GitHub repository URL github.com/aule-games/museumguessr stays.
+    const hits = files.filter((f) => !/\.(jpg|png|woff2?)$/.test(f) && !allowed.has(f) && OLD.test(read(f).replaceAll('github.com/aule-games/museumguessr', '')));
     expect(hits).toEqual([]);
   });
 

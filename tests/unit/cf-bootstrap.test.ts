@@ -70,7 +70,7 @@ async function attempt(args: string[], responses: Record<string, Recorded>, rule
 }
 
 describe('npm run cf:bootstrap', () => {
-  it('creates only missing resources and a second run changes nothing [V12-22]', async () => {
+  it('creates only missing resources and a second run changes nothing [V12-22] [V12-24]', async () => {
     const dry = await attempt([], emptyZone());
     expect(dry.code).toBe(0);
     expect(dry.writes).toEqual([]);

@@ -29,10 +29,12 @@ keep it free of private names.
 | `npm test` | type check, generated-file checks, item check, unit and design tests | offline |
 | `npm run lint` | ESLint and Stylelint | — |
 | `npm run build` | build `dist/` | — |
+| `npm run build:deploy` | build the tracked deploy profile (`deploy/profile.json`), as CI and the deploy do | — |
 | `npm run check:build` | check the built site (move `dist/**/*.map` out first) | a build |
 | `npm run test:e2e` | build and run the browser tests on five viewports | `npx playwright install chromium` once |
-| `npm run verify` | run everything above in CI order and rewrite `docs/verification.md` | prints SKIPPED for rows it cannot run |
-| `npm run release:check` | the release scan of the GitHub repository | `.denylist`, `exiftool`, authenticated `gh` |
+| `npm run verify` | run everything above in CI order, plus the Worker under `wrangler dev`, and rewrite `docs/verification.md` | installs `worker/` dependencies when missing; release-scan rows print SKIPPED without a denylist |
+| `npm run release:check` | the release scan of the GitHub repository (`-- --dist dist` scans a build) | `.denylist`, `exiftool`, authenticated `gh` |
+| `npm run deploy` / `rollback` / `live:check` / `cf:bootstrap` / `setup:check -- --deploy` | hosting on Cloudflare ([docs/ops.md](docs/ops.md)); founder's machine only, each outward step needs `--yes` | the founder's yes, credentials in the shell |
 | `npm run items:check` / `items:new` / `items:add-image` / `items:promote` / `items:swap` / `items:retire` / `items:sheet` | work on content ([docs/content.md](docs/content.md)) | network for `add-image` and the reserve photos |
 | `npm run tokens` | regenerate `src/styles/tokens.css` from `src/design/tokens.json` | — |
 | `npm run types` | regenerate the item type from the schema | — |
@@ -43,6 +45,9 @@ keep it free of private names.
 | Path | Holds |
 | --- | --- |
 | `src/main.ts`, `src/app.ts` | boot order and the screen controller |
+| `worker/`, `wrangler.jsonc` | the museumguessr.com Worker (`/api/v1`), its tests and its own `package.json` with the pinned wrangler |
+| `deploy/profile.json` | every public value of the deployed build |
+| `src/api/`, `src/security/` | the API contract and limits; the security headers (meta CSP and `_headers`) |
 | `src/ui/screens/` | start, round, reveal, end and the other screens ([docs/screen-spec.md](docs/screen-spec.md)) |
 | `src/copy.ts` | every user-facing string, by key |
 | `src/map/` | MapLibre map, bundled fallback map, pins |

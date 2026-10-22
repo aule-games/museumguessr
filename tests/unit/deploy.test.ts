@@ -127,7 +127,7 @@ describe('npm run deploy', () => {
     expect(notReady.lines.some((l) => /vite\.js build$/.test(l))).toBe(false);
   });
 
-  it('applies remote migrations only with a D1 binding, then deploys page and API in one wrangler deploy whose message records SHA, state, scoring, contract and migrations [V12-17]', async () => {
+  it('applies remote migrations only with a D1 binding, then deploys page and API in one wrangler deploy whose message records SHA, state, scoring, contract and migrations [V12-17] [V12-20]', async () => {
     const plain = await attempt(['--yes']);
     expect(remote(plain.lines)).toEqual([`wrangler deploy --config wrangler.jsonc --message ${SHA} state:3 scoring:2 contract:1 migrations:0 --var WORKER_VERSION:${SHA}`]);
     expect(plain.out).toContain('board switch before: off (the board arrives in step 3)');

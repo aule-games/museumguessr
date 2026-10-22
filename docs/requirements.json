@@ -298,6 +298,10 @@
         {
           "file": "tests/unit/deploy.test.ts",
           "title": "refuses a dirty tree, a HEAD that is not origin/main, a red or missing verify check and a build id that differs from HEAD"
+        },
+        {
+          "file": "tests/unit/ops-docs.test.ts",
+          "title": "the runbook names only npm scripts that exist, except commands its table marks for step 3, and every refusal anchor is a heading"
         }
       ]
     },
@@ -379,6 +383,10 @@
         {
           "file": "tests/unit/rollback.test.ts",
           "title": "accepts only a version that was deployed before, and no rollback without a yes even within one version"
+        },
+        {
+          "file": "tests/unit/ops-docs.test.ts",
+          "title": "the runbook names only npm scripts that exist, except commands its table marks for step 3, and every refusal anchor is a heading"
         }
       ]
     },
@@ -391,7 +399,16 @@
         "ENG23"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/ops-docs.test.ts",
+          "title": "migrations are additive, a deploy that fails after migrating is retried at the same SHA, and the runbook covers D1 Time Travel"
+        },
+        {
+          "file": "tests/unit/deploy.test.ts",
+          "title": "applies remote migrations only with a D1 binding, then deploys page and API in one wrangler deploy whose message records SHA, state, scoring, contract and migrations"
+        }
+      ]
     },
     {
       "id": "V12-21",
@@ -476,7 +493,20 @@
         "ENG15"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/ops-docs.test.ts",
+          "title": "the API burst rule is 20 requests per IP per 10 seconds, called a burst limit and not a daily quota, and every limits value is in the runbook"
+        },
+        {
+          "file": "tests/unit/live-check.test.ts",
+          "title": "with a token that may read WAF rules, the API burst rule is compared with the limits module"
+        },
+        {
+          "file": "tests/unit/cf-bootstrap.test.ts",
+          "title": "creates only missing resources and a second run changes nothing"
+        }
+      ]
     },
     {
       "id": "V12-25",
@@ -491,6 +521,10 @@
         {
           "file": "tests/unit/live-check.test.ts",
           "title": "an unblocked unknown path must return the 404 page with status 404 and the headers, while the scanner path is checked separately and only warns until the WAF rule exists"
+        },
+        {
+          "file": "tests/unit/ops-docs.test.ts",
+          "title": "the zone values in the runbook equal what cf:bootstrap creates: the scanner paths, HTTPS and one-year HSTS without preload"
         }
       ]
     },
@@ -506,6 +540,10 @@
         {
           "file": "tests/unit/live-check.test.ts",
           "title": "www and http answer 301 to the https apex keeping the path and query, and the zone sends one-year HSTS without preload"
+        },
+        {
+          "file": "tests/unit/ops-docs.test.ts",
+          "title": "the zone values in the runbook equal what cf:bootstrap creates: the scanner paths, HTTPS and one-year HSTS without preload"
         }
       ]
     },
@@ -555,6 +593,10 @@
         {
           "file": "tests/unit/cf-bootstrap.test.ts",
           "title": "only wrangler receives the credentials, and refusals carry their class and fix"
+        },
+        {
+          "file": "tests/unit/ops-docs.test.ts",
+          "title": "every refusal class has its own exit code, as the runbook table lists"
         }
       ]
     },
@@ -585,7 +627,12 @@
         "W2"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/ops-docs.test.ts",
+          "title": "the dependency audit is recorded and its only advisory stays in development tools, not the shipped site"
+        }
+      ]
     },
     {
       "id": "V12-31",
@@ -633,7 +680,12 @@
         "W1"
       ],
       "replaces": "Keep a redirect page at the old site.",
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/ops-docs.test.ts",
+          "title": "GitHub Pages is unpublished only after the live check and an explicit yes, with no replacement page at the old origin and no migration of saves"
+        }
+      ]
     },
     {
       "id": "V12-34",
@@ -643,7 +695,12 @@
         "E16"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/ops-docs.test.ts",
+          "title": "the runbook stays on Workers Free, accepts quota outages without a paid product and counts junk-path invocations at launch"
+        }
+      ]
     },
     {
       "id": "V12-170",
@@ -680,7 +737,12 @@
         "W2"
       ],
       "replaces": "BOARD_ENABLED=false as the board's emergency switch.",
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/ops-docs.test.ts",
+          "title": "the emergency switches need no paid product: the WAF threshold, board off and Under Attack mode"
+        }
+      ]
     },
     {
       "id": "V12-172",

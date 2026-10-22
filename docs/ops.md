@@ -13,7 +13,7 @@ the asset 404 without D1 access. Do not assume junk paths bypass the Worker:
 include their invocations in usage checks. Disable workers.dev and preview URLs.
 [V12-10] [V12-11] [V12-12]
 
-Use one limits module for API 4096-byte streamed bodies, top 50, binding windows,
+Use one limits module (`src/api/limits.ts`) for API 4096-byte streamed bodies, top 50, binding windows,
 WAF 20/10 seconds, hard-object threshold 2400, city ratio 0.08 and saturation
 threshold 29500. The WAF controls bursts, not daily traffic: 20 every 10 seconds
 is 172800 per day per IP. Request binding: 30/minute/IP (including retries), new
@@ -50,6 +50,7 @@ The build check fails when the header file and the meta CSP disagree apart from
 | Available from | Command | Purpose |
 | --- | --- | --- |
 | Existing | npm run verify | Root verification; later steps add Worker, routing and requirement gates |
+| 1 | npm run build:deploy | The deploy-profile build CI's verify run and npm run deploy share |
 | 1 | npm run setup:check -- --deploy | Runtime, auth, scope, zone, redirect and step-specific prerequisites |
 | 1 | npm run cf:bootstrap | Idempotent resource setup; permitted API changes only, otherwise print dashboard values |
 | 1 | npm run deploy | Guarded build, artifact checks, optional migration, atomic deployment and live check |
@@ -71,6 +72,24 @@ values, why, next command and a runbook anchor, with distinct exit classes.
 Validate identifiers and numbers before invoking fixed SQL statement files;
 never compose SQL with untrusted arguments. [V12-28] [V12-110]
 
+The runner is `scripts/lib/ops.mjs`. A refusal prints `✖ <what failed>`,
+`why:` with the values that matter, `next:` with the command to run and
+`docs:` with an anchor in this file. Exit codes by class:
+
+| Exit | Class | Example |
+| --- | --- | --- |
+| 1 | unexpected error | a bug in the script itself |
+| 2 | usage | an unknown argument or a malformed version id |
+| 3 | environment | wrong Node major, missing credentials |
+| 4 | git | dirty tree, HEAD is not origin/main |
+| 5 | ci | the verify check for the SHA is not green |
+| 6 | build | npm ci, the profile build or the build id failed |
+| 7 | artifact | check-build or the release scan of dist/ failed |
+| 8 | approval | --yes (or --force) is needed |
+| 9 | remote | a wrangler or Cloudflare API call failed |
+| 10 | live | live:check found a difference |
+| 11 | scope | a zone other than museumguessr.com |
+
 ## Switches
 
 | Switch | Where / who | Default by profile | Effect | Change / test |
@@ -84,9 +103,19 @@ never compose SQL with untrusted arguments. [V12-28] [V12-110]
 | VITE_SITE_URL | Public profile / developer | deploy https://museumguessr.com/ | Canonical and share origin | Profile commit; URL hygiene test |
 
 Public tokens, hosts, site key, base path and purpose come from one committed
-profile, not shell overrides in deployment. Board off needs no Turnstile key;
+profile, `deploy/profile.json`, not shell overrides in deployment. Board off needs no Turnstile key;
 board on in deploy refuses dummy site keys. A development untimed override and
 end fixture are absent from deployed output. [V12-18] [V12-125] [V12-127]
+
+`scripts/build.mjs` (npm run build:deploy, and build:e2e for verify) is the
+only way the deploy profile is built: it reads the profile, refuses any shell
+variable that differs from it, removes every CLOUDFLARE_* value and sets the
+build id. Vite refuses invalid combinations at build time (board UI on without
+a site key, a Turnstile test key in a deploy build, a non-`phc_` analytics
+token); each page carries `<meta name="build-purpose">` and check-build fails a
+deploy build that ships development fixture code. The tracked profile keeps a
+placeholder analytics token until the main session commits the public project
+token; `npm run deploy` refuses the placeholder.
 
 ## Preflight and credentials
 
@@ -108,6 +137,22 @@ Bootstrap creates missing resources only. Database ids are public config diffs
 to review and commit. Pipe a newly created Turnstile secret to wrangler secret
 put via stdin; never print or persist it. If zone permissions are unavailable,
 print the table above instead of guessing or changing another zone.
+
+`npm run setup:check -- --deploy` prints one line per check (✓, ✖ with its
+fix, ! for an optional permission, - for a step-3 check that is not due):
+Node, the pinned wrangler in `worker/` (`npm ci --prefix worker`), gh, the
+credentials in the shell, `wrangler whoami`, the zone and its status, the
+token's zone scope (museumguessr.com only), Workers Scripts and Workers Routes,
+the optional DNS, rules and zone-setting permissions, the www 301 and, once
+the config has a D1 binding, D1, Turnstile and TURNSTILE_SECRET.
+
+`npm run cf:bootstrap` reads first and prints what it would create; nothing
+changes without `--yes`. It covers the www record, the redirect rule, the API
+burst rule, the scanner rule, Always Use HTTPS and HSTS (values in
+`scripts/lib/zone-rules.mjs`, equal to the table above). A setting the token
+may not manage, or one that already exists with other values, is left alone
+and printed as a founder task with its dashboard value. `--board` (step 3)
+adds the D1 database and the Turnstile widget and secret.
 
 ## Deploy and rollback
 
@@ -132,12 +177,41 @@ previously deployed versions. Crossing state, scoring or contract versions warns
 and requires --force; it never silently changes the board mode. [V12-19]
 [V12-104] [V12-138]
 
+How to run them (`scripts/deploy.mjs`, `scripts/rollback.mjs`):
+
+1. `npm run deploy` runs every check above and the build, prints the exact
+   URL and stops: nothing remote changes. After the founder's yes on
+   https://museumguessr.com/, `npm run deploy -- --yes` repeats the checks,
+   then migrates (only with a D1 binding), runs one `wrangler deploy` with the
+   message `<sha> state:<n> scoring:<n> contract:<n> migrations:<n>` and
+   `WORKER_VERSION=<sha>`, prints the board switch before and after, and runs
+   live:check. Source maps are kept under `node_modules/.cache/deploy/<sha>/`.
+2. `npm run rollback` lists the deployments and names the previous version;
+   `npm run rollback -- <version-id> --yes` rolls back (add `--force` when it
+   warns about a version change), then runs live:check against that build.
+
 Migrations are forward-only and additive: new columns nullable or defaulted,
 no reused column meaning, no dropped/renamed columns. If migration succeeds and
 deploy fails, retry the same SHA. If data restoration is necessary, record a D1
 Time Travel bookmark and obtain approval before restoring; schema changes are
 not undone by Worker rollback. Free Time Travel retains seven days. [V12-20]
 [Cloudflare D1 limits](https://developers.cloudflare.com/d1/platform/limits/)
+
+## Live check
+
+`npm run live:check [-- --sha <sha>]` (`scripts/live-check.mjs`; the SHA
+defaults to HEAD) checks https://museumguessr.com/ and prints one line per
+check: the page's build-id meta equals the SHA; the page sends the
+`_headers` values; the header CSP equals the meta CSP plus `frame-ancestors
+'none'`; the zone sends `Strict-Transport-Security: max-age=31536000` without
+preload; `/api/v1/health` reports this build's scoring version, pool hash,
+contract version and SHA (and the board mode); www and http answer 301 to the
+https apex keeping path and query; an unblocked unknown path returns the 404
+page with status 404 and the security headers; `/wp-login.php` is blocked
+with 403 (a warning until the scanner rule exists). With a token that may
+read rate-limit rules it compares the API burst rule with
+`src/api/limits.ts`. Any failure exits with the live class and names the
+rollback. [V12-25] [V12-26] [V12-27]
 
 ## Daily KPI check (decision window)
 
