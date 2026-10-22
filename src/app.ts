@@ -111,8 +111,6 @@ export class App {
   private testPause = false;
   /** The round whose view opened in this page, and when (monotonic ms): ready_ms (ENG9). */
   private opened: { key: string; at: number } | null = null;
-  /** A reveal rendered while the tab was hidden: it counts as shown once the tab is visible (N5). */
-  private revealPending: { gameId: string; round: number } | null = null;
   private readonly runner: ClockRunner;
   private readonly drafts: DraftQueue;
 
@@ -289,11 +287,8 @@ export class App {
   private revealOpened() {
     const s = this.state;
     if (!s || s.finished || s.phase !== 'reveal' || this.view !== 'play') return;
-    if (document.visibilityState === 'hidden') {
-      this.revealPending = { gameId: s.game_id, round: s.round };
-      return;
-    }
-    this.revealPending = null;
+    // a reveal rendered in a hidden tab counts once the tab is visible again (clockEvent)
+    if (document.visibilityState === 'hidden') return;
     this.dispatch({ type: 'revealShown', gameId: s.game_id, round: s.round, now: Date.now(), boardWeek: null });
   }
 
