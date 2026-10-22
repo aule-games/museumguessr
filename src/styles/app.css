@@ -2988,16 +2988,12 @@ p {
   bottom: auto;
 }
 
+/* the photo viewer's top bar is the positioned box, so its line spans the bar */
 .pswp__clock {
-  position: relative;
   display: flex;
   align-items: center;
   align-self: stretch;
   padding: 0 var(--space-3);
-}
-
-.pswp__clock .clockline {
-  bottom: 0;
 }
 
 /* time-up: the answer controls dim; there is no modal (D2) */
