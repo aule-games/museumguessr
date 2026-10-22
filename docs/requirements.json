@@ -389,7 +389,20 @@
         "H5"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/preflight.test.ts",
+          "title": "each missing prerequisite prints a failing line with its fix"
+        },
+        {
+          "file": "tests/unit/preflight.test.ts",
+          "title": "once the config has a board, the D1 binding, D1 and Turnstile permissions and TURNSTILE_SECRET are required"
+        },
+        {
+          "file": "tests/unit/preflight.test.ts",
+          "title": "passes on a ready machine and skips the step-3 board checks until the config has a board"
+        }
+      ]
     },
     {
       "id": "V12-22",

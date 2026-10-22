@@ -1,9 +1,15 @@
 #!/usr/bin/env node
 // `npm ci` runs `prepare`, which points git at the committed hooks (DX17).
-// `npm run setup:check` reports hook, identity and denylist status.
+// `npm run setup:check` reports hook, identity and denylist status;
+// `npm run setup:check -- --deploy` adds the deploy preflight (H5, V12-21):
+// Node, Worker dependencies, wrangler identity and token permissions, the
+// zone and its scope, gh, the www redirect and the step-3 board needs.
 
 import { execFileSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 import { loadDenylist } from './lib/denylist.mjs';
+import { createRunner, EXIT } from './lib/ops.mjs';
+import { formatPreflight, preflight } from './lib/preflight.mjs';
 
 const git = (...args) => {
   try {
@@ -43,6 +49,12 @@ if (mode === 'check') {
 
   const major = Number(process.versions.node.split('.')[0]);
   console.log(`node:      ${process.versions.node}${major === 24 ? '' : ' (expected 24.x, see .nvmrc)'}`);
+  if (process.argv.includes('--deploy')) {
+    const ROOT = fileURLToPath(new URL('..', import.meta.url));
+    const lines = await preflight({ root: ROOT, env: process.env, runner: createRunner({ root: ROOT }) });
+    console.log(`\ndeploy preflight (docs/ops.md#preflight-and-credentials):\n${formatPreflight(lines)}`);
+    if (lines.some((l) => l.status === 'fail')) process.exit(EXIT.environment);
+  }
   process.exit(ok ? 0 : 1);
 }
 
