@@ -413,7 +413,24 @@
         "N6"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/cf-bootstrap.test.ts",
+          "title": "creates only missing resources and a second run changes nothing"
+        },
+        {
+          "file": "tests/unit/cf-bootstrap.test.ts",
+          "title": "without zone permissions it prints the exact dashboard values instead of guessing"
+        },
+        {
+          "file": "tests/unit/cf-bootstrap.test.ts",
+          "title": "with --board it creates D1 once and pipes a new Turnstile secret into wrangler through stdin, never printing it"
+        },
+        {
+          "file": "tests/unit/cf-bootstrap.test.ts",
+          "title": "API helpers refuse every zone other than museumguessr.com before any request"
+        }
+      ]
     },
     {
       "id": "V12-23",
@@ -431,6 +448,10 @@
         {
           "file": "tests/unit/deploy.test.ts",
           "title": "install, build and check children get no Cloudflare credentials; only wrangler does"
+        },
+        {
+          "file": "tests/unit/cf-bootstrap.test.ts",
+          "title": "only wrangler receives the credentials, and refusals carry their class and fix"
         }
       ]
     },
@@ -518,6 +539,10 @@
         {
           "file": "tests/unit/rollback.test.ts",
           "title": "refusals carry the class exit code, the fix and the runbook anchor"
+        },
+        {
+          "file": "tests/unit/cf-bootstrap.test.ts",
+          "title": "only wrangler receives the credentials, and refusals carry their class and fix"
         }
       ]
     },
