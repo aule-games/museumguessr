@@ -1,5 +1,8 @@
 # Screen spec
 
+v1.2 target specification, built step by step. See [requirements.json](requirements.json)
+for implemented gates; the presence of copy keys does not mean a feature is live. [V12-04]
+
 The contract between the screens, their copy and their layout. Every
 user-facing string is a key in [`src/copy.ts`](../src/copy.ts); this file
 names keys, not wording, so the copy has one home. Colours, sizes, type and
@@ -81,7 +84,7 @@ States:
 | Action bar | secondary Back (from When on); primary Confirm on Made/When, Reveal answers on Kept | `back`, `confirm`, `confirm.last` | first action full width; thereafter Back left, primary fills remaining width, 8 px gap; both at least 44 × 44 px and fully on screen (DS36) |
 
 Questions come in story order: Made, then When, then Kept (DS35). Nothing is
-revealed until Reveal answers on Kept, so Back can reopen any earlier question
+revealed until Reveal answers on Kept or timer expiry, so Back can reopen any earlier question
 of the round (DS36).
 
 The rule line is always shown; there is no toggle.
@@ -157,7 +160,7 @@ skipped; the last button closes it as done; either way the flag is set and
 
 ### Challenge link (V1-16 to V1-18)
 
-A challenge link (`?d=<10 ids>&s=<score>&n=<name>&h=<deck hash>`) opens the
+A challenge link (`?d=<10 ids>&s=<score>&n=<name>&h=<deck hash>&r=<rules>`) opens the
 Start layout with its own line as the h1, in the body face and never
 uppercased, with `app.tagline` above it as the eyebrow; focus goes to the h1.
 The parameters leave the address bar once read; the challenge waits in
@@ -200,7 +203,7 @@ and there is only one score live region. (DS21)
 | Contested | the sourced claim | `reveal.contested` | wraps |
 | Facts | sourced facts | `reveal.source` | list |
 | Credit | photo credit, photo source, museum record | `reveal.credit`, `reveal.creditSource`, `reveal.record` | wraps |
-| Action bar | after round 3 only: `pulse.difficulty` uses a shorter question label; all three choices retain their wording and 44 px touch height; then Next round or See results | `pulse.*`, `reveal.next`, `reveal.results` | difficulty fits one line at 375 px at normal text size; enlarged text may wrap rather than clip; Next always visible (DS21) |
+| Action bar | after round 3 only: `pulse.gameSoFar` asks about this game so far; all three choices retain their wording and 44 px touch height; then Next round or See results | `pulse.*`, `reveal.next`, `reveal.results` | difficulty fits one line at 375 px at normal text size; enlarged text may wrap rather than clip; Next always visible (DS21) |
 
 States:
 
@@ -217,10 +220,11 @@ States:
 ## End
 
 Order (V1-22): wordmark bar → total and tier (a challenge game adds both
-totals and the result) → share block → Play another 10 → a waiting challenge →
+totals and the result, plus earned hard-object marks) → share block → Play another 10 → board card → a waiting challenge →
 collection line → Most fun → the 10-row recap → Replay these 10. Desktop:
 summary and actions left, recap right. At 375×667 and 390×844 the total, tier
-and Share are above the fold; at 390×844 Play another 10 is too.
+and Share are above the fold (also at 390×664); at 390×844 Play another 10 is too.
+The board card may be below the fold; it is not another filled primary. [V12-116] [V12-162]
 
 | Region | Content | Copy keys | Overflow |
 | --- | --- | --- | --- |
@@ -275,5 +279,210 @@ A finished game saved under other answers shows the total and
 | Difficulty row | — | row shown after round 3 | — | "Thanks", chips removed | — |
 | Share | — | no name: Share without one | invalid name: inline rule, Share stays closed; clipboard fails: the link, selected | sheet (phone) or chooser; "Link copied" | cancelled sheet or closed chooser: nothing sent |
 | Challenge link | h1 empty while the name is checked | no score: "Play the same 10 your friend played" | broken link screen | challenge line | answers changed: no score to beat |
-| Resume | — | start screen | unreadable save: discarded, start screen | "Continue · Round 4 of 10" | a game left on a reveal resumes on that reveal |
+| Resume | — | Start if no running timer or the deadline has passed | corrupt old save: reset; newer-version save: preserved | a running round resumes directly with its remaining time | expired Continue opens the reveal; a reveal resumes on that reveal |
 | Error screen | — | — | "Something broke" + Reload + New game; adds "Your progress is saved" when a save exists | — | — |
+
+
+## Round clock and drafts
+
+Every object has 60 seconds for all three questions; reveals are untimed.
+The constants provide the round length, optional first-round override and
+warning threshold. A null first-round override means no timer on round one;
+the approved default is 60 for all rounds. `timer.disclosure` is composed into
+`start.meta`, `challenge.meta` and the friend variant when the timer ships;
+`timer.help` joins the welcome tour and How to play, with `timer.overlayHelp`.
+The existing about-ten-minutes expectation remains. [V12-40] [V12-61]
+
+Start only once the photo and active answer control are usable. Pause for the
+first-visit automatic tour, the current Made/Kept map not being ready or fallback,
+or our error screen. The causes form a set; all must clear before resuming.
+A failed map shows `timer.pausedMap`. Back, tab hiding, menu help, the replayed
+tour and photo viewer do not pause. Photo failure after start stops the timer
+and follows the photo-failure path instead of generating a timeout. [V12-41]
+[V12-42] [V12-43] [V12-53]
+
+A save holds a wall-clock deadline, or remaining milliseconds and a paused flag.
+Reload and takeover derive pause causes from the current UI, not a persisted
+cause list. Recheck time on focus, pageshow and visibility change. Clamp remaining
+time to the round length; a non-finite value expires, and monotonic time prevents
+backwards clock movement from adding time. [V12-44] [V12-45]
+
+One expiry action wins before late draft, Confirm, Back or resume processing.
+Persist the result and event ledger under the game writer lock first. Draft edits,
+including invalid/empty values, are saved while edited, not only on page exit.
+Use the valid draft, else the last confirmed answer; otherwise the question times
+out at zero points. Invalid edits with a confirmed answer show
+`timer.previousAnswer`. Callbacks carry game, round and generation identity.
+[V12-46] [V12-47] [V12-48]
+
+At expiry cancel drag, blur the field and close overlays through their history
+pop, cancelling queued actions. Dim controls; show `round.timeUp` for about
+800 ms, then focus the reveal score. Reduced motion skips that hold. Returning
+late also skips it and shows `reveal.timedOutAway`. Reload with time left goes
+straight to the running round; expired reload goes to Start with
+`start.continueExpired`, whose Continue opens the reveal. [V12-49] [V12-50]
+[V12-52]
+
+Scoring an expired hidden round is not evidence that its reveal was seen.
+Only the separate, ledgered reveal-shown action records a completed round;
+round-ten reveal sets completion time and the last server board week (or null).
+When round ten opens, fetch server week context once, anonymously and without
+blocking play (skipped when the board UI or the auto-add switch is off). Freeze the last successful response at completion;
+neither a late response nor the end-screen refresh can assign a different week
+to that finished game. No response means the unknown-week state, not an assumed
+device-clock week. Test fixtures request dark smoke context explicitly.
+State version 4 validates new fields; corrupt saves reset while newer-version
+saves remain untouched. Test assistance never clears on games or snapshots.
+[V12-51] [V12-54] [V12-55] [V12-79] [V12-108]
+
+### Clock appearance and accessibility
+
+A 3 px line on the bottom of the top bar is full/static before start, drains
+linearly while running, changes from accent to warning at ten seconds, and
+freezes at 40% opacity when paused. It is decorative, with no digits and
+aria-hidden. Reduced motion updates in one-second steps without transition.
+Every dialog header and the photo viewer repeat the line and last-ten-second
+cue. [V12-58] [V12-59]
+
+The counter cluster reads Round 4/10 · Hard with three pips. It reserves the
+wider of Round 10/10 · Medium and Hurry up · 10. In the last ten seconds
+`timer.hurry` replaces the counter text, with clock glyph, warning colour,
+tabular figures and no pulsing; the pips remain. The cue fades with the existing
+fast motion token and digits change without animation. At doubled text the
+word and round progress remain readable; pips hide and the cluster may wrap.
+Warning contrast is at least 4.5:1. [V12-60] [V12-64] [V12-161]
+
+Use a timer role with aria-live off. `timer.remaining` is hidden, non-live text
+updated every ten seconds. Announce `timer.warning` once at the threshold and
+`round.timeUp` once at expiry in the polite region. Never announce every tick.
+The 60-second limit uses the essential-timing exception to WCAG 2.2.1; this
+is not a blanket accessibility-conformance claim. Keyboard timing and keystrokes:
+**not measured yet**; step 2 records an automation floor, not human performance.
+[V12-77]
+
+### Timed-out reveal and recap
+
+A timeout row has a clock glyph, `reveal.timedOut`, zero and
+`reason.timedOut`, with no guess pin, guess link or guess legend entry. A photo
+skip retains its broken-image glyph. A draft or fallback counted on expiry
+shows `reveal.countedAtTimeUp`; the first timed-out reveal per device shows
+`reveal.timeUpTip` once. The recap adds `end.timedOut` with the unanswered count.
+[V12-62] [V12-63]
+
+## Difficulty, early dates and challenge rules
+
+Use `difficulty.easy`, `difficulty.medium`, `difficulty.hard` in the round and
+`difficulty.object` on the reveal. A difficulty-3 object earning at least 2400
+gets `hard.nailed` with the existing star icon inside the lime total, in its
+single score announcement. The end summary uses `hard.one` or `hard.many`;
+sharing appends `hard.shareOne` or `hard.shareMany` only when earned. No multiplier.
+The pulse after round three uses `pulse.gameSoFar`. [V12-65] [V12-66] [V12-67]
+
+The year end cap is separate with a small gap, labelled `year.earlyCap`;
+its accessible value is `year.earlyStop`. Selecting it shows 4000 BCE plus
+`year.earlierSuffix`. Typing any BCE year 4000 or greater selects sentinel -4001;
+CE clears the stop and field. Left/Down from 3999 BCE and Home select the stop;
+Right/Up from it select 3999 BCE. Dragging snaps across the gap. The error and
+accessible label use `year.rangeWithStop`. Before -4000 the reveal timeline
+has a broken axis and a date range; younger-object distance uses
+`year.earlyDistance`. With the keyboard open, year field, era, cue and Confirm
+must stay reachable against the visual viewport. [V12-68] [V12-69] [V12-70]
+[V12-71]
+
+Challenge rules derive from scoring version 3 and timer configuration. A missing
+or mismatched rules parameter keeps the deck but removes the score to beat,
+showing `challenge.rulesChanged`. Share links omit test, fixture and clock.
+The browser test flag expires after 24 hours, but game test provenance persists.
+The test badge adds `test.tenSeconds`, `test.expire`, `test.pauseClock` through
+one test surface; the development untimed override is absent from deploy output.
+[V12-56] [V12-57] [V12-72]
+
+## Weekly board
+
+Eligible games submit automatically when the end screen opens. Share or Send
+back is the first action after the score and the only filled primary. The
+compact board follows Play another 10: `board.heading`, one status line,
+`board.name`, `board.view`, then a zero-height verification slot that expands
+only if interaction is needed. The board never opens by itself. The card stays
+compact: `board.note` and `board.storageLifetime` appear in the board overlay
+under its heading, not on the card. No score-entry button is used.
+[V12-80] [V12-115] [V12-116]
+
+### Board states
+
+This is the exhaustive card-state copy table. Substitutions come from validated
+server data or local provenance; every value renders as a text node. [V12-117]
+
+| State | Exact string or treatment | Key | Action |
+| --- | --- | --- | --- |
+| Loading | Skeleton, no invented standing | — | None |
+| Before first automatic add | Your score goes on this week's board as {name} | `board.firstAdd` | None |
+| Adding | Adding… | `board.adding` | None |
+| Added | Added: {standing} | `board.added` | See the board |
+| Improved best | New best: {standing} | `board.newBest` | See the board |
+| Not best | Your best this week: {best} ({standing}) · this game {total} | `board.notBest`, `board.notHigher` | See the board |
+| Replaced game | Replaced by a better game this week · {total} | `board.replaced` | See the board |
+| Removed | You removed your score this week | `board.removed` | See the board |
+| Hidden or absent receipt | No longer on the board | `board.hidden` | See the board |
+| Replay | Not ranked (replay) | `board.notRankedReplay` | See the board |
+| Fully seen challenge | Not ranked (all objects seen before) | `board.notRankedSeen` | See the board |
+| Test-assisted game | Not ranked (test game) | `board.notRankedTest` | See the board |
+| Board off | Hide the entire card | — | None |
+| Automatic entry off | Automatic board entry is off | `board.autoOff` | See the board |
+| Storage unavailable | Your browser isn't keeping data, so this score can't be added | `board.storageOff` | Read-only board |
+| Retry pending | Saved on this device; waiting to retry | `board.pending` | Retry after backoff |
+| Verification running | Checking… | `board.checking` | None |
+| Verification interactive | Tap to finish adding | `board.tapToFinish` | Expanded widget |
+| Verification load failed | Verification couldn't load | `board.verificationFailed` | Retry |
+| Unavailable | The board is unavailable right now | `board.unavailable` | Retry |
+| Confirmed, list unavailable | Score sent; the board is unavailable right now | `board.sentUnavailable` | Retry list only |
+| Empty | No scores yet this week | `board.empty` | None |
+| Small count | Fewer than 10 on this week's board | `board.lowCount` | Omit of N |
+| Previous week, unsubmitted | Played last week · the board resets weekly | `board.lastWeek` | No submission |
+| No server week at completion | Couldn't confirm which week this game belongs to | `board.unknownWeek` | No submission |
+| Previous week, confirmed | Last week: #{rank} | `board.lastRank` | Show final rank |
+| Invalid | This game couldn't be added | `board.invalid` | None |
+| Conflicting retry | This game has a different saved result | `board.duplicate` | None |
+| Rules out of date | Update the page before playing another game | `board.updatePage` | Reload |
+
+### Rank wording and overlay
+
+| Evidence | String/key |
+| --- | --- |
+| Exact rank, at least ten devices | `board.rank`: #{rank} of {count} this week |
+| Exact rank, fewer than ten | `board.rankLow`: #{rank} this week |
+| Tied outside the first fifty listed rows | `board.tiedOutside`: #{rank} (tied) · the board lists the first 50 |
+| Bounded estimate within the top half | `board.percentile`: Top {percent}% (never over 50) |
+| Otherwise | `board.distance`: {points} points from the top 50 |
+
+Equal scores share rank; submission order chooses which tied rows fit. Show the
+confirmed receipt rank after an add even when the public copy is cached, labelled
+`board.cached`. Refreshes and retries never move focus. The overlay uses table
+headers `board.columnRank`, `board.columnName`, `board.columnTotal`; the current
+device row has `board.you` and aria-current. Rank and totals are tabular figures,
+names in the body face can wrap to two lines, and a personal below-fifty row
+remains visible without medals. [V12-98] [V12-118] [V12-119] [V12-124]
+
+### Disclosure, storage and score removal
+
+How to play, the welcome tour, About and README include `board.disclosure`.
+Menu `board.scores` lists weekly bests, `board.remove`, `board.removeAll`, and
+an on-by-default `board.autoAdd` switch. Switching off prevents future automatic
+adds; it is not a deletion. Removal shows `board.removeConfirm` with a relative
+local reset time, `board.keep` and `board.remove`; states are `board.removing`,
+`board.removeDone`, `board.removeFailed`. Only current-week removal prevents
+another entry this week. Keep focus in the dialog, then return it to the opener
+or nearest surviving score entry. [V12-120] [V12-121]
+
+Request persistent storage only when the player deliberately opens the board
+or score history, never on display, automatic entry or successful entry.
+The start screen uses `board.standing` from receipts and `board.heading` as a
+link, without an extra request. It says Last confirmed, not current rank.
+[V12-122] [V12-123]
+
+## Not-found page
+
+A standalone 404 page in the game's tokens uses `notFound.title`,
+`notFound.body`, `notFound.home`, linking to the root. It carries the same
+security headers. There is no replacement page at the old hosting origin.
+[V12-10] [V12-13]

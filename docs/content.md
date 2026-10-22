@@ -1,5 +1,8 @@
 # Content guide
 
+v1.2 target rules; implementation gates are in [requirements.json](requirements.json).
+The existing checker gains these rules in steps 2–4. [V12-04]
+
 How MuseumGuessr's objects are chosen, recorded and checked. Every
 `items:check` error links to a section here.
 
@@ -42,7 +45,10 @@ disagree, the museum record wins and the disagreement goes in `conflicts`.
 Two layers must both be free:
 
 1. The artwork is in the public domain (ancient objects; paintings whose artist
-   died more than 70 years ago).
+   died in 1955 or earlier for this release). This editorial cutoff is not proof
+   of public-domain status: verify the work and relevant jurisdiction separately.
+   Later deaths (including Ibrahim Calli, Hikmet Onat and Feyhaman Duran) are
+   excluded from this batch. [V12-141]
 2. The photo is free to use: CC0, public domain, PD-Art (a faithful photo of a
    public-domain 2D work) or CC BY / CC BY-SA. Photos of 3D objects need an
    explicit licence on the photo itself. `photo.author`, `photo.licence` and
@@ -82,7 +88,11 @@ made in Athens and found in Italy.
 `start` and `end` are historical years: negative numbers are BCE and there is
 no year 0 (`-1` is 1 BCE). Full marks go to any guess inside the range, so
 never invent a single year from a range; `label` keeps the museum's own
-wording. Both years must lie inside the year control (4000 BCE to 2000 CE).
+wording. Dates may run from -40000 to 2025, with no year zero. At most three
+pool objects may begin before -4000. The control represents early dates as
+4000 BCE or earlier (sentinel -4001), not as an exact early year. It gives full
+When points only if the whole date range ends before -4000; otherwise it
+scores as -4000. [V12-144] [V12-69]
 
 Century conversion: "3rd century BCE" is `-300` to `-201`; "5th century CE" is
 `401` to `500`; "about 420 BCE" with no range stays `-420` to `-420`.
@@ -96,7 +106,8 @@ grapples with a bearded man; fragments missing at left". The title and full
 credits appear at the reveal.
 
 `caption` is the one short line shown on the photo during the round (10 to 70
-characters, DS37): what the object is and shows, under the same rules as
+characters, DS37), shown in the lightbox and exposed to screen readers:
+what the object is and shows, under the same rules as
 `alt_neutral` (no title phrase, artist, place, culture or date). Example:
 "Colour woodblock print: a huge clawed wave curls over three long boats". The
 item check rejects place words, two-word title phrases and possible dates in
@@ -142,11 +153,16 @@ objects first), and `items:check` proves that the pool splits into
 floor(N / 10) valid decks, so a new player gets every fresh game the pool
 allows. When it cannot, it names the reason first, for example "difficulty-1
 count must be at least 3 x 3 decks" or "Kept city X holds k > decks + spare
-objects". The deck rules live in `src/deck/config.ts`.
+objects". The deck rules live in `src/deck/config.ts`. Diagnostics include city, count,
+cap at the current pool size and reserve alternatives. [V12-150]
 
 A valid deck: 10 different objects; rounds 1-3 are difficulty 1; rounds 4-10
 are difficulty 2 or 3 (difficulty 1 there only when nothing else fits); at
-most 3 difficulty-3 objects; no Kept city twice.
+most 3 difficulty-3 objects; no Kept city twice. A Made country appears at most
+twice when feasible: retain the existing exact flow, retry fresh tie-break
+costs up to twenty times, then keep the best deck and record country_cap_missed.
+The pool fails if over 5% of 1000 seeded decks miss this cap; include adversarial
+seen histories and the phone p95 50 ms target in planner tests. [V12-73] [V12-74]
 
 ## Difficulty
 
@@ -161,14 +177,16 @@ Recalibration: once an object has 30 or more first-encounter rounds in
 `analytics/queries/difficulty.sql`, a mean of 2,000 points or more suggests
 difficulty 1, 1,200-1,999 difficulty 2 and below 1,200 difficulty 3. The
 agent proposes changes on the next batch contact sheet; the founder approves
-them there.
+them there. Fame alone does not establish difficulty 1. Prefer documented
+journeys or clear visual clues; never weaken evidence to hit a count. [V12-145]
 
 ## Spread
 
 Fairness rules for the fixed set of 10: at least 6 holding cities with no more
 than 2 items per city. For a pool of N >= 30 objects:
 
-- no Kept city holds more than min(4, floor(N / 10)) objects;
+- no Kept city holds more than max(3, floor(0.08 × N)) objects: 6 at N=75,
+  5 at N=63–74; [V12-143]
 - at least max(10, ceil(0.3 N)) Kept cities, on at least 4 continents;
 - Made places cover at least min(8, ceil(N / 5)) UN M49 sub-regions;
 - at least ceil(0.15 N) objects end before 500 CE and as many start after
@@ -186,7 +204,11 @@ A saved game and the "Review your 10" recap hold their own 10 objects. They
 stay valid while the kept, made and when answers of those 10 are unchanged:
 adding objects to the pool keeps them, and changing one of those answers drops
 them, so the player starts a fresh game instead of being scored against an
-answer they never saw. Text and fact edits never drop a game. Saves from the
+answer they never saw. Every item also has a positive answers_rev; changing
+kept, made or when requires a higher revision against data/answer-revs.json.
+The step-3 items:record command refreshes that baseline. The Worker retains
+retired answer keys for fourteen days but refuses newly submitted retired ids.
+Text and fact edits never drop a game. [V12-137] Saves from the
 fixed set of 10 carry over only while those 10 answers are the original ones.
 
 ## Sample
@@ -241,3 +263,45 @@ item, the field, the reason, the fix and a link to this page.
 The sample record in `data/sample.json` is a complete, passing record: the
 Met's human-headed winged lion from Nimrud (CC0 photo, made in Nimrud, kept in
 New York, dated 883–859 BCE, with its documented journey via England).
+
+
+## Batches F and T
+
+Research about thirty human-made objects from famous museums (F) and fifteen
+Turkey-related Ottoman-era or earlier objects (T), aiming for about seventy-five
+in the pool. Keep research in durable local plans/research directories, not
+throwaway downloads. Researcher ship recommendations are not approvals. [V12-140]
+[V12-149] [V12-154]
+
+Each batch has its own contact sheet. Normally promote both atomically after
+step 2, so early dates and the new cap are supported and the cap is evaluated
+at final pool size. If T is not approved in time, an explicitly approved F-only
+fallback must substitute reserves and pass the full checker at its own size.
+One contentApproved predicate means both batches promoted, or the approved and
+validated F-only alternative; the public-board switch and final release use
+this same predicate. [V12-147] [V12-148]
+
+Keep at least 30% easy, at most 30% hard, at most half paintings, all geographic,
+date and constant-guess checks, and no repeated Kept city in a deck. At the
+minimum pool size a retirement needs a replacement, ids never repeat, and
+fewer than two ready reserves warns. [V12-146] [V12-151]
+
+Inspect full processed photos for answer leakage, crop, credit and image quality.
+Audit every record's exact photo licence, artwork rights, Made evidence, date,
+journey and restitution search before promotion. Never use generated artwork
+photos. [V12-152] [V12-153]
+
+### Heritage image rules by country
+
+These entries are unresolved research gates, not legal clearance. No affected
+candidate ships without a sourced jurisdiction finding and its resulting flag.
+The existing Italy/Greece flag remains until reviewed; free-photo licensing
+alone does not settle cultural-heritage restrictions. [V12-142]
+
+| Jurisdiction | Finding | Release treatment |
+| --- | --- | --- |
+| Turkey | Finding pending (batch research) | Hold affected records for review |
+| Mexico | Finding pending (batch research) | Hold affected records for review |
+| Egypt | Finding pending (batch research) | Hold affected records for review |
+| Taiwan | Finding pending (batch research) | Hold affected records for review |
+| Vatican City | Finding pending (batch research) | Hold affected records for review |

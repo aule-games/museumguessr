@@ -1,0 +1,1796 @@
+{
+  "release": "v1.2",
+  "built_through_step": 0,
+  "steps": {
+    "0": "specifications and verification foundation",
+    "1": "hosting and security",
+    "2": "timer, difficulty and year stop",
+    "3": "weekly board",
+    "4": "content batches F and T",
+    "5": "visuals, audits and release"
+  },
+  "requirements": [
+    {
+      "id": "V12-01",
+      "step": 0,
+      "text": "The manifest is the source for the generated requirement ledger; completed steps need passing, explicitly linked tests.",
+      "source": [
+        "N16",
+        "M5"
+      ],
+      "replaces": "Requirements recorded only in a generated document.",
+      "tests": [
+        {
+          "file": "tests/unit/requirements.test.ts",
+          "title": "completed steps require every linked test to pass"
+        },
+        {
+          "file": "tests/unit/requirements.test.ts",
+          "title": "future steps stay not built and cannot borrow an unrelated passing test"
+        },
+        {
+          "file": "tests/unit/requirements.test.ts",
+          "title": "the ledger preserves old wording and rejects malformed manifests"
+        },
+        {
+          "file": "tests/unit/requirements.test.ts",
+          "title": "isolated Worker tests can supply requirement evidence without accepting arbitrary paths"
+        },
+        {
+          "file": "tests/unit/requirements.test.ts",
+          "title": "a new verification run cannot reuse stale passing reports"
+        }
+      ]
+    },
+    {
+      "id": "V12-02",
+      "step": 0,
+      "text": "Active specifications and source reject retired rules while the replacement ledger preserves historical wording.",
+      "source": [
+        "N18",
+        "G1"
+      ],
+      "replaces": null,
+      "tests": [
+        {
+          "file": "tests/unit/retired-strings.test.ts",
+          "title": "active specifications and source contain no retired release rules"
+        },
+        {
+          "file": "tests/unit/retired-strings.test.ts",
+          "title": "retired rules are detected without erasing the historical replacement ledger"
+        }
+      ]
+    },
+    {
+      "id": "V12-03",
+      "step": 0,
+      "text": "API endpoint and error tables exactly match the shared contract.",
+      "source": [
+        "M6"
+      ],
+      "replaces": null,
+      "tests": [
+        {
+          "file": "tests/unit/api-contract.test.ts",
+          "title": "the API reference exactly matches endpoint paths authentication and response types"
+        },
+        {
+          "file": "tests/unit/api-contract.test.ts",
+          "title": "smoke reads have explicit unranked context and bounded owner history in the contract"
+        }
+      ]
+    },
+    {
+      "id": "V12-04",
+      "step": 0,
+      "text": "Canonical specifications state the final approved behaviour and distinguish the specification from completed implementation.",
+      "source": [
+        "N18"
+      ],
+      "replaces": null,
+      "tests": [
+        {
+          "file": "tests/unit/v12-docs.test.ts",
+          "title": "the canonical specifications distinguish target rules from implemented gates"
+        },
+        {
+          "file": "tests/unit/v12-docs.test.ts",
+          "title": "canonical specifications preserve week ownership and carried privacy safeguards"
+        }
+      ]
+    },
+    {
+      "id": "V12-05",
+      "step": 0,
+      "text": "The shared API contract compiles without the DOM library or browser build globals.",
+      "source": [
+        "ENG23"
+      ],
+      "replaces": null,
+      "tests": [
+        {
+          "file": "tests/unit/api-contract.test.ts",
+          "title": "the shared contract compiles with no DOM library or ambient package types"
+        }
+      ]
+    },
+    {
+      "id": "V12-06",
+      "step": 0,
+      "text": "The typed contract defines canonical score fields, private receipts and public projections without time values or raw device keys.",
+      "source": [
+        "W6",
+        "ENG10",
+        "ENG22"
+      ],
+      "replaces": null,
+      "tests": [
+        {
+          "file": "tests/unit/api-contract.test.ts",
+          "title": "canonical score fields exclude credentials and time and public rows exclude private identities"
+        }
+      ]
+    },
+    {
+      "id": "V12-07",
+      "step": 0,
+      "text": "Verification recognises and deduplicates V12 requirement identifiers in nested test titles.",
+      "source": [
+        "E23"
+      ],
+      "replaces": null,
+      "tests": [
+        {
+          "file": "tests/unit/requirements.test.ts",
+          "title": "release identifiers are deduplicated across nested unit and browser titles"
+        }
+      ]
+    },
+    {
+      "id": "V12-08",
+      "step": 0,
+      "text": "The release checklist names human approvals separately and defers outward actions until explicit approval.",
+      "source": [
+        "E18",
+        "R8"
+      ],
+      "replaces": "Novice observation sessions are a release task.",
+      "tests": [
+        {
+          "file": "tests/unit/v12-docs.test.ts",
+          "title": "release approvals stay separate from local implementation and unrun checks"
+        }
+      ]
+    },
+    {
+      "id": "V12-10",
+      "step": 1,
+      "text": "One Worker serves assets and same-origin /api/v1 routes; API-first routing and an asset 404 handle navigation and fetch requests without D1 on unknown non-API paths.",
+      "source": [
+        "W1",
+        "ENG13"
+      ],
+      "replaces": "A separate API host and a guarantee that unknown paths never invoke code.",
+      "tests": []
+    },
+    {
+      "id": "V12-11",
+      "step": 1,
+      "text": "The public address is https://museumguessr.com/ with root base path; HTTP and www redirect to HTTPS apex preserving path and query.",
+      "source": [
+        "W1",
+        "ENG16"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-12",
+      "step": 1,
+      "text": "Workers development and preview URLs are disabled.",
+      "source": [
+        "W1"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-13",
+      "step": 1,
+      "text": "One CSP source generates the HTTP header and meta policy, differing only by header-only frame-ancestors; headers protect assets, API and Worker-served 404s.",
+      "source": [
+        "W1"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-14",
+      "step": 1,
+      "text": "CI runs verify on pushes and has no manual dispatch or deployment job; disable the Pages publishing variable before the first push.",
+      "source": [
+        "W2",
+        "N12"
+      ],
+      "replaces": "GitHub Actions deploys Pages and accepts a manually supplied SHA.",
+      "tests": []
+    },
+    {
+      "id": "V12-15",
+      "step": 1,
+      "text": "Deploy requires clean HEAD equal to fetched origin/main, a green verify check on that SHA and a build id matching HEAD.",
+      "source": [
+        "E2",
+        "H1"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-16",
+      "step": 1,
+      "text": "Deploy installs the locked dependencies with Node 24, builds the deploy profile, removes source maps and checks the exact artifact before remote migration or deploy.",
+      "source": [
+        "E2",
+        "H1"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-17",
+      "step": 1,
+      "text": "Deploy applies remote D1 migrations only when bound, then deploys page and API atomically with SHA, migration, state, scoring and contract versions in the deployment message.",
+      "source": [
+        "W1",
+        "C1",
+        "N10"
+      ],
+      "replaces": "The v1 \"Deploys with content\" ordering rule (page and Worker deployed separately).",
+      "tests": []
+    },
+    {
+      "id": "V12-18",
+      "step": 1,
+      "text": "One tracked public profile feeds CI and local deploy; deploy refuses environment overrides and invalid build-purpose or board-key combinations.",
+      "source": [
+        "H1",
+        "M3"
+      ],
+      "replaces": "An empty VITE_API_HOST as the v1 board switch, and CI secrets for deployment.",
+      "tests": []
+    },
+    {
+      "id": "V12-19",
+      "step": 1,
+      "text": "Rollback selects only previously deployed versions, prints the URL and warns with a required force flag across state, scoring or contract version changes.",
+      "source": [
+        "C1",
+        "N10"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-20",
+      "step": 1,
+      "text": "Migrations are additive, older code remains compatible and a failed deploy after migration is retried at the same SHA; the runbook includes Time Travel recovery.",
+      "source": [
+        "C1",
+        "ENG23"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-21",
+      "step": 1,
+      "text": "Preflight checks runtime, permissions, active zone, GitHub authentication, redirects and step-dependent Worker, D1 and Turnstile prerequisites with actionable failures.",
+      "source": [
+        "H5"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-22",
+      "step": 1,
+      "text": "Bootstrap is idempotent, restricted to the game zone, creates needed resources and sends secrets through stdin without printing or storing them.",
+      "source": [
+        "H5",
+        "N6"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-23",
+      "step": 1,
+      "text": "Build, install and test child processes receive no Cloudflare credentials; only authenticated account operations receive credentials.",
+      "source": [
+        "N6"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-24",
+      "step": 1,
+      "text": "The edge API burst rule is 20 requests per IP per 10 seconds; it is not described as a daily quota guarantee.",
+      "source": [
+        "W2",
+        "ENG15"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-25",
+      "step": 1,
+      "text": "The scanner rule blocks PHP, WordPress, environment and git paths; live checks test a different unblocked asset 404 as well as the scanner block.",
+      "source": [
+        "ENG13",
+        "N13"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-26",
+      "step": 1,
+      "text": "The zone enforces HTTPS and one-year HSTS without preload.",
+      "source": [
+        "ENG16"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-27",
+      "step": 1,
+      "text": "Live checks compare build id, security headers, CSP, health versions and pool hash, redirects and 404 behaviour; permitted WAF inspection compares configured limits.",
+      "source": [
+        "M8",
+        "N13"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-28",
+      "step": 1,
+      "text": "Operations share one runner and refusal helper; invalid input has a distinct failure class, safe values, a fix command and a runbook anchor.",
+      "source": [
+        "M2",
+        "N7",
+        "ENG24"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-29",
+      "step": 1,
+      "text": "Release scanning covers generated output separately; a confidential term in the deployment artifact prevents remote writes.",
+      "source": [
+        "ENG21"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-30",
+      "step": 1,
+      "text": "Update vulnerable development tooling and record the verified dependency audit without claiming runtime risk from development-only findings.",
+      "source": [
+        "W2"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-31",
+      "step": 1,
+      "text": "Verify runs the local Worker routing/header suite and Worker tests when their step is built; CI fails on a missing required prerequisite.",
+      "source": [
+        "ENG17",
+        "N12"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-32",
+      "step": 1,
+      "text": "Round and game events carry an unlinked per-game reference; completed rounds measure active control time and readiness delay from the untimed baseline onward.",
+      "source": [
+        "ENG9"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-33",
+      "step": 1,
+      "text": "Only after the custom-domain live check and explicit approval is GitHub Pages unpublished; old-origin saves do not migrate.",
+      "source": [
+        "W1"
+      ],
+      "replaces": "Keep a redirect page at the old site.",
+      "tests": []
+    },
+    {
+      "id": "V12-34",
+      "step": 1,
+      "text": "Stay on Workers Free and accept quota outages; no paid product is enabled without approval. Launch checks include junk-path invocations.",
+      "source": [
+        "E16"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-170",
+      "step": 1,
+      "text": "Assets, API responses and Worker-served 404s send X-Content-Type-Options: nosniff, a Referrer-Policy and a Permissions-Policy as HTTP headers, and the header CSP adds frame-ancestors 'none'; the build check verifies the header file.",
+      "source": [
+        "W1"
+      ],
+      "replaces": "Security headers only as a meta CSP on GitHub Pages.",
+      "tests": []
+    },
+    {
+      "id": "V12-171",
+      "step": 1,
+      "text": "docs/ops.md documents the emergency switches without a paid product: the WAF threshold, board off (step 3) and Cloudflare \"I'm Under Attack\" mode.",
+      "source": [
+        "W2"
+      ],
+      "replaces": "BOARD_ENABLED=false as the board's emergency switch.",
+      "tests": []
+    },
+    {
+      "id": "V12-172",
+      "step": 1,
+      "text": "Everything that names the address moves to https://museumguessr.com/ in one change (public profile, index.html canonical and og tags, Playwright configuration, README and docs, release-scan exemptions), and docs/ops.md \"Moving to another domain\" lists it; PostHog authorised URLs are a founder task.",
+      "source": [
+        "W1"
+      ],
+      "replaces": "The GitHub Pages address https://aule-games.github.io/museumguessr/ and BASE_PATH /museumguessr/.",
+      "tests": []
+    },
+    {
+      "id": "V12-40",
+      "step": 2,
+      "text": "One configuration sets roundSeconds 60, firstRoundSeconds 60 (every round is timed, including round 1) and warnSeconds 10; copy derives from the constants. A null firstRoundSeconds would mean an untimed round 1 and is not the shipped value.",
+      "source": [
+        "W3",
+        "M4"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-41",
+      "step": 2,
+      "text": "The timer starts only when the photo is ready and the active control accepts answers; reveals are untimed and photo-skipped rounds have no timer.",
+      "source": [
+        "W3",
+        "D4"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-42",
+      "step": 2,
+      "text": "Pause causes are a set of automatic first-visit tour, unusable active map and own error screen; resume requires all causes cleared and takeover recomputes them.",
+      "source": [
+        "D4",
+        "ENG8",
+        "N8"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-43",
+      "step": 2,
+      "text": "Back, a hidden tab, replayed help and open overlays do not pause the clock.",
+      "source": [
+        "W3",
+        "D4"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-44",
+      "step": 2,
+      "text": "The persisted wall-clock deadline is authoritative; focus, pageshow and visibility changes recheck it, backwards-clock protection is monotonic and non-finite remaining time expires.",
+      "source": [
+        "ENG7",
+        "E21"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-45",
+      "step": 2,
+      "text": "Remaining time clamps to the round length; paused saves contain remaining milliseconds rather than a deadline and rebuild causes from the live UI.",
+      "source": [
+        "E21",
+        "N8"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-46",
+      "step": 2,
+      "text": "Expiry is idempotent and precedes late draft, Confirm, Back and resume events; results and the ledger persist under the writer lock before presentation.",
+      "source": [
+        "ENG7"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-47",
+      "step": 2,
+      "text": "Drafts including empty or invalid values persist while edited; timer and overlay callbacks reject stale game, round and generation identities.",
+      "source": [
+        "ENG7"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-48",
+      "step": 2,
+      "text": "A valid draft wins at expiry; an empty or invalid draft falls back to the last confirmed answer, with visible fallback wording. No draft or answer scores zero as timed out.",
+      "source": [
+        "D8"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-49",
+      "step": 2,
+      "text": "Expiry cancels pin drag, blurs year input and closes overlays through their history pop, cancelling queued actions; the cue lasts about 800 ms then focuses the reveal score.",
+      "source": [
+        "D2"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-50",
+      "step": 2,
+      "text": "Reduced motion skips the expiry hold; returning after the deadline shows the away message without the hold.",
+      "source": [
+        "D2",
+        "R1"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-51",
+      "step": 2,
+      "text": "Persisted expiry is not a completed round; one ledgered reveal_shown action records completion only when the reveal visibly opens.",
+      "source": [
+        "N5"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-52",
+      "step": 2,
+      "text": "Reload with time left returns directly to the round; an expired reload lands on Start with a time-ran-out Continue label that opens the reveal.",
+      "source": [
+        "R1"
+      ],
+      "replaces": "Every mid-round reload opens Start.",
+      "tests": []
+    },
+    {
+      "id": "V12-53",
+      "step": 2,
+      "text": "Photo failure after timer start stops the clock and follows the photo-failure skip path, not the timeout path.",
+      "source": [
+        "N9"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-54",
+      "step": 2,
+      "text": "State version 4 validates every timer, draft, timeout, provenance and completion field; corrupt saves reset but newer-version saves remain untouched.",
+      "source": [
+        "ENG10",
+        "N10"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-55",
+      "step": 2,
+      "text": "Test assistance is sticky on active games, snapshots and pending submissions, including all fixture, jump and timer-control paths.",
+      "source": [
+        "ENG5"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-56",
+      "step": 2,
+      "text": "Share and challenge links omit test, fixture and clock parameters; the browser test flag expires after 24 hours.",
+      "source": [
+        "N11"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-57",
+      "step": 2,
+      "text": "One test surface controls seconds and pause in test mode; the untimed development override is compiled out of deployment artifacts.",
+      "source": [
+        "M4"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-58",
+      "step": 2,
+      "text": "A 3 px decorative draining line is full before start, linear while running, warning-coloured at 10 seconds and frozen at 40 percent opacity while paused.",
+      "source": [
+        "R2"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-59",
+      "step": 2,
+      "text": "Reduced motion uses one-second steps without transition; every dialog and the lightbox mirrors both the line and warning.",
+      "source": [
+        "R2",
+        "D3"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-60",
+      "step": 2,
+      "text": "The last-ten-second cue replaces counter text without layout shift; digits are non-live, hidden time updates every ten seconds and warnings are announced once.",
+      "source": [
+        "D3",
+        "D7"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-61",
+      "step": 2,
+      "text": "Start, challenge, tour and help disclose the timer, placed-answer rule and continued timing inside help and the photo viewer.",
+      "source": [
+        "D1"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-62",
+      "step": 2,
+      "text": "Timed-out rows differ from photo skips, show no guess pin or link and explain zero points; unconfirmed values scored at expiry are tagged.",
+      "source": [
+        "D2"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-63",
+      "step": 2,
+      "text": "Recaps count timed-out questions and the first timed-out reveal shows a once-per-device placed-answer tip.",
+      "source": [
+        "D2"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-64",
+      "step": 2,
+      "text": "Every round and reveal names Easy, Medium or Hard with a non-colour signal; enlarged text keeps the word and round progress while hiding pips if needed.",
+      "source": [
+        "W4",
+        "D3"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-65",
+      "step": 2,
+      "text": "A hard object at 2400 points or more receives the mark in the reveal total and end summary, without multiplying points.",
+      "source": [
+        "W4",
+        "D12"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-66",
+      "step": 2,
+      "text": "The share hook adds singular or plural hard-object marks only when earned, keeping the hook-plus-link format.",
+      "source": [
+        "D12"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-67",
+      "step": 2,
+      "text": "The round-three pulse asks about this game so far, not the object's difficulty.",
+      "source": [
+        "R3"
+      ],
+      "replaces": "The pulse label is Difficulty.",
+      "tests": []
+    },
+    {
+      "id": "V12-68",
+      "step": 2,
+      "text": "Scoring version 3 maps input at or below 4000 BCE to sentinel -4001; zero is invalid and later input ends at 2025 CE.",
+      "source": [
+        "W5",
+        "ENG10"
+      ],
+      "replaces": "Years earlier than 4000 BCE are out of range on the year control.",
+      "tests": []
+    },
+    {
+      "id": "V12-69",
+      "step": 2,
+      "text": "The sentinel earns full When points only when the object's range ends before -4000; otherwise it scores as -4000, including distance wording.",
+      "source": [
+        "W5",
+        "ENG10"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-70",
+      "step": 2,
+      "text": "The year end cap has a gap, accessible early-date wording and defined arrow/Home behaviour; CE clears the selected stop and dragging snaps across the gap.",
+      "source": [
+        "D11"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-71",
+      "step": 2,
+      "text": "The field, era switch, warning and Confirm remain reachable with the phone keyboard open; early-date reveals use a broken-axis range.",
+      "source": [
+        "D11"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-72",
+      "step": 2,
+      "text": "Challenge rules versions derive from scoring and timer constants; missing or mismatched rules keep the deck playable but remove the score to beat.",
+      "source": [
+        "ENG11"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-73",
+      "step": 2,
+      "text": "Decks retry made-country counts over two with fresh tie-break costs up to twenty times; retain the best result and record a missed cap.",
+      "source": [
+        "ENG12"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-74",
+      "step": 2,
+      "text": "The pool fails when more than five percent of 1000 seeded decks miss the made-country cap; planner property tests include adversarial history and a phone performance benchmark.",
+      "source": [
+        "ENG12"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-75",
+      "step": 2,
+      "text": "Timer logic stays pure in its own module; the screen controller only connects modules.",
+      "source": [
+        "E22"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-76",
+      "step": 2,
+      "text": "Measurement compares active-time percentiles and separately reports reveal reach, answered completion and timeout share; timer changes require a decision, not an automatic threshold fallback.",
+      "source": [
+        "E10",
+        "R7",
+        "R8"
+      ],
+      "replaces": "Automatic timer fallback and novice observation sessions.",
+      "tests": []
+    },
+    {
+      "id": "V12-77",
+      "step": 2,
+      "text": "Keyboard E2E records elapsed time and keystrokes as an automation floor, not proof of human accessibility; the essential timing exception is documented.",
+      "source": [
+        "E20",
+        "D7",
+        "N19"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-78",
+      "step": 2,
+      "text": "Round completion records timed-out question count, seconds left, active milliseconds and readiness milliseconds; timing never enters the board payload.",
+      "source": [
+        "W3",
+        "ENG9"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-79",
+      "step": 2,
+      "text": "Round-ten reveal records finished_at; snapshots and pending records keep the last server board week or null, never silently infer a week from the device clock.",
+      "source": [
+        "N4"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-80",
+      "step": 3,
+      "text": "Eligible random and challenge games submit automatically on the end screen; replay, all-seen challenges and test-assisted games do not rank in public mode.",
+      "source": [
+        "W6",
+        "G1"
+      ],
+      "replaces": "Manual Add or Replace buttons; fresh-only or fixed-week decks.",
+      "tests": []
+    },
+    {
+      "id": "V12-81",
+      "step": 3,
+      "text": "Create a cryptographically random 128-bit device key under the named browser lock, reread it before POST or DELETE and store receipt fingerprints.",
+      "source": [
+        "W6",
+        "N3"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-82",
+      "step": 3,
+      "text": "Only the bearer header carries the key; the server stores its hash, with one best row per device and ISO week.",
+      "source": [
+        "W6"
+      ],
+      "replaces": "A per-row removal secret (secret_sha256) and a typed nickname in the payload.",
+      "tests": []
+    },
+    {
+      "id": "V12-83",
+      "step": 3,
+      "text": "Validate the streamed 4 KB body and schema before the known-game shortcut; no D1 write occurs before rate-limit and verification approval.",
+      "source": [
+        "W6",
+        "ENG1"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-84",
+      "step": 3,
+      "text": "The IPv4 or IPv6 /64 request limit is thirty per minute before POST lookup and on bearer reads; it also counts receipt retries.",
+      "source": [
+        "ENG15"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-85",
+      "step": 3,
+      "text": "Known games return only the owner's matching-hash receipt; changed payloads or another device receive duplicate without verification or a per-key submission charge.",
+      "source": [
+        "W6",
+        "ENG22"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-86",
+      "step": 3,
+      "text": "Check the week's tombstone before rescoring; a removed current week cannot be recreated by late submissions.",
+      "source": [
+        "W6",
+        "ENG1"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-87",
+      "step": 3,
+      "text": "Refuse replay and test provenance in public mode; allow the current contract and only the previous compatible-scoring contract, otherwise require a page update.",
+      "source": [
+        "W6",
+        "ENG19"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-88",
+      "step": 3,
+      "text": "Answer revisions lower than the server or retired ids require update_page; higher revisions or unknown ids return try_later; equal revisions rescore.",
+      "source": [
+        "W6",
+        "V1-answers-rev"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-89",
+      "step": 3,
+      "text": "The server uses the shared scorer, ignores client totals, requires null answers for timeout flags and awards those questions zero.",
+      "source": [
+        "W6",
+        "ENG10"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-90",
+      "step": 3,
+      "text": "A non-improving score returns not_best with the current best and writes nothing.",
+      "source": [
+        "W6",
+        "ENG1"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-91",
+      "step": 3,
+      "text": "Limit submissions to three per key and five new device-week rows per IP per minute before verifying a fresh Turnstile token; IPs stay in memory only.",
+      "source": [
+        "ENG14",
+        "ENG15"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-92",
+      "step": 3,
+      "text": "Siteverify checks success, hostname and action and receives the remote IP; local and public environments have separate expected values.",
+      "source": [
+        "ENG14"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-93",
+      "step": 3,
+      "text": "One transactional batch conditionally inserts or improves the best and updates receipts; losing races return removed or fresh not_best without corrupting receipts or buckets.",
+      "source": [
+        "ENG1"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-94",
+      "step": 3,
+      "text": "Replacement preserves row id and hidden state, changes game and payload hash, and resets sequence and creation time for tie ordering.",
+      "source": [
+        "W6",
+        "ENG1"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-95",
+      "step": 3,
+      "text": "Each game has its own current, replaced or removed receipt retained eight weeks; retries keep their original week and score. Owner board reads return this week's best and at most one best per retained week (eight), with no history paging and never unbounded arrays.",
+      "source": [
+        "W6",
+        "C1",
+        "spec reconciliation: weekly bests, eight-week purge"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-96",
+      "step": 3,
+      "text": "Receipt reads require the owner; public responses never expose game ids, device hashes, receipts or keys.",
+      "source": [
+        "ENG22"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-97",
+      "step": 3,
+      "text": "Owner deletion tombstones the current device-week, clears stored name and answer detail and invalidates the affected public cache; older-week removal does not block the current week, and Remove all follows the same rule.",
+      "source": [
+        "W6",
+        "D6",
+        "v1 ranks, weeks and removal"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-98",
+      "step": 3,
+      "text": "Display fifty rows, equal totals share rank and earlier submission orders tied rows; device counts are never labelled people.",
+      "source": [
+        "W6",
+        "D10"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-99",
+      "step": 3,
+      "text": "Check mode before cache; cache only public projection by week and mode, for at most sixty seconds and never past Monday reset. Delete, hide and unhide delete the affected week's cache entry where the request ran; other locations converge within the 60-second lifetime; a warm-cache test proves the local purge.",
+      "source": [
+        "ENG2",
+        "v1 ranks, weeks and removal"
+      ],
+      "replaces": "The v1 board GET cached at the edge for 30 s.",
+      "tests": []
+    },
+    {
+      "id": "V12-100",
+      "step": 3,
+      "text": "Materialized public JSON and weekly count update with writes; misses read one or two projection rows and personal responses are private and uncached.",
+      "source": [
+        "ENG2"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-101",
+      "step": 3,
+      "text": "Store exact POST rank in receipts; the whole personal read, including weekly bests and owner summaries, scans at most one hundred rows using narrow high-score buckets and bounded approximate-rank wording.",
+      "source": [
+        "ENG18"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-102",
+      "step": 3,
+      "text": "SQLite triggers maintain visible-score buckets on insert, update and delete; widths match TypeScript for every total from zero through 30000.",
+      "source": [
+        "ENG1",
+        "ENG18"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-103",
+      "step": 3,
+      "text": "Mode is off, dark or on in D1 settings with a thirty-second local cache; absent settings mean off, unreadable settings mean unavailable.",
+      "source": [
+        "ENG3"
+      ],
+      "replaces": "The BOARD_ENABLED Worker variable (v1).",
+      "tests": []
+    },
+    {
+      "id": "V12-104",
+      "step": 3,
+      "text": "An independent force-off secret overrides D1; deployment and rollback never reset the board mode.",
+      "source": [
+        "ENG3"
+      ],
+      "replaces": "A deployment variable stores the emergency mode.",
+      "tests": []
+    },
+    {
+      "id": "V12-105",
+      "step": 3,
+      "text": "Dark submissions use a separate smoke table, never ranking buckets or public counts; ordinary clients see disabled. An explicit dark-only test read header obtains server week and optional owner smoke history, with null ranks and no caching.",
+      "source": [
+        "ENG4",
+        "H2",
+        "spec reconciliation: dark read context"
+      ],
+      "replaces": "Smoke rows stored hidden in the public scores table (H2).",
+      "tests": []
+    },
+    {
+      "id": "V12-106",
+      "step": 3,
+      "text": "Enabling the board requires content approval and first purges this week's smoke rows, printing the count.",
+      "source": [
+        "ENG4",
+        "ENG20"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-107",
+      "step": 3,
+      "text": "Purge records older than eight weeks in bounded off-reset batches; avoid per-row old-week bucket upkeep.",
+      "source": [
+        "N2"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-108",
+      "step": 3,
+      "text": "Fetch server week context once, nonblockingly, when round ten opens (skipped when the board UI or the auto-add switch is off); freeze the last successful week when its reveal opens. First online games can rank; late responses never rewrite null or closed completion weeks. Known retries retain their week.",
+      "source": [
+        "N4",
+        "spec reconciliation: pre-completion week fetch"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-109",
+      "step": 3,
+      "text": "A shared versioned name generator has at least a million combinations, append-only lists, golden key fixtures and word/pair safety checks; blocked pairs alone rederive.",
+      "source": [
+        "W6",
+        "N17",
+        "M7",
+        "D13"
+      ],
+      "replaces": "Typed nicknames on the board, the \"Another name\" re-roll and name_rejected.",
+      "tests": []
+    },
+    {
+      "id": "V12-110",
+      "step": 3,
+      "text": "Local name blocking and bulk hide/unhide validate arguments, never interpolate user input into SQL commands, and keep moderation reasons free of personal data.",
+      "source": [
+        "M7",
+        "N7"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-111",
+      "step": 3,
+      "text": "Every API error has reason and retryability; the page dispatches by reason, maps edge 429 and quota HTML separately and keeps pending data through bounded retries.",
+      "source": [
+        "M1",
+        "ENG23"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-112",
+      "step": 3,
+      "text": "Worker invocation logging is disabled in configuration. Server failures log only request id, route and error name; the tail wrapper and incident steps never log credentials, bodies or IPs.",
+      "source": [
+        "M9",
+        "v1 Worker edge cases"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-113",
+      "step": 3,
+      "text": "Write the canonical pending submission before its first POST; retry on load and card show independently of the active game until confirmed or refused.",
+      "source": [
+        "W6",
+        "G1"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-114",
+      "step": 3,
+      "text": "Automatic retries stop after five; honour Retry-After or bounded backoff, retain the pending record and offer explicit retry.",
+      "source": [
+        "ENG23"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-115",
+      "step": 3,
+      "text": "Load Turnstile only when needed; verification expands in place for interaction, times out after ten seconds and retries with a fresh token.",
+      "source": [
+        "G1",
+        "ENG14"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-116",
+      "step": 3,
+      "text": "Share remains the first action after the score and sole filled primary; Play another 10 precedes the compact board card, which never opens itself.",
+      "source": [
+        "G2",
+        "R4"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-117",
+      "step": 3,
+      "text": "The canonical board-state table covers loading, adding, success, replacement, removal, hidden, all ineligible reasons, storage, verification, retry, unavailable and week/rank states.",
+      "source": [
+        "D10",
+        "G2"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-118",
+      "step": 3,
+      "text": "Low counts hide the denominator; rank copy uses exact rank, top-half percentiles or points from the top fifty, including ties outside the fifty listed rows.",
+      "source": [
+        "D10",
+        "E12"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-119",
+      "step": 3,
+      "text": "Show the confirmed receipt rank after submission even when the public list is cached; background retries never steal focus.",
+      "source": [
+        "D10"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-120",
+      "step": 3,
+      "text": "Tour, help, About and README disclose automatic generated-name entry; a device switch defaults on and stops future automatic submissions when off.",
+      "source": [
+        "G3"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-121",
+      "step": 3,
+      "text": "Your board scores lists weekly bests with Remove and Remove all; confirmation names the relative local reset time and has explicit pending, failure and success states.",
+      "source": [
+        "G3",
+        "D6"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-122",
+      "step": 3,
+      "text": "Request persistent storage only on a deliberate board or score-history open, never on card display or automatic success.",
+      "source": [
+        "G4"
+      ],
+      "replaces": "Request persistence after the first successful automatic add.",
+      "tests": []
+    },
+    {
+      "id": "V12-123",
+      "step": 3,
+      "text": "The start screen shows last-confirmed standing from local receipts without another API request; opening the end card refreshes it.",
+      "source": [
+        "R5",
+        "N15"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-124",
+      "step": 3,
+      "text": "Board tables use accessible headers, a You current row and text nodes for server values; generated names use the body font and numeric columns tabular figures.",
+      "source": [
+        "W6"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-125",
+      "step": 3,
+      "text": "Board UI off removes the panel and Turnstile CSP/site-key requirement; board UI on in deploy requires a real public site key.",
+      "source": [
+        "W6",
+        "H1"
+      ],
+      "replaces": "VITE_API_HOST as the board host; the board UI was on whenever a host was set.",
+      "tests": []
+    },
+    {
+      "id": "V12-126",
+      "step": 3,
+      "text": "The local loop builds missing assets, migrates/seeds a dark local Worker, waits for health, proxies Vite and stops both processes on exit.",
+      "source": [
+        "H4",
+        "N14"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-127",
+      "step": 3,
+      "text": "The local end fixture is test-assisted, exercises smoke submission and not_best, resets local state on request and is absent from deploy builds.",
+      "source": [
+        "N14",
+        "ENG5"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-128",
+      "step": 3,
+      "text": "Browser suites fail on any unmocked API or Turnstile request except the dedicated local widget test using dummy keys.",
+      "source": [
+        "W6",
+        "ENG17"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-129",
+      "step": 3,
+      "text": "Worker dependencies and configuration are isolated; shared modules use no DOM or runtime code evaluation and receive independent type and CSP checks.",
+      "source": [
+        "V1-toolchain",
+        "ENG23"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-130",
+      "step": 3,
+      "text": "Worker tests measure reads and writes per endpoint including concentrated and equal-score fixtures; the runbook budgets accepted adds and non-improving submits separately.",
+      "source": [
+        "N1"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-131",
+      "step": 3,
+      "text": "A fixed Monday rollover test covers cache, pending retries, receipt ranks and purge together; injected D1 limit failures preserve the game and pending data.",
+      "source": [
+        "N19"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-132",
+      "step": 3,
+      "text": "A local last-active ISO-week marker emits week_active once per week with active_last_week; return measurement does not join daily cookieless identities.",
+      "source": [
+        "ENG6"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-133",
+      "step": 3,
+      "text": "Queries report board views and challenge shares per finished game, weekly return, full-game completion and challenge completion, with explicit denominators.",
+      "source": [
+        "E9",
+        "G5",
+        "R7"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-134",
+      "step": 3,
+      "text": "Board submission events include reason and auto true; a separate viewed event counts deliberate board opens.",
+      "source": [
+        "G5"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-135",
+      "step": 3,
+      "text": "Privacy copy states the stable cross-week generated name, stored score/date, device-only key and weekly marker, without claiming no local analytics state. The server never persists raw pins, IP addresses or user agents.",
+      "source": [
+        "W6",
+        "ENG6",
+        "v1 data stored"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-136",
+      "step": 3,
+      "text": "Board listing reports how many top-fifty totals reach 29500; more than ten triggers a ranking review, never a time-based rule using nonexistent data.",
+      "source": [
+        "E8",
+        "R8"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-137",
+      "step": 3,
+      "text": "Answer changes require raised revisions and a recorded answer baseline; retired keys remain available for fourteen days without allowing retired submissions.",
+      "source": [
+        "V1-answers-rev",
+        "ENG23"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-138",
+      "step": 3,
+      "text": "Old tabs, pending submissions and rollback across scoring or contract changes are tested for explicit update handling.",
+      "source": [
+        "ENG19",
+        "N10"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-139",
+      "step": 3,
+      "text": "Normal end-screen networking is at most one bearer board GET and one score POST; retries and deliberate refreshes are separate.",
+      "source": [
+        "ENG2"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-140",
+      "step": 4,
+      "text": "Research about thirty famous-museum and fifteen Turkey-related objects in durable local folders; only human-made objects with complete evidence can ship.",
+      "source": [
+        "W7"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-141",
+      "step": 4,
+      "text": "The release's artist cutoff is death in 1955 or earlier; this does not replace artwork and exact-photo rights evidence.",
+      "source": [
+        "W7"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-142",
+      "step": 4,
+      "text": "Every newly represented heritage jurisdiction gets a sourced finding before affected objects ship; unknown findings remain pending, not clear.",
+      "source": [
+        "W7"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-143",
+      "step": 4,
+      "text": "The pool city cap is max(3, floor(0.08 times pool size)); each deck still contains each Kept city at most once.",
+      "source": [
+        "W7"
+      ],
+      "replaces": "Pool city cap min(4, floor(N / 10)).",
+      "tests": []
+    },
+    {
+      "id": "V12-144",
+      "step": 4,
+      "text": "Dates may begin at -40000 with no year zero, at most three objects precede the early stop and the constant-guess baseline remains below forty percent.",
+      "source": [
+        "W5",
+        "W7"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-145",
+      "step": 4,
+      "text": "Editorial selection prefers documented journeys and visible clues; fame alone does not make an object easy.",
+      "source": [
+        "W7",
+        "E14"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-146",
+      "step": 4,
+      "text": "Retain easy share at least thirty percent, hard share at most thirty percent, paintings at most half and all other diversity rules.",
+      "source": [
+        "W7"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-147",
+      "step": 4,
+      "text": "Separate contact sheets receive approval or strikes; batches normally promote together after the timer/year step and validate at final pool size.",
+      "source": [
+        "W7"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-148",
+      "step": 4,
+      "text": "The F-only alternative needs explicit approval and validated reserve substitutions; one contentApproved predicate gates board activation and release.",
+      "source": [
+        "E13",
+        "ENG20"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-149",
+      "step": 4,
+      "text": "Content promotion is atomic on failed checks and never treats a researcher recommendation as approval.",
+      "source": [
+        "W7"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-150",
+      "step": 4,
+      "text": "Pool diagnostics print country-cap failure and city count, cap, pool size and reserve alternatives rather than only a generic failure.",
+      "source": [
+        "E14",
+        "ENG12"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-151",
+      "step": 4,
+      "text": "Retire at the minimum requires replacement, retired ids cannot be reused and fewer than two ready reserves warns.",
+      "source": [
+        "V1-retirement"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-152",
+      "step": 4,
+      "text": "Inspect full processed photos and audit every record's exact photo licence, making place, date, journey and claims before promotion.",
+      "source": [
+        "W7",
+        "W8"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-153",
+      "step": 4,
+      "text": "No generated artwork photos enter game content; all images retain real source credits and licences.",
+      "source": [
+        "W7"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-154",
+      "step": 4,
+      "text": "The final pool target is about seventy-five, not a reason to lower evidence standards or bypass diversity checks.",
+      "source": [
+        "W7"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-160",
+      "step": 5,
+      "text": "Visual review covers timer stages and overlays, timeout states, difficulty, early-year control, keyboard-open entry, all board states, standing and removal.",
+      "source": [
+        "W8",
+        "D14"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-161",
+      "step": 5,
+      "text": "Inspect 375x667, 390x664, 390x844, 844x390 and 1280x800 plus doubled text; warning contrast is at least 4.5 to one.",
+      "source": [
+        "W8",
+        "D3"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-162",
+      "step": 5,
+      "text": "Reveal score and hard mark fit the phone fold; end total, tier and Share fit small phones and Play another 10 fits the tall phone without requiring the board above its fold.",
+      "source": [
+        "W8",
+        "D12",
+        "G2"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-163",
+      "step": 5,
+      "text": "Final verification includes root and Worker suites, routing integration, built design review, security/content audits and release scan with no open blocking findings.",
+      "source": [
+        "W9"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-164",
+      "step": 5,
+      "text": "Measure a fresh clone to a successful local board submission against a three-minute target; never report an unrun check as passed.",
+      "source": [
+        "H4",
+        "N14"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-165",
+      "step": 5,
+      "text": "Run dark live board checks after the board deploy and before enabling public ranking; test-assisted results never contaminate real rankings.",
+      "source": [
+        "W9",
+        "H2"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-166",
+      "step": 5,
+      "text": "Launch copy uses the approved domain, actual pool and current privacy rules; publishing and each deploy still require explicit approval.",
+      "source": [
+        "E17",
+        "E18"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-167",
+      "step": 5,
+      "text": "Launch-day checks cover quota and the first three fifty-visitor cohorts with distinct completion measures; future timer or ranking changes remain human decisions.",
+      "source": [
+        "E16",
+        "R7",
+        "R8"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-168",
+      "step": 5,
+      "text": "The release checklist records completed, failed, blocked and manual evidence separately; incomplete requirements cannot be labelled shipped.",
+      "source": [
+        "W9"
+      ],
+      "replaces": null,
+      "tests": []
+    },
+    {
+      "id": "V12-169",
+      "step": 5,
+      "text": "Use the existing visual tokens and independent milestone audits; fixes to blocking findings are rechecked.",
+      "source": [
+        "W8",
+        "W9"
+      ],
+      "replaces": null,
+      "tests": []
+    }
+  ]
+}
