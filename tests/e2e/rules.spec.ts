@@ -89,11 +89,14 @@ test.describe('the year stop', () => {
     const visible = size.height - 336;
     await page.setViewportSize({ width: size.width, height: visible });
     await expect.poll(() => page.evaluate(() => document.documentElement.style.getPropertyValue('--app-height'))).toBe(`${visible}px`);
+    // The emulated resize can settle over a few frames; the steady layout is what counts.
     for (const target of [field, page.getByRole('button', { name: /^BCE/ }), page.getByRole('button', { name: 'CE', exact: true }), page.locator('[data-test=confirm]')]) {
-      const box = await target.boundingBox();
-      expect(box, String(target)).not.toBeNull();
-      expect(box!.y, String(target)).toBeGreaterThanOrEqual(0);
-      expect(box!.y + box!.height, String(target)).toBeLessThanOrEqual(visible + 0.5);
+      await expect
+        .poll(async () => {
+          const box = await target.boundingBox();
+          return !!box && box.y >= 0 && box.y + box.height <= visible + 0.5;
+        }, { message: `${String(target)} is fully inside the visible ${visible} px` })
+        .toBe(true);
     }
     await expect(page.locator('[data-test=confirm]')).toBeEnabled();
   });
