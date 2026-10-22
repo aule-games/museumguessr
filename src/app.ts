@@ -949,7 +949,7 @@ export class App {
       step: s.step,
       total,
       answer: draft === undefined ? confirmed : draft,
-      previous: draft === null && typeof confirmed === 'number' ? confirmed : null,
+      previous: typeof confirmed === 'number' ? confirmed : null,
       madePin: s.answers[s.round]?.made ?? null,
       photo: this.photo,
       map: s.step === 'when' ? this.map : this.ensureMap(),
