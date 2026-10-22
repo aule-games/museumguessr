@@ -2,19 +2,22 @@
 // on the same account shares one origin, so storage keys are namespaced.
 
 import { revalidateSrc, type Src } from '../analytics/channels.ts';
-import type { Step } from '../analytics/events.ts';
+import { STEPS, type Step } from '../analytics/events.ts';
 import { DECK } from '../deck/config.ts';
+import type { ClockSave, Drafts } from '../game/timer.ts';
 import { SCORING_VERSION } from '../scoring/config.ts';
 import type { RoundAnswers, RoundResult } from '../scoring/game.ts';
 import { isAnswerYear } from '../scoring/years.ts';
 
 export type { RoundAnswers, RoundResult } from '../scoring/game.ts';
+export type { ClockSave, Draft, Drafts } from '../game/timer.ts';
 
 /**
  * Bump when the shape or meaning of saved state changes (2: question order
- * made → when → kept, DS35; 3: a game holds its own deck, V1-05).
+ * made → when → kept, DS35; 3: a game holds its own deck, V1-05; 4: the
+ * round clock, drafts, time-ups, test provenance and completion, V12-54).
  */
-export const STATE_VERSION = 3;
+export const STATE_VERSION = 4;
 
 /**
  * The items hash of the fixed v0 set of 10. A version 2 save is migrated only
@@ -47,6 +50,10 @@ export const KEYS = {
   gamesInTab: 'museumguessr:v1:games-in-tab',
   /** sessionStorage: challenge links whose screen already sent challenge_opened. */
   challengeOpened: 'museumguessr:v1:challenge-opened',
+  /** The first timed-out reveal on this device showed its one-time tip (V12-63). */
+  timeUpTip: 'museumguessr:v1:time-up-tip',
+  /** The last ISO week (UTC, Monday start) in which this device completed a game (V12-132). */
+  weekActive: 'museumguessr:v1:week-active',
 } as const;
 
 export type Phase = 'answering' | 'reveal';
@@ -67,8 +74,40 @@ export interface Versions {
   items_version: string;
 }
 
-export interface GameState extends Versions {
+/** How a round ended at time-up (D2, D8): a round that ended by Confirm or a photo skip has none. */
+export interface TimeUp {
+  /** Questions with no answer and no valid draft at time-up: 0 points, "No answer · time ran out" (not "Skipped"). */
+  questions: Step[];
+  /** Questions scored from an unconfirmed draft or from the fallback to the last confirmed answer: "Counted at time-up". */
+  counted: Step[];
+  /** The deadline passed while the player was away (hidden tab, closed page): the reveal says so and skips the hold. */
+  away: boolean;
+}
+
+/** Timing evidence for round_completed (ENG9), kept in the save so a reload never changes it. */
+export interface RoundTiming {
+  /** Whole seconds left when the round ended; null for an untimed round. */
+  seconds_left: number | null;
+  /** Time the answer controls were usable (the clock only runs while they are). */
+  active_ms: number;
+  /** Round opened → photo and controls ready; null when they never were. */
+  ready_ms: number | null;
+}
+
+/** Test provenance and completion, shared by the active game and its finished snapshot (ENG5, N4). */
+export interface Provenance {
+  /** Started in test mode, or touched by any test control; never cleared (ENG5). */
+  test_assisted: boolean;
+  /** Wall-clock ms when the round-10 reveal was first shown; null before (N4). */
+  finished_at: number | null;
+  /** The server's ISO week frozen at completion, or null; never inferred from the device clock (N4). */
+  board_week: string | null;
+}
+
+export interface GameState extends Versions, Provenance {
   game_id: string;
+  /** A random per-game reference for analytics, never reused across games and never sent to the board (ENG9). */
+  game_ref: string;
   /** Write counter for cross-tab safety (ENG30). */
   rev: number;
   /** Channel captured at game start (PH3). */
@@ -91,10 +130,18 @@ export interface GameState extends Versions {
   /** Ledger of events already handed to analytics: `${game_id}:${event}:${round}:${step}` (ENG14, R3). */
   sent: string[];
   finished: boolean;
+  /** The current round's clock; null before it starts and on the reveal (V12-44). */
+  clock: ClockSave | null;
+  /** The current round's unconfirmed edits, saved as they change (ENG7). */
+  drafts: Drafts;
+  /** Per round: how it ended at time-up, or null. */
+  timed_out: (TimeUp | null)[];
+  /** Per round: timing evidence for round_completed, or null before the round ends. */
+  timing: (RoundTiming | null)[];
 }
 
 /** A finished game, kept next to the active save for "Review your 10" (ENG37). */
-export interface FinishedSnapshot extends Versions {
+export interface FinishedSnapshot extends Versions, Provenance {
   game_id: string;
   item_ids: string[];
   deck_kind: DeckKind;
@@ -103,6 +150,7 @@ export interface FinishedSnapshot extends Versions {
   answers: RoundAnswers[];
   results: RoundResult[];
   total: number;
+  timed_out: (TimeUp | null)[];
 }
 
 export function currentVersions(itemsVersion: string): Versions {
@@ -155,10 +203,10 @@ function challengeOk(c: unknown): c is Challenge | null {
 
 /**
  * The deck fields of a saved game or snapshot, or null when it cannot be
- * used with the live pool (V1-05). A version 3 record is valid while its
- * deck hash still matches the pool, so pool growth keeps it and an answer
- * change drops it. A version 2 record (the fixed v0 set) is migrated as a
- * random, not-fresh deck only when it was made against the recorded v0
+ * used with the live pool (V1-05). A version 3 or 4 record is valid while
+ * its deck hash still matches the pool, so pool growth keeps it and an
+ * answer change drops it. A version 2 record (the fixed v0 set) is migrated
+ * as a random, not-fresh deck only when it was made against the recorded v0
  * answers and they are unchanged.
  */
 function deckFields(
@@ -173,7 +221,7 @@ function deckFields(
     if (v.items_version !== V2_ITEMS_VERSION || hash !== V2_ITEMS_VERSION) return null;
     return { item_ids: ids, deck_kind: 'random', deck_hash: hash, fresh: false, first_seen: ids.map(() => false), challenge: null };
   }
-  if (v.state_version !== STATE_VERSION || v.deck_hash !== hash) return null;
+  if ((v.state_version !== 3 && v.state_version !== STATE_VERSION) || v.deck_hash !== hash) return null;
   if (!DECK_KINDS.includes(v.deck_kind as DeckKind) || !challengeOk(v.challenge ?? null)) return null;
   const firstSeen = v.first_seen ?? ids.map(() => false);
   if (!Array.isArray(firstSeen) || firstSeen.length !== ids.length || !firstSeen.every((f) => typeof f === 'boolean')) return null;
@@ -187,12 +235,85 @@ function deckFields(
   };
 }
 
+// ----- version 4 fields (V12-54): every one is checked; one bad field resets the save -----
+
+const isStep = (s: unknown): s is Step => (STEPS as readonly unknown[]).includes(s);
+const isMs = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v) && v >= 0;
+const stepList = (v: unknown): v is Step[] => Array.isArray(v) && v.every(isStep) && new Set(v).size === v.length;
+
+/** A random reference for analytics: 22 base64url characters, like a game id but never linked to one. */
+export function newGameRef(random: (n: number) => Uint8Array = (n) => crypto.getRandomValues(new Uint8Array(n))): string {
+  let bin = '';
+  for (const b of random(16)) bin += String.fromCharCode(b);
+  return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+const REF = /^[A-Za-z0-9_-]{8,64}$/;
+const WEEK = /^\d{4}-W(0[1-9]|[1-4]\d|5[0-3])$/;
+
+function clockOk(c: unknown, round: number, phase: unknown): boolean {
+  if (c === null) return true;
+  if (!isObj(c) || phase !== 'answering' || c.round !== round) return false;
+  if (!(c.limit_ms === null || (Number.isInteger(c.limit_ms) && (c.limit_ms as number) > 0))) return false;
+  if (typeof c.paused !== 'boolean' || typeof c.stopped !== 'boolean' || !isMs(c.ready_ms)) return false;
+  if (c.stopped && !c.paused) return false;
+  // Running: a deadline and no remaining time. Paused or stopped: remaining time and no deadline (N8).
+  return c.paused ? c.deadline === null && isMs(c.remaining_ms) : typeof c.deadline === 'number' && Number.isFinite(c.deadline) && c.remaining_ms === null;
+}
+
+function draftsOk(d: unknown): boolean {
+  if (!isObj(d)) return false;
+  return Object.entries(d).every(([step, v]) => {
+    if (!isStep(step)) return false;
+    if (v === null) return true;
+    return step === 'when' ? isAnswerYear(v) : isObj(v) && Number.isFinite(v.lat) && Number.isFinite(v.lng);
+  });
+}
+
+function timeUpOk(t: unknown): boolean {
+  return t === null || (isObj(t) && stepList(t.questions) && stepList(t.counted) && typeof t.away === 'boolean');
+}
+
+function timingOk(t: unknown): boolean {
+  return (
+    t === null ||
+    (isObj(t) &&
+      (t.seconds_left === null || (Number.isInteger(t.seconds_left) && (t.seconds_left as number) >= 0)) &&
+      isMs(t.active_ms) &&
+      (t.ready_ms === null || isMs(t.ready_ms)))
+  );
+}
+
+function provenanceOk(v: Record<string, unknown>): boolean {
+  return (
+    typeof v.test_assisted === 'boolean' &&
+    (v.finished_at === null || (typeof v.finished_at === 'number' && Number.isFinite(v.finished_at))) &&
+    (v.board_week === null || (typeof v.board_week === 'string' && WEEK.test(v.board_week)))
+  );
+}
+
+const perRound = (v: unknown, n: number, ok: (x: unknown) => boolean) => Array.isArray(v) && v.length === n && v.every(ok);
+
+/** The saved record is from a newer page version: leave it untouched (N10) rather than discard it. */
+export function isNewerRecord(raw: string | null): boolean {
+  if (!raw) return false;
+  try {
+    const v = JSON.parse(raw) as unknown;
+    return isObj(v) && typeof v.state_version === 'number' && v.state_version > STATE_VERSION;
+  } catch {
+    return false;
+  }
+}
+
 /**
  * Parse a saved game. Returns null (start a new game) on a parse error, a
- * version mismatch, an unknown item id or a deck whose answers changed
- * (E6, DX18, V1-05).
+ * version mismatch, an unknown item id, a deck whose answers changed or any
+ * corrupt field (E6, DX18, V1-05, V12-54). A newer-version save also parses
+ * to null; the caller leaves it in storage (see isNewerRecord). An older save
+ * (version 2 or 3) gains the version 4 fields: no clock yet, no drafts, no
+ * time-ups, not test-assisted, unfinished.
  */
-export function parseSave(raw: string | null, pool: Pool): GameState | null {
+export function parseSave(raw: string | null, pool: Pool, newRef: () => string = () => newGameRef()): GameState | null {
   if (!raw) return null;
   let v: unknown;
   try {
@@ -223,6 +344,31 @@ export function parseSave(raw: string | null, pool: Pool): GameState | null {
   ) {
     return null;
   }
+  const older = v.state_version !== STATE_VERSION;
+  if (older) {
+    const migrated = {
+      game_ref: newRef(),
+      clock: null,
+      drafts: {},
+      timed_out: deck.item_ids.map(() => null),
+      timing: deck.item_ids.map(() => null),
+      test_assisted: false,
+      finished_at: null,
+      board_week: null,
+    };
+    return { ...(v as unknown as GameState), ...migrated, ...deck, state_version: STATE_VERSION, src: revalidateSrc(v.src) };
+  }
+  if (
+    typeof v.game_ref !== 'string' ||
+    !REF.test(v.game_ref) ||
+    !clockOk(v.clock, v.round as number, v.phase) ||
+    !draftsOk(v.drafts) ||
+    !perRound(v.timed_out, n, timeUpOk) ||
+    !perRound(v.timing, n, timingOk) ||
+    !provenanceOk(v)
+  ) {
+    return null;
+  }
   return { ...(v as unknown as GameState), ...deck, state_version: STATE_VERSION, src: revalidateSrc(v.src) };
 }
 
@@ -232,15 +378,24 @@ export interface ParsedSnapshot {
   current: boolean;
 }
 
+/** A finished snapshot; an older one gains the version 4 provenance fields, a corrupt version 4 one is not current. */
 export function parseSnapshot(raw: string | null, pool: Pool): ParsedSnapshot | null {
   if (!raw) return null;
   try {
     const v = JSON.parse(raw) as unknown;
     if (!isObj(v) || !Number.isFinite(v.total)) return null;
     const deck = deckFields(v, pool);
+    const n = deck?.item_ids.length ?? 0;
+    const v4 = v.state_version === STATE_VERSION;
+    const extrasOk = !v4 || (perRound(v.timed_out, n, timeUpOk) && provenanceOk(v));
     const current =
-      !!deck && answersOk(v.answers, deck.item_ids.length) && Array.isArray(v.results) && v.results.every(resultOk);
-    const snapshot = { ...(v as unknown as FinishedSnapshot), ...(deck ? { deck_kind: deck.deck_kind, deck_hash: deck.deck_hash, challenge: deck.challenge, state_version: STATE_VERSION } : {}) };
+      !!deck && extrasOk && answersOk(v.answers, n) && Array.isArray(v.results) && v.results.every(resultOk);
+    const defaults = { timed_out: Array.from({ length: Array.isArray(v.item_ids) ? v.item_ids.length : 0 }, () => null), test_assisted: false, finished_at: null, board_week: null };
+    const base = { ...defaults, ...(v as unknown as FinishedSnapshot) };
+    if (!current) Object.assign(base, { timed_out: defaults.timed_out });
+    // Test provenance never clears, whatever else about the record is unusable (ENG5).
+    base.test_assisted = v.test_assisted === true;
+    const snapshot = { ...base, ...(deck ? { deck_kind: deck.deck_kind, deck_hash: deck.deck_hash, challenge: deck.challenge, state_version: STATE_VERSION } : {}) };
     return { snapshot, current };
   } catch {
     return null;

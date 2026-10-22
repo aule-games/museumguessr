@@ -104,7 +104,7 @@ describe('[V1-05] saved games hold their own deck', () => {
   it('a version 2 save of the v0 set migrates as a random, not-fresh deck', () => {
     expect(POOL.deckHash(TEN)).toBe(V2_ITEMS_VERSION);
     const restored = parseSave(v2From(midGame()), POOL);
-    expect(restored).toMatchObject({ state_version: 3, deck_kind: 'random', fresh: false, deck_hash: V2_ITEMS_VERSION, challenge: null, round: 0, phase: 'reveal' });
+    expect(restored).toMatchObject({ state_version: 4, deck_kind: 'random', fresh: false, deck_hash: V2_ITEMS_VERSION, challenge: null, round: 0, phase: 'reveal' });
     expect(restored?.first_seen).toEqual(TEN.map(() => false));
   });
 
@@ -181,9 +181,10 @@ describe('[V1-27] share and challenge events from the reducer', () => {
       }
       return props;
     };
-    expect(effectsOf(18240)).toEqual([{ src: 'webgames', beat: true }]);
-    expect(effectsOf(30000)).toEqual([{ src: 'webgames', beat: false }]);
-    expect(effectsOf(null)).toEqual([{ src: 'webgames', beat: null }]);
+    const ref = expect.any(String);
+    expect(effectsOf(18240)).toEqual([{ game_ref: ref, src: 'webgames', beat: true }]);
+    expect(effectsOf(30000)).toEqual([{ game_ref: ref, src: 'webgames', beat: false }]);
+    expect(effectsOf(null)).toEqual([{ game_ref: ref, src: 'webgames', beat: null }]);
     expect(finish(deckOf(ids)).sent.some((k) => k.includes('challenge_completed'))).toBe(false);
   });
 });
@@ -192,7 +193,11 @@ describe('[V1-27] round and game events carry the object and the deck', () => {
   it('round events name the item; round_completed splits the points and says whether the object was new to the device', () => {
     const ids = [...TEN].reverse();
     const firstSeen = ids.map((_, i) => i !== 0);
-    const actions: Action[] = [{ type: 'start', gameId: 'g1', src: 'webgames', itemsVersion: V, deck: deckOf(ids, { firstSeen }), context: { gameInTab: '2', seenBefore: '10-19' } }, ...answerAt(0, keyOf(ids[0] as string))];
+    const actions: Action[] = [
+      { type: 'start', gameId: 'g1', gameRef: 'ref-of-g1', src: 'webgames', itemsVersion: V, deck: deckOf(ids, { firstSeen }), context: { gameInTab: '2', seenBefore: '10-19' } },
+      ...answerAt(0, keyOf(ids[0] as string)),
+      { type: 'revealShown', gameId: 'g1', round: 0, now: 1 },
+    ];
     const tracks: { name: string; props: Record<string, unknown> }[] = [];
     let state: GameState | null = null;
     for (const a of actions) {
@@ -200,7 +205,7 @@ describe('[V1-27] round and game events carry the object and the deck', () => {
       state = r.state;
       for (const e of r.effects) if (e.type === 'track') tracks.push({ name: e.name, props: e.props });
     }
-    expect(tracks.find((t) => t.name === 'game_start')?.props).toEqual({ src: 'webgames', deck_kind: 'random', game_in_tab: '2', seen_before: '10-19' });
+    expect(tracks.find((t) => t.name === 'game_start')?.props).toEqual({ game_ref: 'ref-of-g1', src: 'webgames', deck_kind: 'random', game_in_tab: '2', seen_before: '10-19' });
     expect(tracks.find((t) => t.name === 'round_started')?.props).toMatchObject({ round: 1, item_id: ids[0] });
     expect(tracks.filter((t) => t.name === 'step_completed').every((t) => t.props.item_id === ids[0])).toBe(true);
     expect(tracks.find((t) => t.name === 'round_completed')?.props).toMatchObject({ item_id: ids[0], made_points: 1000, when_points: 1000, kept_points: 1000, first_seen: false });

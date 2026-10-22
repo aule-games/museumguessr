@@ -40,7 +40,7 @@ const answerRound = (round: number): Action[] => [
 
 describe('[E5] full event sequence for one round', () => {
   it('sends game_start, round_started, three step_completed and round_completed in order', () => {
-    const { tracked } = run([start, ...answerRound(0)]);
+    const { tracked } = run([start, ...answerRound(0), { type: 'revealShown', gameId: 'g1', round: 0, now: 1 }]);
     expect(tracked.map((t) => t.name)).toEqual([
       EVENTS.gameStart,
       EVENTS.roundStarted,
@@ -89,6 +89,7 @@ describe('[ENG28] KPI completion counts answered rounds only', () => {
       ...answerRound(2),
       { type: 'next', round: 2 },
       ...answerRound(3),
+      { type: 'revealShown', gameId: 'g1', round: 3, now: 1 },
     ]);
     const rc = tracked.filter((t) => t.name === EVENTS.roundCompleted).map((t) => t.props);
     expect(rc.map((p) => [p.round, p.skipped, p.answered_count])).toEqual([
