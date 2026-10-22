@@ -277,6 +277,7 @@ p {
 }
 
 .topbar {
+  position: relative; /* the clock line sits on its bottom edge */
   grid-area: top;
   font-variant-numeric: tabular-nums;
 }
@@ -2272,10 +2273,12 @@ p {
 }
 
 .dialog__head {
+  position: relative; /* the clock line sits on its bottom edge */
   flex: none;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: var(--space-2);
   padding: var(--space-2) var(--space-2) var(--space-2) var(--space-4);
   border-bottom: 1px solid var(--color-line);
 }
@@ -2847,4 +2850,225 @@ p {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* ---------- round clock (W3, R2, D3, D7; the design agent polishes) ---------- */
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* the counter and the cue share one grid cell: the cue replaces the counter
+   text without shifting anything; the hidden reserve keeps "Hurry up · 10" wide */
+.topbar__cluster {
+  display: inline-grid;
+  align-items: center;
+}
+
+.topbar__cluster > * {
+  grid-area: 1 / 1;
+}
+
+/* "Round 4/10 · Hard": the counter text the cue replaces; the pips sit outside the slot */
+.topbar__counter {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  white-space: nowrap;
+}
+
+.topbar__counter > .difficulty {
+  margin-left: 0;
+}
+
+.topbar > .difficulty__pips {
+  margin-left: calc(-1 * var(--space-1));
+  color: var(--color-accent);
+}
+
+.topbar__cluster[data-cue='on'] > .topbar__counter {
+  visibility: hidden;
+}
+
+.clockcue {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--color-warning);
+  font-size: var(--text-md);
+  font-weight: var(--font-weight-bold);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  animation: clockcue-in var(--motion-fast) var(--motion-ease-standard);
+}
+
+.clockcue[hidden] {
+  display: none;
+}
+
+.clockcue--reserve {
+  visibility: hidden;
+  animation: none;
+}
+
+@keyframes clockcue-in {
+  from {
+    opacity: 0;
+  }
+}
+
+.clock-glyph,
+.clockcue__glyph,
+.score__glyph,
+.reveal__glyph {
+  flex: none;
+  width: 1em;
+  height: 1em;
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* the 3 px draining line on the bar's bottom edge: decorative, no digits */
+.clockline {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.clockline[hidden] {
+  display: none;
+}
+
+.clockline__fill {
+  height: 100%;
+  background: var(--color-accent);
+  transform-origin: left center;
+}
+
+.clockline[data-warning='true'] .clockline__fill {
+  background: var(--color-warning);
+}
+
+.clockline[data-state='paused'] {
+  opacity: 0.4;
+}
+
+/* overlays repeat the line and the cue in their header */
+.clockmirror {
+  display: inline-flex;
+  align-items: center;
+  margin-left: auto;
+}
+
+.clockmirror[hidden] {
+  display: none;
+}
+
+.tour__card > .clockmirror {
+  margin: 0;
+}
+
+.tour__card > .clockmirror .clockline {
+  top: 0;
+  bottom: auto;
+}
+
+.pswp__clock {
+  position: relative;
+  display: flex;
+  align-items: center;
+  align-self: stretch;
+  padding: 0 var(--space-3);
+}
+
+.pswp__clock .clockline {
+  bottom: 0;
+}
+
+/* time-up: the answer controls dim; there is no modal (D2) */
+.round--timeup .answer,
+.round--timeup .actionbar {
+  opacity: 0.4;
+}
+
+.answer__previous {
+  margin: 0;
+  padding: 0 var(--space-4) var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--color-ink-muted);
+}
+
+.answer__paused {
+  position: absolute;
+  left: var(--space-3);
+  right: var(--space-3);
+  bottom: var(--space-3);
+  z-index: 2;
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-raised);
+  color: var(--color-warning);
+  font-size: var(--text-sm);
+  text-align: center;
+}
+
+.answer__paused[hidden] {
+  display: none;
+}
+
+/* timed-out and skipped rows look different from each other (D2) */
+.score__row[data-status='timedout'] .score__glyph {
+  color: var(--color-warning);
+}
+
+.score__tag {
+  grid-column: 1 / -1;
+  justify-self: start;
+  margin: 0 var(--space-3) var(--space-2);
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--color-bg);
+  color: var(--color-ink-muted);
+  font-size: var(--text-xs);
+}
+
+.reveal__away,
+.reveal__tip {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--color-warning);
+}
+
+.reveal__tip {
+  color: var(--color-ink-muted);
+}
+
+.recap__timedout {
+  font-size: var(--text-xs);
+  color: var(--color-warning);
+}
+
+.badge__clock {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
 }

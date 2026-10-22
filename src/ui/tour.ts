@@ -6,6 +6,7 @@
 
 import { t, type CopyKey } from '../copy.ts';
 import tokens from '../design/tokens.json';
+import { clockMirror } from './clock.ts';
 import { h, reducedMotion } from './dom.ts';
 import { pushOverlay } from './overlay.ts';
 
@@ -107,6 +108,8 @@ export function startTour(o: TourOptions): () => void {
   const card = h(
     'section',
     { class: 'tour__card', 'aria-live': 'polite' },
+    // the tour replayed from the menu does not pause the clock, so the card shows it (R2)
+    clockMirror(),
     progress,
     title,
     body,

@@ -92,8 +92,10 @@ There is no sign-up and nothing identifies you. To learn whether the game is
 fun, the page sends anonymous play events to PostHog's EU servers in
 cookieless mode: `$pageview`, `game_start`, `round_started`, `step_completed`,
 `step_back`, `round_completed`, `game_completed`, `client_error`, `feedback`,
-`result_shared`, `challenge_opened`, `challenge_completed` and `tour_ended`. Each carries game facts (round, step, points, the channel tag
-from the link you followed) and the build id, plus the technical details
+`result_shared`, `challenge_opened`, `challenge_completed`, `tour_ended` and
+`week_active`. Each carries game facts (round, step, points, time left, the
+channel tag from the link you followed, a random reference that lasts one
+game) and the build id, plus the technical details
 PostHog's library adds to every event: browser and version, operating system,
 device type, screen and window size, language, time zone, the browser's
 user-agent string and the site that linked here. Page addresses are sent
@@ -104,10 +106,12 @@ Your device remembers which objects you have seen, so your next game shows
 new ones, and the name you add to a shared link. Each game start sends only a
 rough count of the objects seen (0, 1-9, 10-19, 20-29 or 30 and more); the
 list and the name stay on the device, and anyone with a link you share sees
-the name in it.
+the name in it. It also keeps the last week in which it finished a game, so
+the first finished game of a week can say whether you also played the week
+before (`week_active`).
 
-Open the site with `?test=1` to stop sending events from your browser;
-`?test=0` turns them back on.
+Open the site with `?test=1` to stop sending events from your browser for 24
+hours; `?test=0` turns them back on sooner.
 
 ## Credits
 

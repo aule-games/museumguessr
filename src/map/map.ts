@@ -384,6 +384,7 @@ export class GameMap {
   /** Guess mode: a tap places the pin, a drag adjusts it, Enter drops it at the centre. */
   guess(opts: GuessOptions) {
     this.mode = 'guess';
+    this.placed = null;
     this.revealFit = null;
     this.guessStep = opts.step;
     this.clearMarkers();
@@ -425,8 +426,31 @@ export class GameMap {
     }
   }
 
+  /**
+   * Time is up (D2): end a pin drag at once and take no more taps or keys. The
+   * pin goes back to where it was last placed, which is what counts; the
+   * next guess() or reveal() starts afresh.
+   */
+  cancelDrag() {
+    if (this.mode !== 'guess') return;
+    this.mode = 'idle';
+    this.element.dataset.mode = 'idle';
+    const at = this.placed;
+    this.pin?.remove();
+    this.pin = null;
+    if (at && this.map && this.lib) {
+      const el = pinElement(this.guessStep === 'kept' ? 'guess-kept' : 'guess-made', t(this.guessStep === 'kept' ? 'step.kept' : 'step.made'));
+      this.markers.push(new this.lib.Marker({ element: el, anchor: 'bottom' }).setLngLat([at.lng, at.lat]).addTo(this.map));
+    }
+  }
+
+  /** Where the guess pin was last placed (a drag in progress does not count). */
+  private placed: LatLng | null = null;
+
   private placePin(p: LatLng, announce: boolean) {
     if (!this.map || !this.lib) return;
+    if (this.mode !== 'guess') return;
+    this.placed = p;
     const kind: PinKind = this.guessStep === 'kept' ? 'guess-kept' : 'guess-made';
     if (!this.pin) {
       const el = pinElement(kind, t(this.guessStep === 'kept' ? 'step.kept' : 'step.made'));

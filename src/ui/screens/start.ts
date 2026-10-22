@@ -14,7 +14,8 @@ import { h, s } from '../dom.ts';
 
 export type StartMode =
   | { kind: 'new' }
-  | { kind: 'continue'; round: number; challenge: boolean }
+  /** `expired`: the round's time ran out while the player was away; Continue opens its reveal (R1). */
+  | { kind: 'continue'; round: number; challenge: boolean; expired?: boolean }
   | { kind: 'finished'; total: number; canReview: boolean }
   /** `line` is null while the friend's name is being checked. */
   | { kind: 'challenge'; line: string | null; meta: string; notes: string[]; unfinished: boolean }
@@ -108,7 +109,11 @@ export function startScreen(p: StartProps): HTMLElement {
     actions.append(h('p', { class: 'start__nowebgl', role: 'alert' }, t('start.noWebgl')));
   } else if (mode.kind === 'continue') {
     actions.append(
-      h('button', { type: 'button', class: 'btn btn--primary', 'data-test': 'continue', onclick: p.onContinue }, t(mode.challenge ? 'start.continueChallenge' : 'start.continue', { round: mode.round })),
+      h(
+        'button',
+        { type: 'button', class: 'btn btn--primary', 'data-test': 'continue', onclick: p.onContinue },
+        t(mode.expired ? 'start.continueExpired' : mode.challenge ? 'start.continueChallenge' : 'start.continue', { round: mode.round }),
+      ),
       secondary(t('start.new'), 'new-game', p.onNew),
     );
   } else if (mode.kind === 'finished') {

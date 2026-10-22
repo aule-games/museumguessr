@@ -11,7 +11,7 @@ import { imageUrl } from '../../content/items.ts';
 import { hardNailedCount } from '../../game/hard.ts';
 import { hardSummary } from '../../game/text.ts';
 import { tierFor } from '../../scoring/score.ts';
-import type { RoundResult } from '../../state/schema.ts';
+import type { RoundResult, TimeUp } from '../../state/schema.ts';
 import type { Item } from '../../types/item.ts';
 import { h, scoreText } from '../dom.ts';
 import { shareBlock, type ShareSetup } from '../share.ts';
@@ -27,6 +27,8 @@ export interface ChallengeResult {
 export interface EndProps {
   items: readonly Item[];
   results: readonly (RoundResult | null)[] | null;
+  /** Per round: how it ended at time-up, for "Time ran out on 2 of 3" (V12-63). */
+  timedOut?: readonly (TimeUp | null)[] | null;
   total: number;
   /** False for a snapshot saved under other answers: total only. */
   detailed: boolean;
@@ -83,6 +85,7 @@ export function endScreen(p: EndProps): HTMLElement {
           { class: 'recap', 'data-test': 'recap' },
           ...p.items.map((it, i) => {
             const r = p.results?.[i];
+            const out = p.timedOut?.[i]?.questions.length ?? 0;
             return h(
               'li',
               { class: 'recap__row' },
@@ -92,6 +95,7 @@ export function endScreen(p: EndProps): HTMLElement {
                 { class: 'recap__text' },
                 h('p', { class: 'recap__title' }, it.title),
                 h('p', { class: 'recap__line' }, t('end.recapRow', { made: it.made.place, kept: `${it.kept.museum}, ${it.kept.city}` })),
+                out > 0 && !r?.skipped ? h('p', { class: 'recap__timedout', 'data-test': 'recap-timed-out' }, t('end.timedOut', { n: out })) : null,
               ),
               h('p', { class: 'recap__points' }, r?.skipped ? t('reveal.skipped') : t('end.points', { points: formatNumber(r?.points ?? 0) })),
             );

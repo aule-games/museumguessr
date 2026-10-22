@@ -13,8 +13,9 @@ import type { GameMap } from '../../map/map.ts';
 import { MAX_POINTS, SLIDER } from '../../scoring/config.ts';
 import { madeFullMarksKm } from '../../scoring/score.ts';
 import { formatRange, yearToPosition } from '../../scoring/years.ts';
-import type { RoundAnswers, RoundResult } from '../../state/schema.ts';
+import type { RoundAnswers, RoundResult, TimeUp } from '../../state/schema.ts';
 import type { Item } from '../../types/item.ts';
+import { clockGlyph } from '../clock.ts';
 import { objectDifficulty } from '../difficulty.ts';
 import { ext, h, reducedMotion, s, scoreText } from '../dom.ts';
 import { topBar } from './round.ts';
@@ -31,6 +32,10 @@ export interface RevealProps {
   pulse: boolean;
   /** During a challenge game, the friend's score, shown under the round total (V1-21). */
   toBeat?: number | null;
+  /** How the round ended at time-up, or null when it ended by Reveal answers or a photo skip (D2). */
+  timeUp?: TimeUp | null;
+  /** The device's first timed-out reveal: show the one-time tip (V12-63). */
+  tip?: boolean;
   onPulse(a: string): void;
   onNext(): void;
   onMenu(opener: HTMLElement): void;
@@ -170,21 +175,53 @@ function fitOneLine(el: HTMLElement) {
   }).observe(el);
 }
 
-function scoreRow(step: Step, points: number, result: { text: string; value: string | null }, how: string, extra?: Node | null): HTMLElement {
+/** How a score row ended: answered, timed out (no answer before time ran out) or skipped (the photo failed). */
+export type RowStatus = 'answered' | 'timedout' | 'skipped';
+
+/** A broken-image glyph: a photo skip looks different from a time-out (D2). */
+function skipGlyph(): SVGSVGElement {
+  return s(
+    'svg',
+    { class: 'score__glyph', viewBox: '0 0 16 16', 'aria-hidden': 'true', focusable: 'false' },
+    s('rect', { x: 2, y: 3, width: 12, height: 10, rx: 1.5 }),
+    s('path', { d: 'M2 11l3.5-3.5 2.5 2.5M9 3l-2 5 2 1-1 4' }),
+  );
+}
+
+/** A row's status and its "Counted at time-up" tag, from the round's time-up record (D2, D8). */
+export function rowStatus(step: Step, r: RoundResult, timeUp: TimeUp | null | undefined): { status: RowStatus; counted: boolean } {
+  if (r.skipped) return { status: 'skipped', counted: false };
+  if (timeUp?.questions.includes(step)) return { status: 'timedout', counted: false };
+  return { status: 'answered', counted: !!timeUp?.counted.includes(step) };
+}
+
+function scoreRow(
+  step: Step,
+  points: number,
+  result: { text: string; value: string | null },
+  how: string,
+  extra?: Node | null,
+  mark: { status: RowStatus; counted: boolean } = { status: 'answered', counted: false },
+): HTMLElement {
   const full = points === MAX_POINTS;
   const howId = `how-${step}-${++rowIds}`;
+  // a timed-out question says so and explains its zero; it is never "Skipped" (D2)
+  const timedOut = mark.status === 'timedout';
+  const shown = timedOut ? { text: t('reveal.timedOut'), value: null } : result;
   // the explanation takes the result line's place on hover, keyboard focus or tap,
   // so the row explains itself and the table grows no extra strip
-  const howLine = h('span', { class: 'score__how', id: howId }, how);
+  const howLine = h('span', { class: 'score__how', id: howId }, timedOut ? t('reason.timedOut') : how);
   // a tap also opens the row's extras (When's timeline, a place or date note)
   const detail = extra ? h('div', { class: 'score__detail', hidden: true }, extra) : null;
+  const glyph = timedOut ? clockGlyph('score__glyph') : mark.status === 'skipped' ? skipGlyph() : null;
   const btn = h(
     'button',
-    { type: 'button', class: 'score__row', 'aria-expanded': 'false', 'aria-describedby': howId, 'data-test': `row-${step}`, 'data-full': String(full) },
-    h('span', { class: 'score__label' }, t(`reveal.row.${step}` as CopyKey)),
-    resultLine(result),
+    { type: 'button', class: 'score__row', 'aria-expanded': 'false', 'aria-describedby': howId, 'data-test': `row-${step}`, 'data-full': String(full), 'data-status': mark.status },
+    h('span', { class: 'score__label' }, glyph, t(`reveal.row.${step}` as CopyKey)),
+    resultLine(shown),
     howLine,
     h('span', { class: 'score__points', 'data-test': `points-${step}` }, formatNumber(points)),
+    mark.counted ? h('span', { class: 'score__tag', 'data-test': `counted-${step}` }, t('reveal.countedAtTimeUp')) : null,
   );
   btn.addEventListener('click', () => {
     const open = btn.getAttribute('aria-expanded') !== 'true';
@@ -214,9 +251,9 @@ export function revealScreen(p: RevealProps): RevealView {
     'ul',
     { class: 'scores', 'data-test': 'scores' },
     // rows follow the question order (DS35)
-    scoreRow('made', r.made.points, rowResult('made', item, r), howText('made', item, r), madeNote),
-    scoreRow('when', r.when.points, rowResult('when', item, r), howText('when', item, r, p.answers.when), whenExtra(item, p.answers.when)),
-    scoreRow('kept', r.kept.points, rowResult('kept', item, r), howText('kept', item, r)),
+    scoreRow('made', r.made.points, rowResult('made', item, r), howText('made', item, r), madeNote, rowStatus('made', r, p.timeUp)),
+    scoreRow('when', r.when.points, rowResult('when', item, r), howText('when', item, r, p.answers.when), whenExtra(item, p.answers.when), rowStatus('when', r, p.timeUp)),
+    scoreRow('kept', r.kept.points, rowResult('kept', item, r), howText('kept', item, r), null, rowStatus('kept', r, p.timeUp)),
     h(
       'li',
       { class: 'scores__summary' },
@@ -226,7 +263,12 @@ export function revealScreen(p: RevealProps): RevealView {
   );
 
   const mapHost = h('div', { class: 'reveal__map', 'data-test': 'reveal-map' });
-  const legend = h('p', { class: 'reveal__legend' }, t('reveal.legend'));
+  // no guess pins (both map questions timed out): no guess entry in the legend either (D2)
+  const noGuesses = !r.skipped && p.answers.kept == null && p.answers.made == null;
+  const legend = h('p', { class: 'reveal__legend', 'data-test': 'legend' }, t(noGuesses ? 'reveal.legendNoGuess' : 'reveal.legend'));
+  const away = p.timeUp?.away ? h('p', { class: 'reveal__away', 'data-test': 'timed-out-away' }, clockGlyph('reveal__glyph'), t('reveal.timedOutAway')) : null;
+  // after the score table, so the rows and the total keep their place above the fold (DS21)
+  const tip = p.tip ? h('p', { class: 'reveal__tip', 'data-test': 'time-up-tip' }, t('reveal.timeUpTip')) : null;
 
   const next = h(
     'button',
@@ -280,7 +322,9 @@ export function revealScreen(p: RevealProps): RevealView {
         h('h2', { class: 'label__title', 'data-test': 'reveal-title' }, item.title),
         h('p', { class: 'label__line' }, wallLabel(item), ' · ', h('span', { class: 'label__difficulty', 'data-test': 'object-difficulty' }, objectDifficulty(item))),
       ),
+      away,
       rows,
+      tip,
       h('div', { class: 'reveal__media' }, mapHost, legend),
       journey && h('p', { class: 'reveal__journey', 'data-test': 'journey' }, journey.text, ' ', ext(journey.source_url, t('reveal.source'))),
       item.contested && item.claimant_source

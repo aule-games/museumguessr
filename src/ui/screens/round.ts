@@ -5,10 +5,13 @@ import { STEPS, type Step } from '../../analytics/events.ts';
 import { HINT, QUESTION, formatNumber, t } from '../../copy.ts';
 import { imageUrl } from '../../content/items.ts';
 import tokens from '../../design/tokens.json';
+import { formatAnswerYear } from '../../game/text.ts';
+import type { Draft } from '../../game/timer.ts';
 import type { GameMap } from '../../map/map.ts';
 import type { LatLng } from '../../scoring/geo.ts';
 import type { Item } from '../../types/item.ts';
 import { difficultyLabel } from '../difficulty.ts';
+import { counterSlot, topBarClock } from '../clock.ts';
 import { h, s } from '../dom.ts';
 import { openLightbox } from '../lightbox.ts';
 import { yearControl } from '../year.ts';
@@ -16,17 +19,24 @@ import { yearControl } from '../year.ts';
 export const MAX_IMAGE_RETRIES = 3;
 
 export function topBar(round: number, total: number, onMenu: (opener: HTMLElement) => void, item?: { difficulty: number }): HTMLElement {
+  const label = item ? difficultyLabel(item) : null;
+  const pips = label?.querySelector<HTMLElement>('.difficulty__pips') ?? null;
+  pips?.remove();
   return h(
     'header',
     { class: 'topbar' },
-    h('span', { class: 'topbar__round' }, t('round.counter', { round: round + 1 })),
-    item ? difficultyLabel(item) : null,
+    // the counter's slot holds "Round 4/10 · Hard" and the last-ten-seconds cue that replaces it;
+    // the pips stay beside it (D3)
+    counterSlot(h('span', { class: 'topbar__counter' }, h('span', { class: 'topbar__round' }, t('round.counter', { round: round + 1 })), label)),
+    pips,
     h('span', { class: 'topbar__total', 'data-test': 'total' }, t('round.total', { total: formatNumber(total) })),
     h(
       'button',
       { type: 'button', class: 'topbar__menu', 'aria-label': t('menu.open'), 'aria-haspopup': 'dialog', 'data-test': 'menu', onclick: (e: MouseEvent) => onMenu(e.currentTarget as HTMLElement) },
       h('span', { class: 'topbar__menu-icon', 'aria-hidden': 'true' }),
     ),
+    // the draining line on the bar's bottom edge and the timer's hidden text (R2, D7)
+    topBarClock(),
   );
 }
 
@@ -69,6 +79,11 @@ export class PhotoRegion {
     this.listeners.add(cb);
   }
 
+  /** The photo failed to load (and has not been retried successfully yet). */
+  get isFailed(): boolean {
+    return this.element.dataset.state === 'failed';
+  }
+
   private set(state: string) {
     this.element.dataset.state = state;
     for (const cb of this.listeners) cb();
@@ -107,8 +122,10 @@ export interface RoundProps {
   round: number;
   step: Step;
   total: number;
-  /** This step's earlier answer when the player came back to it (DS36); it starts as the draft. */
+  /** This step's draft (a saved edit) or else its earlier answer (DS36); it starts as the draft. */
   answer: LatLng | number | null;
+  /** When an edit of a confirmed year is empty or invalid: that confirmed year, used if time runs out (D8). */
+  previous?: number | null;
   /** The confirmed Made pin, shown dimmed on the Kept step. */
   madePin: LatLng | null;
   photo: PhotoRegion;
@@ -118,6 +135,8 @@ export interface RoundProps {
   /** Reopen the previous question of this round; absent on the first question. */
   onBack?(): void;
   onMenu(opener: HTMLElement): void;
+  /** Every edit of this question, including an empty or invalid one (null), so it can be saved (ENG7). */
+  onDraft?(value: Draft): void;
 }
 
 export interface RoundView {
@@ -126,6 +145,8 @@ export interface RoundView {
   /** Called by the app when the map places a pin. */
   pinPlaced(p: LatLng, label: string): void;
   refresh(): void;
+  /** Time is up (D2): cancel a pin drag, blur the year field and dim the answer controls; nothing answers any more. */
+  freeze(): void;
 }
 
 export function roundScreen(p: RoundProps): RoundView {
@@ -163,21 +184,33 @@ export function roundScreen(p: RoundProps): RoundView {
       } }, t('back'))
     : null;
 
+  // "The clock is paused until the map works" on the map's failed state (D4)
+  const pausedNote = h('p', { class: 'answer__paused', 'data-test': 'clock-paused-map', hidden: true }, t('timer.pausedMap'));
   const refresh = () => {
     const mapOk = p.step === 'when' || (p.map != null && (p.map.state === 'ready' || p.map.state === 'fallback'));
     confirm.disabled = submitted || draft == null || !p.photo.ready || !mapOk;
+    pausedNote.hidden = p.step === 'when' || p.map?.state !== 'failed';
   };
   p.photo.onChange(refresh);
 
   let answer: HTMLElement;
   if (p.step === 'when') {
+    // While an edit is empty or invalid, the last confirmed year is what counts at time-up (D8).
+    const previous = h('p', { class: 'answer__previous', 'data-test': 'previous-answer', hidden: true });
+    const showPrevious = (y: number | null) => {
+      previous.hidden = y != null || p.previous == null;
+      previous.textContent = previous.hidden || p.previous == null ? '' : t('timer.previousAnswer', { answer: formatAnswerYear(p.previous) });
+    };
     const year = yearControl(typeof p.answer === 'number' ? p.answer : null, (y) => {
       draft = y;
+      showPrevious(y);
+      p.onDraft?.(y);
       refresh();
     });
-    answer = h('div', { class: 'answer answer--year' }, year.element);
+    showPrevious(typeof p.answer === 'number' ? p.answer : null);
+    answer = h('div', { class: 'answer answer--year' }, year.element, previous);
   } else {
-    answer = h('div', { class: 'answer answer--map', 'data-test': 'map-region' });
+    answer = h('div', { class: 'answer answer--map', 'data-test': 'map-region' }, pausedNote);
     if (!p.webgl) answer.append(h('p', { class: 'map__nowebgl', role: 'alert' }, t('start.noWebgl')));
   }
 
@@ -215,9 +248,19 @@ export function roundScreen(p: RoundProps): RoundView {
     element,
     prompt: question,
     pinPlaced(pt) {
+      if (submitted) return;
       draft = pt;
+      p.onDraft?.(pt);
       refresh();
     },
     refresh,
+    freeze() {
+      submitted = true;
+      p.map?.cancelDrag();
+      if (document.activeElement instanceof HTMLElement && element.contains(document.activeElement)) document.activeElement.blur();
+      element.classList.add('round--timeup');
+      for (const part of element.querySelectorAll<HTMLElement>('.answer, .actionbar')) part.inert = true;
+      refresh();
+    },
   };
 }

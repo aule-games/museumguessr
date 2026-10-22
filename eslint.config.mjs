@@ -1,7 +1,7 @@
 // Code and copy rules on owned source (ENG34, SEC1, DX30, DS30).
 import tseslint from 'typescript-eslint';
 
-const EVENT_NAMES = '^(\\$pageview|game_start|round_started|step_completed|round_completed|game_completed|client_error|feedback|result_shared|challenge_opened|challenge_completed|tour_ended|step_back)$';
+const EVENT_NAMES = '^(\\$pageview|game_start|round_started|step_completed|round_completed|game_completed|client_error|feedback|result_shared|challenge_opened|challenge_completed|tour_ended|step_back|week_active)$';
 
 const SOURCE_RULES = [
   {

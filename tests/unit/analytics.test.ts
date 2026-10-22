@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { CHANNELS, channelFrom, revalidateSrc } from '../../src/analytics/channels';
-import { createAnalytics, QUEUE_LIMIT, type AnalyticsEnv, type Provider } from '../../src/analytics/core';
+import { applyTestParam, createAnalytics, QUEUE_LIMIT, TEST_FLAG_TTL_MS, testFlagOn, type AnalyticsEnv, type Provider } from '../../src/analytics/core';
 import { CATALOGUE, EVENTS } from '../../src/analytics/events';
 import { beforeSend, sanitizeUrl } from '../../src/analytics/sanitize';
 import { guarded } from '../../src/storage/guarded';
@@ -76,7 +76,7 @@ describe('[DX3] [ENG13] off-reasons, one console line each', () => {
   it('?test=1 persists the flag and ?test=0 clears it', () => {
     const storage = guarded(memoryStore);
     createAnalytics(env({ storage, testParam: '1' }));
-    expect(storage.get(KEYS.test)).toBe('1');
+    expect(storage.get(KEYS.test)).toMatch(/^\d+$/);
     expect(createAnalytics(env({ storage })).testMode).toBe(true);
     createAnalytics(env({ storage, testParam: '0' }));
     expect(storage.get(KEYS.test)).toBeNull();
@@ -151,6 +151,25 @@ describe('[ENG29] pre-load queue', () => {
     a.start();
     await flush();
     expect(() => a.track(EVENTS.gameStart, {})).not.toThrow();
+  });
+});
+
+describe('the browser test flag', () => {
+  it('the browser test flag expires after 24 hours, while a flag set before v1.2 starts its 24 hours now [V12-56]', () => {
+    const storage = guarded(memoryStore);
+    expect(applyTestParam(storage, '1', 1000)).toBe(true);
+    expect(applyTestParam(storage, null, 1000 + TEST_FLAG_TTL_MS - 1)).toBe(true);
+    expect(applyTestParam(storage, null, 1000 + TEST_FLAG_TTL_MS)).toBe(false);
+    expect(storage.get(KEYS.test)).toBeNull();
+    storage.set(KEYS.test, '1');
+    expect(testFlagOn(storage, 5_000)).toBe(true);
+    expect(storage.get(KEYS.test)).toBe('5000');
+    expect(testFlagOn(storage, 5_000 + TEST_FLAG_TTL_MS)).toBe(false);
+    // a flag from the future (a clock moved back) or a damaged one is dropped
+    storage.set(KEYS.test, String(10_000));
+    expect(testFlagOn(storage, 9_000)).toBe(false);
+    storage.set(KEYS.test, 'yes');
+    expect(testFlagOn(storage, 9_000)).toBe(false);
   });
 });
 

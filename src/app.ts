@@ -4,6 +4,7 @@
 
 import type { Analytics } from './analytics/core.ts';
 import { EVENTS, STEPS, type FeedbackQ } from './analytics/events.ts';
+import { weekActive } from './analytics/week-active.ts';
 import { ANSWER_KEYS, DECK_ITEMS, ITEMS_VERSION, ITEM_IDS, POOL, SAMPLE, deckItems, hasItem, imageUrl, itemsLoaded, loadItems } from './content/items.ts';
 import { challengeUrl, parseChallenge, scoreToBeat, type ChallengeLink, type ParsedChallenge, type ShareKind } from './challenge/link.ts';
 import { SITE_URL } from './config.ts';
@@ -11,25 +12,31 @@ import { formatNumber, t } from './copy.ts';
 import { drawDeck, seededRng } from './deck/planner.ts';
 import { stripMessage, takeErrorBudget, toReport, type ErrorReport } from './errors/boundary.ts';
 import { newGameId } from './game/ids.ts';
+import { ClockRunner } from './game/clock-runner.ts';
+import { DraftQueue, type PendingDraft } from './game/drafts.ts';
 import type { WriterLock } from './game/lock.ts';
 import { hardNailedCount } from './game/hard.ts';
 import { isListed, nameList } from './game/names.ts';
 import { shareHook, shareText } from './game/text.ts';
 import { SeenLists } from './game/seen.ts';
 import type { TabSession } from './game/session.ts';
+import { testSurface, type TestSurface } from './game/test-surface.ts';
 import { testGuess } from './game/testplay.ts';
+import { DEFAULT_TIMER, type ClockToken, type Draft, type LiveRound } from './game/timer.ts';
 import { GameMap, hasWebGL2, prefetchMap, type MapState } from './map/map.ts';
 import type { LatLng } from './scoring/geo.ts';
-import { ledgerKey, reduce, seenBucket, totalPoints, type Action, type Deck, type Effect, type ShareMethod, type StartContext } from './state/reducer.ts';
-import { KEYS, parseSave, parseSnapshot, serialize, type GameState, type ParsedSnapshot, type RoundResult } from './state/schema.ts';
+import { expiredUnseen, ledgerKey, reduce, roundClock, seenBucket, totalPoints, type Action, type Deck, type Effect, type ShareMethod, type StartContext } from './state/reducer.ts';
+import { KEYS, isNewerRecord, parseSave, parseSnapshot, serialize, type GameState, type ParsedSnapshot, type RoundResult } from './state/schema.ts';
 import type { KV } from './storage/guarded.ts';
-import { clear, focus } from './ui/dom.ts';
+import { announce, currentClockFace, renderClockFace, timerCopy } from './ui/clock.ts';
+import { clear, focus, reducedMotion } from './ui/dom.ts';
 import { endScreen, resultLine, collectionLine } from './ui/screens/end.ts';
 import { confirmNewGame, errorScreen, frozenScreen, openMenu, aboutPrivacy, testBadge } from './ui/screens/misc.ts';
 import { revealScreen } from './ui/screens/reveal.ts';
 import { PhotoRegion, roundScreen, type RoundView } from './ui/screens/round.ts';
 import { startScreen, type StartMode } from './ui/screens/start.ts';
 import type { ShareSetup } from './ui/share.ts';
+import { presentTimeUp } from './ui/timeup.ts';
 import { startTour } from './ui/tour.ts';
 
 export type View = 'start' | 'play' | 'review' | 'error' | 'frozen';
@@ -44,6 +51,10 @@ export interface AppDeps {
   /** The landing URL's query, read once for a challenge link (V1-16). */
   params?: URLSearchParams;
   newId?: () => string;
+  /** Development only (`?clock=off`): untimed rounds; always false in production builds (M4). */
+  devClockOff?: boolean;
+  /** Test mode only: publish the one test surface (window.__mgTest, M4). */
+  exposeTest?: (surface: TestSurface) => void;
 }
 
 const START_IMAGE_WAIT_MS = 4000;
@@ -94,11 +105,44 @@ export class App {
   private waiting: ChallengeLink | null = null;
   /** Checked friend names: the name, or null when it matched the word list (V1-20). */
   private checkedNames = new Map<string, string | null>();
+  /** The open tour was replayed from the menu (it does not pause the clock, D4). */
+  private tourReplay = false;
+  /** Test mode's "Pause clock" (M4). */
+  private testPause = false;
+  /** The round whose view opened in this page, and when (monotonic ms): ready_ms (ENG9). */
+  private opened: { key: string; at: number } | null = null;
+  /** A reveal rendered while the tab was hidden: it counts as shown once the tab is visible (N5). */
+  private revealPending: { gameId: string; round: number } | null = null;
+  private readonly runner: ClockRunner;
+  private readonly drafts: DraftQueue;
 
   constructor(private d: AppDeps) {
     this.webgl = hasWebGL2();
     this.seenLists = new SeenLists(d.local, new Set(ITEM_IDS), () => crypto.getRandomValues(new Uint32Array(1))[0] as number);
     d.lock.onLost(() => this.guard(() => this.show('frozen')));
+    this.runner = new ClockRunner({
+      now: () => Date.now(),
+      mono: () => performance.now(),
+      hidden: () => document.visibilityState === 'hidden',
+      reducedMotion,
+      state: () => this.state,
+      live: () => this.liveRound(),
+      writable: () => this.d.lock.held && this.view !== 'frozen',
+      readyMs: () => (this.opened ? performance.now() - this.opened.at : 0),
+      config: () => DEFAULT_TIMER,
+      untimed: () => this.d.devClockOff === true,
+      dispatch: (a) => this.dispatch(a),
+      flushDraft: () => this.drafts.flush(),
+      face: renderClockFace,
+      announce: (kind) => announce(kind === 'warning' ? timerCopy(0).warning : timerCopy(0).timeUp),
+      expired: (info) => this.timeUp(info),
+      setInterval: (fn, ms) => setInterval(() => this.guard(fn), ms),
+      clearInterval: (handle) => clearInterval(handle as ReturnType<typeof setInterval>),
+    });
+    this.drafts = new DraftQueue((draft) => this.saveDraft(draft), {
+      set: (fn, ms) => setTimeout(() => this.guard(fn), ms),
+      clear: (handle) => clearTimeout(handle as ReturnType<typeof setTimeout>),
+    });
     // The full item records load while the start screen shows; Start waits for them (V1-02).
     this.records();
   }
@@ -119,6 +163,8 @@ export class App {
   boot(): { resumed: boolean } {
     this.state = parseSave(this.d.local.get(KEYS.save), POOL);
     if (this.state?.finished) this.state = null;
+    // A deadline that passed while the page was closed is applied before anything else (ENG7, R1).
+    this.expireOnLoad();
     this.snapshot = parseSnapshot(this.d.local.get(KEYS.last), POOL);
     // Repair the seen lists from the save, the commit point (V1-07).
     if (this.state) this.seenLists.add(shownIds(this.state));
@@ -130,8 +176,16 @@ export class App {
     this.waiting = waiting?.kind === 'ok' ? waiting.link : null;
     for (const c of [this.challenge?.kind === 'ok' ? this.challenge.link : null, this.waiting]) if (c?.name) this.checkName(c.name);
     // A challenge link just opened shows its screen, even over a game this tab could resume.
-    const resume = !!this.state && !this.d.tab.landing && linked.kind === 'none';
-    if (this.d.analytics.testMode) this.badge = testBadge(() => this.d.analytics.inspect(), () => void this.finishForTest());
+    // A round with time left reopens directly, even on a later visit, so no hidden seconds
+    // are lost; a round whose time ran out while away lands on Start (R1).
+    const s = this.state;
+    const timeLeft = !!s && !s.finished && this.timedRound(s);
+    const resume = !!s && linked.kind === 'none' && !expiredUnseen(s) && (!this.d.tab.landing || timeLeft);
+    if (this.d.analytics.testMode) {
+      const surface = this.testSurface();
+      this.badge = testBadge(() => this.d.analytics.inspect(), surface);
+      this.d.exposeTest?.(surface);
+    }
     if (!this.webgl) this.telemetry({ name: 'webgl_unavailable', message: '', frame: '' });
     if (resume && this.d.lock.held) this.show('play');
     else if (resume) this.show('frozen');
@@ -139,10 +193,139 @@ export class App {
     return { resumed: resume && this.d.lock.held };
   }
 
-  /** Discard a saved game that crashes on resume (ENG11), keeping the test flag. */
+  /** Discard a saved game that crashes on resume (ENG11), keeping the test flag; a newer page version's save stays (N10). */
   discardSave() {
-    this.d.local.remove(KEYS.save);
+    if (!isNewerRecord(this.d.local.get(KEYS.save))) this.d.local.remove(KEYS.save);
     this.state = null;
+  }
+
+  // ----- the round clock (W3): src/game/timer.ts decides, src/game/clock-runner.ts runs it -----
+
+  /** The current round has a started, timed clock (with time left, or paused). */
+  private timedRound(s: GameState): boolean {
+    const c = roundClock(s);
+    return !!c && !c.stopped && c.limit_ms !== null;
+  }
+
+  /** On load or takeover, an expired deadline is applied first, as an away expiry (R1). */
+  private expireOnLoad() {
+    const s = this.state;
+    if (s && !s.finished && roundClock(s) && this.d.lock.held) this.dispatch({ type: 'expire', gameId: s.game_id, round: s.round, now: Date.now(), away: true });
+  }
+
+  /** The live page, from which the pause causes are derived on every check (N8). */
+  private liveRound(): LiveRound | null {
+    const s = this.state;
+    const step = s?.step ?? STEPS[0];
+    const base = { autoTour: false, step, mapState: null, photoReady: false, testPause: this.testPause };
+    if (this.view === 'error') return { ...base, view: 'error' };
+    if (this.view !== 'play' || !s || s.phase !== 'answering' || !this.roundView) return this.testPause ? { ...base, view: 'other' } : null;
+    return {
+      ...base,
+      view: 'round',
+      autoTour: this.tourOpen && !this.tourReplay,
+      mapState: step === 'when' ? null : (this.map?.state ?? null),
+      photoReady: this.photo?.ready ?? false,
+    };
+  }
+
+  /** Re-check the clock: on focus, pageshow and visibility changes (ENG7), and after state changes. */
+  clockEvent(kind: 'visible' | 'hidden' | 'pageshow' | 'focus' | 'pagehide') {
+    this.guard(() => {
+      if (kind === 'hidden' || kind === 'pagehide') this.drafts.flush();
+      if (kind !== 'pagehide') this.runner.check();
+      if (kind === 'visible' || kind === 'pageshow') this.revealOpened();
+    });
+  }
+
+  /** Save an edit of the active question (throttled), including empty and invalid ones (ENG7). */
+  private saveDraft(d: PendingDraft) {
+    const s = this.state;
+    if (!s || s.game_id !== d.gameId || s.round !== d.round || s.step !== d.step || s.phase !== 'answering') return;
+    this.dispatch({ type: 'draft', round: d.round, step: d.step, value: d.value, now: d.at });
+  }
+
+  private queueDraft(value: Draft) {
+    const s = this.state;
+    if (s) this.drafts.push({ gameId: s.game_id, round: s.round, step: s.step, value, at: Date.now() });
+  }
+
+  /** The photo changed state: the clock may start, or stop for good when the photo fails (N9). */
+  private photoChanged(region: PhotoRegion) {
+    if (this.photo !== region) return;
+    const s = this.state;
+    const c = s ? roundClock(s) : null;
+    if (s && c && !c.stopped && region.isFailed) this.dispatch({ type: 'clockStop', round: s.round, now: Date.now() });
+    this.runner.check();
+  }
+
+  /**
+   * Time is up (D2). The expiry is already saved; now the transition: freeze
+   * the controls, close overlays, hold "Time's up", then open the reveal. On
+   * any other screen the expiry waits for Continue.
+   */
+  private timeUp({ away, token }: { away: boolean; token: ClockToken }) {
+    const ours = () => this.state?.game_id === token.gameId && this.state.round === token.round && this.state.phase === 'reveal';
+    if (this.view !== 'play') {
+      this.runner.release(token);
+      if (this.view === 'start') this.show('start');
+      return;
+    }
+    void presentTimeUp({
+      freeze: this.roundView ? () => this.roundView?.freeze() : null,
+      away,
+      reducedMotion: reducedMotion(),
+      showCue: () => renderClockFace({ ...currentClockFace(), mode: 'timeup', remaining: 0, warning: true }),
+      wait: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
+      reveal: () =>
+        this.guard(() => {
+          this.runner.release(token);
+          if (ours() && this.view === 'play') this.show('play');
+        }),
+    });
+  }
+
+  /** The reveal on screen visibly opened: record it once (N5); a hidden tab waits until it is visible. */
+  private revealOpened() {
+    const s = this.state;
+    if (!s || s.finished || s.phase !== 'reveal' || this.view !== 'play') return;
+    if (document.visibilityState === 'hidden') {
+      this.revealPending = { gameId: s.game_id, round: s.round };
+      return;
+    }
+    this.revealPending = null;
+    this.dispatch({ type: 'revealShown', gameId: s.game_id, round: s.round, now: Date.now(), boardWeek: null });
+  }
+
+  /** The first time-up reveal on this device shows a one-time tip; the same reveal keeps it after a reload (V12-63). */
+  private timeUpTip(s: GameState): boolean {
+    if (!s.timed_out[s.round]) return false;
+    const key = `${s.game_id}:${s.round}`;
+    const shown = this.d.local.get(KEYS.timeUpTip);
+    if (shown === null) this.d.local.set(KEYS.timeUpTip, key);
+    return shown === null || shown === key;
+  }
+
+  /** The device's first game completed this week sends week_active once (ENG6). */
+  private weekCompleted(at: number, src: string) {
+    const r = weekActive(this.d.local.get(KEYS.weekActive), at);
+    if (!r.send) return;
+    this.d.local.set(KEYS.weekActive, r.marker);
+    this.d.analytics.track(EVENTS.weekActive, { src, week: r.week, active_last_week: r.active_last_week });
+  }
+
+  private testSurface(): TestSurface {
+    return testSurface({
+      state: () => this.state,
+      dispatch: (a) => this.dispatch(a),
+      check: () => this.runner.check(),
+      paused: () => this.testPause,
+      setPaused: (on) => {
+        this.testPause = on;
+      },
+      finish: () => this.finishForTest(),
+      now: () => Date.now(),
+    });
   }
 
   guard(fn: () => void) {
@@ -255,6 +438,12 @@ export class App {
       if (state === prev && effects.length === 0) return;
       if (!this.persist(prev, state, effects, action.type === 'start')) return;
       this.state = state;
+      // A late Confirm, Back or draft lost to the deadline: present the expiry, not the action (ENG7).
+      if (action.type !== 'expire' && prev && state && prev.phase === 'answering' && state.round === prev.round && state.timed_out[state.round] && !prev.timed_out[prev.round]) {
+        announce(timerCopy(0).timeUp);
+        this.timeUp({ away: false, token: this.runner.hold(state.game_id, state.round) });
+        return;
+      }
       this.afterAction(action, prev);
     });
   }
@@ -283,6 +472,8 @@ export class App {
         this.snapshot = { snapshot: e.snapshot, current: true };
       } else if (e.type === 'track') {
         this.d.analytics.track(e.name, e.props);
+      } else if (e.type === 'completed') {
+        this.weekCompleted(e.at, next?.src ?? this.d.tab.src);
       }
     }
     return true;
@@ -329,7 +520,9 @@ export class App {
   async continueGame() {
     if (!(await this.d.lock.acquire(true))) return;
     this.guard(() => {
+      // a tab that takes over reads the other tab's drafts and clock, and derives its own pause causes (N8)
       this.state = parseSave(this.d.local.get(KEYS.save), POOL);
+      this.expireOnLoad();
       this.show(this.state && !this.state.finished ? 'play' : 'start');
     });
   }
@@ -337,6 +530,7 @@ export class App {
   /** Test mode only: finish the game in progress, or a new one, with random answers and show the end screen. */
   async finishForTest() {
     if (!this.state || this.state.finished) await this.startGame();
+    this.dispatch({ type: 'testAssist' });
     this.guard(() => {
       const skills = new Map<number, number>();
       for (let i = 0; i < 100 && this.state && !this.state.finished; i++) {
@@ -365,7 +559,7 @@ export class App {
     const n = Number(this.d.session.get(KEYS.gamesInTab) ?? '0') + 1;
     this.d.session.set(KEYS.gamesInTab, String(n));
     const context: StartContext = { gameInTab: n >= 3 ? '3+' : n === 2 ? '2' : '1', seenBefore: seenBucket(this.seenLists.ever().size) };
-    this.dispatch({ type: 'start', gameId: this.id(), src: this.d.tab.src, itemsVersion: ITEMS_VERSION, deck, context });
+    this.dispatch({ type: 'start', gameId: this.id(), src: this.d.tab.src, itemsVersion: ITEMS_VERSION, deck, context, testAssisted: this.d.analytics.testMode });
   }
 
   private dropChallenge() {
@@ -478,6 +672,8 @@ export class App {
     if (this.badge) root.append(this.badge);
     if (focusTarget) focus(focusTarget);
     if (view === 'play') requestAnimationFrame(() => this.guard(() => this.maybeTour()));
+    if (view === 'play' && this.state?.phase === 'reveal') this.revealOpened();
+    this.runner.check();
   }
 
   /** The first-visit tour (DS34): once per browser, on round 1's first question; not for a player who has finished a game. */
@@ -491,13 +687,17 @@ export class App {
   openTour(replay: boolean) {
     if (this.tourOpen) return;
     this.tourOpen = true;
+    // only the automatic first-visit tour pauses the clock (D4)
+    this.tourReplay = replay;
     startTour({
       onEnd: (outcome, step) => {
         this.tourOpen = false;
         this.d.local.set(KEYS.tour, outcome);
         this.d.analytics.track(EVENTS.tourEnded, { src: this.d.tab.src, outcome, step, replay });
+        this.runner.check();
       },
     });
+    this.runner.check();
   }
 
   private renderStart(): HTMLElement {
@@ -536,7 +736,7 @@ export class App {
       }
       this.challengeOpened(c, own);
     } else if (this.state && !this.state.finished) {
-      mode = { kind: 'continue', round: this.state.round + 1, challenge: this.state.deck_kind === 'challenge' };
+      mode = { kind: 'continue', round: this.state.round + 1, challenge: this.state.deck_kind === 'challenge', expired: expiredUnseen(this.state) };
     } else if (this.snapshot) {
       mode = { kind: 'finished', total: this.snapshot.snapshot.total, canReview: this.snapshot.current };
     }
@@ -584,6 +784,7 @@ export class App {
     return endScreen({
       items: snap?.current && game ? deckItems(game.item_ids) : [],
       results: snap?.current && game ? game.results : null,
+      timedOut: snap?.current && game ? game.timed_out : null,
       total: game?.total ?? 0,
       detailed: !!snap?.current,
       askMostFun: false,
@@ -629,6 +830,8 @@ export class App {
           return;
         }
         this.roundView?.refresh();
+        // a map that cannot take an answer pauses the clock; a ready one may start or resume it (ENG8)
+        this.guard(() => this.runner.check());
       },
       onError: (name, message) => this.telemetry({ name, message, frame: '' }),
     });
@@ -659,6 +862,7 @@ export class App {
         screen: endScreen({
           items,
           results: s.results,
+          timedOut: s.timed_out,
           total,
           detailed: true,
           askMostFun: !asked,
@@ -698,8 +902,9 @@ export class App {
       // older photo must not skip a round of the game now on screen (V1-11).
       const round = s.round;
       const region: PhotoRegion = new PhotoRegion(item, () => {
-        if (this.photo === region) this.dispatch({ type: 'skip', round });
+        if (this.photo === region) this.dispatch({ type: 'skip', round, now: Date.now() });
       });
+      region.onChange(() => this.guard(() => this.photoChanged(region)));
       this.photo = region;
       this.photoKey = photoKey;
     }
@@ -720,8 +925,10 @@ export class App {
         map: this.ensureMap(),
         pulse,
         toBeat: s.deck_kind === 'challenge' ? (s.challenge?.score ?? null) : null,
+        timeUp: s.timed_out[s.round] ?? null,
+        tip: this.timeUpTip(s),
         onPulse: (a) => this.dispatch({ type: 'pulse', q: 'difficulty' as FeedbackQ, a }),
-        onNext: () => this.dispatch({ type: 'next', round: s.round }),
+        onNext: () => this.dispatch({ type: 'next', round: s.round, now: Date.now() }),
         onMenu,
       });
       const round = s.round;
@@ -731,18 +938,34 @@ export class App {
       return { screen: view.element, focus: view.score };
     }
 
+    const key = `${s.game_id}:${s.round}`;
+    if (this.opened?.key !== key) this.opened = { key, at: performance.now() };
+    // A saved edit reopens as the draft: a value, or an empty field with the confirmed answer shown as the fallback (D8).
+    const confirmed = s.answers[s.round]?.[s.step] ?? null;
+    const draft = s.drafts[s.step];
     const view = roundScreen({
       item,
       round: s.round,
       step: s.step,
       total,
-      answer: s.answers[s.round]?.[s.step] ?? null,
+      answer: draft === undefined ? confirmed : draft,
+      previous: draft === null && typeof confirmed === 'number' ? confirmed : null,
       madePin: s.answers[s.round]?.made ?? null,
       photo: this.photo,
       map: s.step === 'when' ? this.map : this.ensureMap(),
       webgl: this.webgl,
-      onConfirm: (value) => this.dispatch({ type: 'confirm', round: s.round, step: s.step, value }),
-      onBack: STEPS.indexOf(s.step) > 0 ? () => this.dispatch({ type: 'back', round: s.round, step: s.step }) : undefined,
+      onConfirm: (value) => {
+        this.drafts.flush();
+        this.dispatch({ type: 'confirm', round: s.round, step: s.step, value, now: Date.now() });
+      },
+      onBack:
+        STEPS.indexOf(s.step) > 0
+          ? () => {
+              this.drafts.flush();
+              this.dispatch({ type: 'back', round: s.round, step: s.step, now: Date.now() });
+            }
+          : undefined,
+      onDraft: (value) => this.queueDraft(value),
       onMenu,
     });
     this.roundView = view;

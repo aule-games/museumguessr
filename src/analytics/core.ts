@@ -68,11 +68,32 @@ export interface Analytics {
   readonly testMode: boolean;
 }
 
+/** The browser test flag lasts 24 hours from `?test=1` (N11); game test provenance never expires (ENG5). */
+export const TEST_FLAG_TTL_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * Whether this browser's test flag is on at `now`. The flag holds the time
+ * `?test=1` was opened; it lapses after 24 hours and is then removed. A flag
+ * from before v1.2 ("1") starts its 24 hours now.
+ */
+export function testFlagOn(storage: KV, now: number): boolean {
+  const v = storage.get(KEYS.test);
+  if (v === null) return false;
+  if (v === '1') {
+    storage.set(KEYS.test, String(now));
+    return true;
+  }
+  const at = Number(v);
+  if (/^\d+$/.test(v) && Number.isFinite(at) && now >= at && now - at < TEST_FLAG_TTL_MS) return true;
+  storage.remove(KEYS.test);
+  return false;
+}
+
 /** Apply `?test=1` / `?test=0` to the stored flag; returns whether test mode is on. */
-export function applyTestParam(storage: KV, testParam: string | null): boolean {
-  if (testParam === '1') storage.set(KEYS.test, '1');
+export function applyTestParam(storage: KV, testParam: string | null, now: number = Date.now()): boolean {
+  if (testParam === '1') storage.set(KEYS.test, String(now));
   if (testParam === '0') storage.remove(KEYS.test);
-  return testParam === '1' || storage.get(KEYS.test) === '1';
+  return testParam === '1' || testFlagOn(storage, now);
 }
 
 export function createAnalytics(env: AnalyticsEnv): Analytics {
@@ -189,7 +210,7 @@ export function createAnalytics(env: AnalyticsEnv): Analytics {
       }
       if (reason) return;
       // Recheck the flag before each capture (ENG38).
-      if (env.storage.get(KEYS.test) === '1') {
+      if (testFlagOn(env.storage, at.getTime())) {
         turnOff('test flag');
         return;
       }
@@ -198,7 +219,7 @@ export function createAnalytics(env: AnalyticsEnv): Analytics {
       else enqueue(q);
     },
     testFlagChanged() {
-      if (env.storage.get(KEYS.test) === '1') turnOff('test flag');
+      if (testFlagOn(env.storage, Date.now())) turnOff('test flag');
     },
     inspect() {
       return {

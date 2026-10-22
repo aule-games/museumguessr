@@ -158,7 +158,8 @@ export function topBarClock(): HTMLElement {
 export function clockMirror(): HTMLElement {
   const l = line();
   const c = cue();
-  const el = h('span', { class: 'clockmirror', 'data-test': 'clock-mirror' }, c.el, l.el);
+  // a visual repeat: screen readers get the warning and "Time's up" announcements instead
+  const el = h('span', { class: 'clockmirror', 'aria-hidden': 'true', 'data-test': 'clock-mirror' }, c.el, l.el);
   return register(el, (face) => {
     l.update(face);
     c.update(face);
@@ -168,11 +169,15 @@ export function clockMirror(): HTMLElement {
 
 let region: HTMLElement | null = null;
 
-/** Say something once in the polite live region (the warning and "Time's up"; never every tick). */
+/**
+ * Say something once in the polite live region (the warning and "Time's up";
+ * never every tick). A modal dialog makes the rest of the page inert, so the
+ * region moves into the topmost open dialog while one is open.
+ */
 export function announce(text: string) {
-  if (!region || !region.isConnected) {
-    region = h('div', { class: 'visually-hidden', 'aria-live': 'polite', 'data-test': 'announcer' });
-    document.body.append(region);
-  }
+  region ??= h('div', { class: 'visually-hidden', 'aria-live': 'polite', 'data-test': 'announcer' });
+  const dialogs = document.querySelectorAll('dialog[open]');
+  const host = dialogs.length ? (dialogs[dialogs.length - 1] as HTMLElement) : document.body;
+  if (region.parentElement !== host) host.append(region);
   region.textContent = text;
 }

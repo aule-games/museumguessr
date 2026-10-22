@@ -101,8 +101,16 @@ export function openMenu(opener: HTMLElement, a: MenuActions) {
   );
 }
 
-/** "Test mode · analytics off" badge; expands to the payloads that would have been sent (DX29). */
-export function testBadge(inspect: () => Inspection, onFinish: () => void): HTMLElement {
+/** The test badge's controls; the same functions are window.__mgTest (M4). Each marks the game test-assisted (ENG5). */
+export interface TestControls {
+  finish(): void;
+  tenSeconds(): void;
+  expire(): void;
+  pauseClock(): void;
+}
+
+/** "Test mode · analytics off" badge; expands to the test controls and the payloads that would have been sent (DX29, M4). */
+export function testBadge(inspect: () => Inspection, controls: TestControls): HTMLElement {
   const list = h('div', { class: 'badge__panel', hidden: true, 'data-test': 'badge-panel' });
   const btn = h('button', { type: 'button', class: 'badge', 'aria-expanded': 'false', 'data-test': 'test-badge' }, t('test.badge'));
   const close = () => {
@@ -115,21 +123,29 @@ export function testBadge(inspect: () => Inspection, onFinish: () => void): HTML
     list.hidden = !open;
     if (!open) return;
     const info = inspect();
-    const finish = h(
-      'button',
-      {
-        type: 'button',
-        class: 'btn btn--secondary',
-        'data-test': 'test-finish',
-        onclick: () => {
-          close();
-          onFinish();
+    const control = (label: string, test: string, run: () => void) =>
+      h(
+        'button',
+        {
+          type: 'button',
+          class: 'btn btn--secondary',
+          'data-test': test,
+          onclick: () => {
+            close();
+            run();
+          },
         },
-      },
-      t('test.finish'),
-    );
+        label,
+      );
     list.replaceChildren(
-      finish,
+      control(t('test.finish'), 'test-finish', controls.finish),
+      h(
+        'div',
+        { class: 'badge__clock', role: 'group' },
+        control(t('test.tenSeconds'), 'test-ten-seconds', controls.tenSeconds),
+        control(t('test.expire'), 'test-expire', controls.expire),
+        control(t('test.pauseClock'), 'test-pause-clock', controls.pauseClock),
+      ),
       h('p', {}, t('test.payloads')),
       h('p', { class: 'badge__counts' }, t('test.counts', info.counts)),
       info.payloads.length

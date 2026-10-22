@@ -504,11 +504,10 @@ describe('save schema version 4', () => {
 
 describe('the timer module stays pure', () => {
   it('timer logic lives in its own module without the page; the screen controller only connects it [V12-75]', () => {
-    const timer = readFileSync(join(ROOT, 'src/game/timer.ts'), 'utf8');
-    for (const word of ['document', 'window', 'Date.now', 'performance', 'setTimeout', 'setInterval', 'localStorage']) {
-      expect(timer.replace(/\/\/.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, ''), word).not.toContain(word);
-    }
-    const app = readFileSync(join(ROOT, 'src/app.ts'), 'utf8');
+    const code = (file: string) => readFileSync(join(ROOT, file), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '');
+    const timer = code('src/game/timer.ts');
+    for (const word of ['document', 'window', 'Date.now', 'performance', 'setTimeout', 'setInterval', 'localStorage']) expect(timer, word).not.toContain(word);
+    const app = code('src/app.ts');
     // no timing rule in the controller: no deadline arithmetic, no round length, no warning threshold
     for (const word of ['deadline', 'remaining_ms', 'roundSeconds', 'warnSeconds', '60_000', '60000']) expect(app, word).not.toContain(word);
   });

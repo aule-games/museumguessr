@@ -34,8 +34,8 @@ export function readSession(url: URL, session: KV): TabSession {
   return { src, landing, testParam, devParam };
 }
 
-/** Parameters the page removes from the address bar after reading them: test flags and challenge links (V1-16). */
-const CLEANED = ['test', 'dev', 'd', 's', 'n', 'h', 'r'];
+/** Parameters the page removes from the address bar after reading them: test flags, the development clock switch and challenge links (V1-16). */
+const CLEANED = ['test', 'dev', 'clock', 'd', 's', 'n', 'h', 'r'];
 
 /** URL without `test`, `dev` and the challenge parameters, for history.replaceState. Other parameters stay. */
 export function cleanedUrl(url: URL): string | null {
