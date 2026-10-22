@@ -273,7 +273,7 @@ test.describe('[M4] the test surface', () => {
 
   test('the development untimed switch is compiled out of the built site [V12-57]', async ({ page }) => {
     const dir = join(import.meta.dirname, '../../dist/assets');
-    for (const f of readdirSync(dir).filter((x) => x.endsWith('.js'))) expect(readFileSync(join(dir, f), 'utf8'), f).not.toContain('mg-dev-clock-off');
+    for (const f of readdirSync(dir).filter((x) => x.endsWith('.js'))) expect(readFileSync(join(dir, f), 'utf8'), f).not.toContain('__mgDev clock=off');
     await start(page, '?clock=off');
     expect(page.url()).not.toContain('clock=');
     await clockRunning(page);
