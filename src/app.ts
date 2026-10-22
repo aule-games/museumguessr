@@ -12,6 +12,7 @@ import { drawDeck, seededRng } from './deck/planner.ts';
 import { stripMessage, takeErrorBudget, toReport, type ErrorReport } from './errors/boundary.ts';
 import { newGameId } from './game/ids.ts';
 import type { WriterLock } from './game/lock.ts';
+import { hardNailedCount } from './game/hard.ts';
 import { isListed, nameList } from './game/names.ts';
 import { shareHook, shareText } from './game/text.ts';
 import { SeenLists } from './game/seen.ts';
@@ -20,7 +21,7 @@ import { testGuess } from './game/testplay.ts';
 import { GameMap, hasWebGL2, prefetchMap, type MapState } from './map/map.ts';
 import type { LatLng } from './scoring/geo.ts';
 import { ledgerKey, reduce, seenBucket, totalPoints, type Action, type Deck, type Effect, type ShareMethod, type StartContext } from './state/reducer.ts';
-import { KEYS, parseSave, parseSnapshot, serialize, type GameState, type ParsedSnapshot } from './state/schema.ts';
+import { KEYS, parseSave, parseSnapshot, serialize, type GameState, type ParsedSnapshot, type RoundResult } from './state/schema.ts';
 import type { KV } from './storage/guarded.ts';
 import { clear, focus } from './ui/dom.ts';
 import { endScreen, resultLine, collectionLine } from './ui/screens/end.ts';
@@ -227,14 +228,15 @@ export class App {
   }
 
   /** The share block for a finished deck; shares go through `onShared`. */
-  private shareSetup(game: { item_ids: string[]; deck_hash: string; total: number; replay: boolean; kind: ShareKind }, onShared: (method: ShareMethod) => void): ShareSetup {
+  private shareSetup(game: { item_ids: string[]; deck_hash: string; total: number; results: readonly (RoundResult | null)[]; replay: boolean; kind: ShareKind }, onShared: (method: ShareMethod) => void): ShareSetup {
+    const hard = hardNailedCount(deckItems(game.item_ids), game.results);
     return {
       kind: game.kind,
       storedName: this.d.local.get(KEYS.name),
       onName: (name) => (name ? this.d.local.set(KEYS.name, name) : this.d.local.remove(KEYS.name)),
       link: (medium, name) => {
         const url = challengeUrl(SITE_URL, { ids: game.item_ids, score: game.total, name, hash: game.deck_hash }, medium, game.kind);
-        const p = { total: game.total, url, replay: game.replay, kind: game.kind };
+        const p = { total: game.total, url, replay: game.replay, kind: game.kind, hard };
         return { url, hook: shareHook(p), text: shareText(p) };
       },
       onShared,

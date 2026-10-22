@@ -8,6 +8,8 @@
 import { FEEDBACK } from '../../analytics/events.ts';
 import { formatNumber, t, type CopyKey } from '../../copy.ts';
 import { imageUrl } from '../../content/items.ts';
+import { hardNailedCount } from '../../game/hard.ts';
+import { hardSummary } from '../../game/text.ts';
 import { tierFor } from '../../scoring/score.ts';
 import type { RoundResult } from '../../state/schema.ts';
 import type { Item } from '../../types/item.ts';
@@ -97,6 +99,9 @@ export function endScreen(p: EndProps): HTMLElement {
         )
       : h('p', { class: 'end__note' }, t('end.versionChanged'));
 
+  // "1 hard one nailed" / "2 hard ones nailed" in the lime summary panel (D12).
+  const hard = p.detailed && p.results ? hardSummary(hardNailedCount(p.items, p.results)) : null;
+
   const c = p.challenge;
   const versus =
     c && c.score !== null
@@ -129,6 +134,7 @@ export function endScreen(p: EndProps): HTMLElement {
       h('p', { class: 'end__total', 'data-test': 'end-total' }, ...scoreText(t('end.total', { total: formatNumber(p.total) }))),
       h('p', { class: 'end__tier' }, tierFor(p.total)),
       ...versus,
+      hard ? h('p', { class: 'end__hard hard-mark', 'data-test': 'hard-count' }, h('span', { class: 'hard-mark__star', 'aria-hidden': 'true' }), ' ', hard) : null,
     ),
     p.detailed && p.share ? shareBlock(p.share, c ? 'sendBack.button' : 'share.button') : null,
     h('button', { type: 'button', class: 'btn btn--secondary btn--wide end__another', 'data-test': 'play-another', onclick: p.onAnother }, t('end.another')),

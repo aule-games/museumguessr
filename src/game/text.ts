@@ -76,16 +76,25 @@ export function xLength(text: string): number {
   return [...text.replace(/https:\/\/\S+/g, 'x'.repeat(X_LINK_LENGTH))].length;
 }
 
-/** The share hook (V1-19). A replay marks its total "(replay)"; a reply answers a friend's challenge. */
-export function shareHook(p: { total: number; replay: boolean; kind: 'challenge' | 'reply' }): string {
+/** The end summary's count of hard objects nailed: "1 hard one nailed", "2 hard ones nailed", or null for none (D12). */
+export function hardSummary(n: number): string | null {
+  if (n <= 0) return null;
+  return n === 1 ? t('hard.one') : t('hard.many', { n });
+}
+
+/** The share hook (V1-19). A replay marks its total "(replay)"; a reply answers a friend's challenge; hard objects nailed add their tag (D12). */
+export function shareHook(p: { total: number; replay: boolean; kind: 'challenge' | 'reply'; hard?: number }): string {
   const total = formatNumber(p.total);
-  return p.kind === 'reply' ? t('share.hookReply', { total }) : t(p.replay ? 'share.hookReplay' : 'share.hook', { total });
+  const hook = p.kind === 'reply' ? t('share.hookReply', { total }) : t(p.replay ? 'share.hookReplay' : 'share.hook', { total });
+  const n = p.hard ?? 0;
+  if (n <= 0) return hook;
+  return `${hook} ${n === 1 ? t('hard.shareOne') : t('hard.shareMany', { n })}`;
 }
 
 /**
  * The share message for a finished game (V1-19): the hook and the challenge
  * link, nothing about the answers, so a friend plays the same 10 unspoiled.
  */
-export function shareText(p: { total: number; url: string; replay: boolean; kind: 'challenge' | 'reply' }): string {
+export function shareText(p: { total: number; url: string; replay: boolean; kind: 'challenge' | 'reply'; hard?: number }): string {
   return `${shareHook(p)} ${p.url}`;
 }

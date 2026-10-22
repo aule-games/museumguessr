@@ -8,17 +8,19 @@ import tokens from '../../design/tokens.json';
 import type { GameMap } from '../../map/map.ts';
 import type { LatLng } from '../../scoring/geo.ts';
 import type { Item } from '../../types/item.ts';
+import { difficultyLabel } from '../difficulty.ts';
 import { h, s } from '../dom.ts';
 import { openLightbox } from '../lightbox.ts';
 import { yearControl } from '../year.ts';
 
 export const MAX_IMAGE_RETRIES = 3;
 
-export function topBar(round: number, total: number, onMenu: (opener: HTMLElement) => void): HTMLElement {
+export function topBar(round: number, total: number, onMenu: (opener: HTMLElement) => void, item?: { difficulty: number }): HTMLElement {
   return h(
     'header',
     { class: 'topbar' },
     h('span', { class: 'topbar__round' }, t('round.counter', { round: round + 1 })),
+    item ? difficultyLabel(item) : null,
     h('span', { class: 'topbar__total', 'data-test': 'total' }, t('round.total', { total: formatNumber(total) })),
     h(
       'button',
@@ -182,7 +184,7 @@ export function roundScreen(p: RoundProps): RoundView {
   const element = h(
     'main',
     { class: `screen round round--${p.step}`, 'data-screen': 'round', 'data-step': p.step, 'data-round': p.round + 1 },
-    topBar(p.round, p.total, p.onMenu),
+    topBar(p.round, p.total, p.onMenu, p.item),
     h('div', { class: 'round__body' }, p.photo.element, prompt, answer),
     h('div', { class: 'round__footer' }, h('div', { class: `actionbar${back ? ' actionbar--back' : ''}` }, back, confirm)),
   );

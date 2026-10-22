@@ -206,7 +206,6 @@ export const COPY = {
   'reveal.record': 'museum record',
   'reveal.next': 'Next round',
   'reveal.results': 'See results',
-  'pulse.difficulty': 'Difficulty:',
   'pulse.too_hard': 'too hard',
   'pulse.about_right': 'about right',
   'pulse.too_easy': 'too easy',

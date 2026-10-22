@@ -7,6 +7,7 @@
 import { FEEDBACK, type Step } from '../../analytics/events.ts';
 import { formatNumber, t, type CopyKey } from '../../copy.ts';
 import tokens from '../../design/tokens.json';
+import { hardNailed } from '../../game/hard.ts';
 import { formatAnswerYear, howText, rowResult } from '../../game/text.ts';
 import type { GameMap } from '../../map/map.ts';
 import { MAX_POINTS, SLIDER } from '../../scoring/config.ts';
@@ -14,6 +15,7 @@ import { madeFullMarksKm } from '../../scoring/score.ts';
 import { formatRange, yearToPosition } from '../../scoring/years.ts';
 import type { RoundAnswers, RoundResult } from '../../state/schema.ts';
 import type { Item } from '../../types/item.ts';
+import { objectDifficulty } from '../difficulty.ts';
 import { ext, h, reducedMotion, s, scoreText } from '../dom.ts';
 import { topBar } from './round.ts';
 
@@ -25,7 +27,7 @@ export interface RevealProps {
   answers: RoundAnswers;
   result: RoundResult;
   map: GameMap | null;
-  /** Show the optional difficulty row (after round 3, once per game). */
+  /** Show the optional "this game so far" row (after round 3, once per game). */
   pulse: boolean;
   /** During a challenge game, the friend's score, shown under the round total (V1-21). */
   toBeat?: number | null;
@@ -203,7 +205,11 @@ export function revealScreen(p: RevealProps): RevealView {
   const journey = item.journey_fact;
   const madeNote = item.made.note && !r.skipped ? h('p', { class: 'score__note' }, item.made.note) : null;
 
-  const score = h('p', { class: 'reveal__score', 'aria-live': 'polite', tabindex: -1, 'data-test': 'round-score' }, ...scoreText(t('reveal.score', { points: formatNumber(r.points) })));
+  // A hard object nailed shows its mark inside the lime total and joins the one score announcement (D12).
+  const nailed = hardNailed(item.difficulty, r)
+    ? h('span', { class: 'hard-mark', 'data-test': 'hard-nailed' }, h('span', { class: 'hard-mark__star', 'aria-hidden': 'true' }), ' ', t('hard.nailed'))
+    : null;
+  const score = h('p', { class: 'reveal__score', 'aria-live': 'polite', tabindex: -1, 'data-test': 'round-score' }, ...scoreText(t('reveal.score', { points: formatNumber(r.points) })), nailed);
   const rows = h(
     'ul',
     { class: 'scores', 'data-test': 'scores' },
@@ -247,7 +253,8 @@ export function revealScreen(p: RevealProps): RevealView {
         t(`pulse.${a}` as CopyKey),
       ),
     );
-    pulseRow = h('div', { class: 'pulse', role: 'group', 'aria-label': t('pulse.difficulty'), 'data-test': 'pulse' }, h('span', { class: 'pulse__q' }, t('pulse.difficulty')), ...choices, thanks);
+    // It asks about this game so far, never the object's own difficulty label (R3).
+    pulseRow = h('div', { class: 'pulse', role: 'group', 'aria-label': t('pulse.gameSoFar'), 'data-test': 'pulse' }, h('span', { class: 'pulse__q' }, t('pulse.gameSoFar')), ...choices, thanks);
   }
 
   const credit = h(
@@ -263,7 +270,7 @@ export function revealScreen(p: RevealProps): RevealView {
   const element = h(
     'main',
     { class: 'screen reveal', 'data-screen': 'reveal', 'data-round': p.round + 1 },
-    topBar(p.round, p.total, p.onMenu),
+    topBar(p.round, p.total, p.onMenu, item),
     h(
       'div',
       { class: 'reveal__scroll' },
@@ -271,7 +278,7 @@ export function revealScreen(p: RevealProps): RevealView {
         'header',
         { class: 'label' },
         h('h2', { class: 'label__title', 'data-test': 'reveal-title' }, item.title),
-        h('p', { class: 'label__line' }, wallLabel(item)),
+        h('p', { class: 'label__line' }, wallLabel(item), ' · ', h('span', { class: 'label__difficulty', 'data-test': 'object-difficulty' }, objectDifficulty(item))),
       ),
       rows,
       h('div', { class: 'reveal__media' }, mapHost, legend),
