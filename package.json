@@ -31,6 +31,8 @@
     "check:build": "node scripts/check-build.mjs",
     "verify": "node scripts/verify.mjs",
     "release:check": "node scripts/release-scan.mjs",
+    "deploy": "node scripts/deploy.mjs",
+    "live:check": "node scripts/live-check.mjs",
     "test:design": "node --test tests/design/*.test.mjs",
     "design:build": "node scripts/design-directions.mjs",
     "design:check": "node scripts/design-directions.mjs --check",

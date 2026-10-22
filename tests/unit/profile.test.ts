@@ -32,6 +32,7 @@ describe('the tracked public profile (H1)', () => {
     const pkg = JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf8')) as { scripts: Record<string, string> };
     expect(pkg.scripts['build:e2e']).toBe('node scripts/build.mjs --build-id e2e');
     expect(readFileSync(join(ROOT, 'scripts/verify.mjs'), 'utf8')).toContain("sh('npm', ['run', '-s', 'build:e2e'])");
+    expect(readFileSync(join(ROOT, 'scripts/deploy.mjs'), 'utf8')).toContain('profileBuild({ root, buildId: sha, shellEnv: env, deploy: true })');
   });
 
   it('the deploy profile refuses shell overrides, a placeholder token and invalid switch combinations [V12-18]', () => {

@@ -216,6 +216,10 @@
         {
           "file": "tests/unit/wrangler-config.test.ts",
           "title": "the Worker answers only at the custom domain museumguessr.com"
+        },
+        {
+          "file": "tests/unit/live-check.test.ts",
+          "title": "www and http answer 301 to the https apex keeping the path and query, and the zone sends one-year HSTS without preload"
         }
       ]
     },
@@ -278,7 +282,12 @@
         "H1"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/deploy.test.ts",
+          "title": "refuses a dirty tree, a HEAD that is not origin/main, a red or missing verify check and a build id that differs from HEAD"
+        }
+      ]
     },
     {
       "id": "V12-16",
@@ -289,7 +298,12 @@
         "H1"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/deploy.test.ts",
+          "title": "installs the locked dependencies with Node 24, builds the deploy profile, moves source maps aside and checks the exact artifact before anything remote"
+        }
+      ]
     },
     {
       "id": "V12-17",
@@ -301,7 +315,16 @@
         "N10"
       ],
       "replaces": "The v1 \"Deploys with content\" ordering rule (page and Worker deployed separately).",
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/deploy.test.ts",
+          "title": "applies remote migrations only with a D1 binding, then deploys page and API in one wrangler deploy whose message records SHA, state, scoring, contract and migrations"
+        },
+        {
+          "file": "tests/unit/versions.test.ts",
+          "title": "the deployment message records the SHA and the state, scoring, contract and migration versions the page uses"
+        }
+      ]
     },
     {
       "id": "V12-18",
@@ -382,6 +405,10 @@
         {
           "file": "tests/unit/profile.test.ts",
           "title": "build children never receive Cloudflare credentials"
+        },
+        {
+          "file": "tests/unit/deploy.test.ts",
+          "title": "install, build and check children get no Cloudflare credentials; only wrangler does"
         }
       ]
     },
@@ -405,7 +432,12 @@
         "N13"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/live-check.test.ts",
+          "title": "an unblocked unknown path must return the 404 page with status 404 and the headers, while the scanner path is checked separately and only warns until the WAF rule exists"
+        }
+      ]
     },
     {
       "id": "V12-26",
@@ -415,7 +447,12 @@
         "ENG16"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/live-check.test.ts",
+          "title": "www and http answer 301 to the https apex keeping the path and query, and the zone sends one-year HSTS without preload"
+        }
+      ]
     },
     {
       "id": "V12-27",
@@ -426,7 +463,16 @@
         "N13"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/live-check.test.ts",
+          "title": "compares the build id, the security headers, both CSPs, the health versions and pool hash, the redirects and the 404 page"
+        },
+        {
+          "file": "tests/unit/live-check.test.ts",
+          "title": "with a token that may read WAF rules, the API burst rule is compared with the limits module"
+        }
+      ]
     },
     {
       "id": "V12-28",
@@ -438,7 +484,16 @@
         "ENG24"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/deploy.test.ts",
+          "title": "without --yes it runs every local check, prints the exact URL and deploys nothing; a failed live check names the rollback"
+        },
+        {
+          "file": "tests/unit/live-check.test.ts",
+          "title": "a failed check exits with the live class and names the rollback command"
+        }
+      ]
     },
     {
       "id": "V12-29",
@@ -448,7 +503,12 @@
         "ENG21"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/deploy.test.ts",
+          "title": "a confidential term in the built output stops the deploy before any remote write"
+        }
+      ]
     },
     {
       "id": "V12-30",
