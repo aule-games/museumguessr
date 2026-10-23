@@ -1,0 +1,4 @@
+{
+  "note": "Word sequences no generated board name may contain (whole words, in order). Add one with npm run names:block -- \"<name or pair>\"; only names containing it change. Never remove an entry.",
+  "entries": []
+}

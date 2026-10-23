@@ -374,6 +374,20 @@ Root install does not install Worker dependencies; Worker scripts and verify
 install their exact locked dependencies explicitly when needed. [V12-126]
 [V12-127] [V12-129]
 
+## Board names
+
+Public rows show a generated three-word name ("Quality Material Thing") from
+`src/board/names.ts`, seeded by sha256 of the device key, so a device keeps its
+name every week and nobody types one. The word lists in
+`src/board/name-words.ts` are append-only (over 1,000,000 names, no number
+suffix); a unit test checks every word and every adjacent pair against
+`data/name-list.json`. To retire a name or a word pair, run
+`npm run names:block -- "Amber Heron"` (one to three words in name order): it
+appends the sequence to `src/board/name-blocklist.json`, and only names that
+contain it derive again with the next salt. Commit the file and deploy; the
+page and the Worker share it. Never remove an entry or edit a word list.
+[V12-109] [V12-110]
+
 ## Release checklist
 
 | Step | Agent evidence | Founder tasks | Gate |

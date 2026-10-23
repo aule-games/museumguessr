@@ -35,6 +35,7 @@
     "rollback": "node scripts/rollback.mjs",
     "live:check": "node scripts/live-check.mjs",
     "cf:bootstrap": "node scripts/cf-bootstrap.mjs",
+    "names:block": "node scripts/names.mjs block",
     "test:design": "node --test tests/design/*.test.mjs",
     "design:build": "node scripts/design-directions.mjs",
     "design:check": "node scripts/design-directions.mjs --check",
