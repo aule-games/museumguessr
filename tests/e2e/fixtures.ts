@@ -3,6 +3,8 @@
 //   possibly gzip-compressed bodies; an unhandled PostHog request fails the test
 // - every other non-local request denied (map tiles aborted, so the bundled
 //   fallback map is used)
+// - any /api/ request no test mocked, and any request to Turnstile's host,
+//   fails the test (V12-128): board tests mock /api/ and stub Turnstile
 // - navigator.webdriver false and a non-headless user agent, so posthog-js's
 //   bot filter does not drop events
 
@@ -21,6 +23,8 @@ export class Recorder {
   events: Captured[] = [];
   requests = 0;
   unhandled: string[] = [];
+  /** /api/ and Turnstile requests that reached the network: none may (V12-128). */
+  unmocked: string[] = [];
   lastAt = 0;
 
   names(): string[] {
@@ -108,8 +112,13 @@ export const test = base.extend<{ recorder: Recorder; blockImages: boolean; fres
     const rec = new Recorder();
     // Registered first so it runs last: deny everything that is not the local site.
     await context.route('**/*', async (route) => {
-      const host = new URL(route.request().url()).hostname;
-      if (host === LOCAL_HOST) return route.continue();
+      const url = new URL(route.request().url());
+      if (url.hostname === LOCAL_HOST && url.pathname.startsWith('/api/')) {
+        rec.unmocked.push(`${route.request().method()} ${url.pathname}`);
+        return route.abort('blockedbyclient');
+      }
+      if (url.hostname === LOCAL_HOST) return route.continue();
+      if (url.hostname === 'challenges.cloudflare.com') rec.unmocked.push(url.href);
       return route.abort('blockedbyclient');
     });
     await context.route(/^https:\/\/tiles\.openfreemap\.org\//, (route) => route.abort('connectionrefused'));
@@ -141,6 +150,7 @@ export const test = base.extend<{ recorder: Recorder; blockImages: boolean; fres
     });
     await use(rec);
     expect(rec.unhandled, `unhandled PostHog requests:\n${rec.unhandled.join('\n')}`).toEqual([]);
+    expect(rec.unmocked, `unmocked API or Turnstile requests:\n${rec.unmocked.join('\n')}`).toEqual([]);
   },
 });
 
