@@ -65,6 +65,8 @@ describe('the board card states', () => {
       note: "Ties and lower scores don't replace your best",
     });
     expect(line({ record: rec(), personal: { name: 'x', best: best(26000), weeks: [] } })).toBe('Replaced by a better game this week · 26,000');
+    // not_best names the best without a standing; the card's earlier read supplies it
+    expect(line({ record: rec({ status: 'refused', outcome: 'not_best', receipt: null, best: best(25000, null) }), personal: { name: 'x', best: best(25000), weeks: [] } })).toBe('Your best this week: 25,000 (#3 of 40 this week) · this game 18,240');
     expect(line({ record: rec({ receipt: rc({ status: 'removed' }) }) })).toBe('You removed your score this week');
     expect(line({ record: rec(), removedWeeks: [WEEK] })).toBe('You removed your score this week');
     expect(line({ record: rec(), personal: { name: 'x', best: null, weeks: [] } })).toBe('No longer on the board');

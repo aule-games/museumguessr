@@ -10,7 +10,8 @@ import { weekStart } from '../api/week.ts';
 import { EVENTS } from '../analytics/events.ts';
 import { TURNSTILE_SITEKEY } from '../config.ts';
 import { deckItems } from '../content/items.ts';
-import { formatNumber, t, type CopyKey } from '../copy.ts';
+import { answersRev } from '../content/revs.ts';
+import { formatNumber, t } from '../copy.ts';
 import type { KV } from '../storage/guarded.ts';
 import { h } from '../ui/dom.ts';
 import { closeDialog, openDialog } from '../ui/overlay.ts';
@@ -29,11 +30,6 @@ export interface BoardEnv {
   src: string;
   track(name: string, props: Record<string, unknown>): void;
 }
-
-const answersRev = (it: unknown) => {
-  const r = (it as { answers_rev?: unknown }).answers_rev;
-  return Number.isInteger(r) && (r as number) > 0 ? (r as number) : 1;
-};
 
 function depsFor(env: BoardEnv, slot: HTMLElement | null): BoardDeps {
   return {
@@ -331,5 +327,3 @@ export function resume(env: BoardEnv): Promise<void> {
   return resumePending(depsFor(env, null));
 }
 
-/** For copy checks: every key the board UI uses directly. */
-export const BOARD_UI_KEYS: CopyKey[] = ['board.heading', 'board.view', 'board.retry', 'board.note', 'board.storageLifetime', 'board.scores', 'board.autoAdd'];

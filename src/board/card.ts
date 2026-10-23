@@ -103,7 +103,9 @@ function confirmed(i: CardInput, r: GameRecord): CardView {
 function refused(i: CardInput, r: GameRecord): CardView {
   const reason = r.outcome;
   if (reason === 'not_best' && r.best) {
-    const standing = i.mode === 'smoke' ? t('board.notRankedTest') : standingText(r.best.standing, i.count);
+    // not_best names the best without a standing; the card's earlier read may hold it (V12-90)
+    const known = r.best.standing ?? (i.personal?.best?.row_id === r.best.row_id ? i.personal.best.standing : null);
+    const standing = i.mode === 'smoke' ? t('board.notRankedTest') : standingText(known, i.count);
     return view('board.notBest', notBest(r.best.total, standing, r.total), { note: t('board.notHigher') });
   }
   if (reason === 'update_page') return say('board.updatePage', {}, { action: 'reload' });

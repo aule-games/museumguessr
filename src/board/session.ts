@@ -182,7 +182,7 @@ async function attempt(d: BoardDeps, gameId: string, verifier: Verifier | null, 
   }
   on.verified();
   const key = readKey(d.kv) ?? (await ensureKey(d.kv, d.locks));
-  const res = await api.submit(d.fetch, key, { ...r.payload, turnstile_token: token });
+  const res = await api.submit(d.fetch, key, r.payload, token);
   return settle(d, gameId, res, key);
 }
 

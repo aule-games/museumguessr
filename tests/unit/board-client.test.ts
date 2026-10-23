@@ -1,9 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { ERRORS } from '../../src/api/contract';
-import { api as client, failure, isBoardResponse, isScoreResponse, retryAfter } from '../../src/board/client';
+import { canonicalPayload } from '../../src/api/canonical';
+import { api as client, failure, isBoardResponse, isScoreResponse, retryAfter, scoreBody } from '../../src/board/client';
+import { scorePayload } from '../../src/board/payload';
 import { ensureKey, fingerprint, isKey, KEY_LOCK, newKey, readKey } from '../../src/board/key';
 import { KEYS } from '../../src/state/schema';
-import { api, board, error, html, json, kv, personal, scored } from './helpers/board';
+import { api, board, error, finished, html, json, kv, personal, scored } from './helpers/board';
+
+const payload = scorePayload(finished(), Array(10).fill(1));
 
 const QUOTA_PAGE = '<!DOCTYPE html><html><head><title>Worker exceeded resource limits | museumguessr.com | Cloudflare</title></head><body><span class="code-label">Error code: 1027</span><p>This website has been temporarily rate limited</p></body></html>';
 const WAF_PAGE = '<!DOCTYPE html><html><head><title>Access denied | museumguessr.com used Cloudflare to restrict access</title></head><body><h1>Error 1015</h1><p>You are being rate limited</p></body></html>';
@@ -35,7 +39,7 @@ describe('the board API client', () => {
     const key = newKey();
     await client.board(a.fetch, key, false);
     await client.board(a.fetch, null, true);
-    await client.submit(a.fetch, key, { turnstile_token: 't' } as never);
+    await client.submit(a.fetch, key, payload, 't');
     await client.remove(a.fetch, key, 'row-1');
     expect(a.sent.map((s) => `${s.method} ${s.path}`)).toEqual(['GET /api/v1/board', 'GET /api/v1/board', 'POST /api/v1/scores', 'DELETE /api/v1/scores/row-1']);
     for (const s of a.sent) {
@@ -46,6 +50,10 @@ describe('the board API client', () => {
     expect(a.sent[0]!.headers['X-MuseumGuessr-Test']).toBeUndefined();
     expect(a.sent[1]!.headers.Authorization).toBeUndefined();
     expect(a.sent[1]!.headers['X-MuseumGuessr-Test']).toBe('1');
+    // the POST body is the canonical payload text with the token added last
+    const body = scoreBody(payload, 'tok');
+    expect(body.startsWith(canonicalPayload(payload).slice(0, -1))).toBe(true);
+    expect(Object.keys(JSON.parse(body))).toEqual([...Object.keys(JSON.parse(canonicalPayload(payload))), 'turnstile_token']);
   });
 
   it('an unreachable API, an unreadable success and a malformed board are all unavailable, never trusted [V12-111]', async () => {
@@ -61,9 +69,9 @@ describe('the board API client', () => {
     expect(isBoardResponse({ smoke: true, week: '2026-W43', resets_at: '2026-10-26T00:00:00Z' })).toBe(true);
     expect(isScoreResponse(scored())).toBe(true);
     expect(isScoreResponse({ ...scored(), receipt: { ...scored().receipt, week: '2026-43' } })).toBe(false);
-    const quota = await client.submit(api({ 'POST /scores': [html(429, QUOTA_PAGE)] }).fetch, newKey(), {} as never);
+    const quota = await client.submit(api({ 'POST /scores': [html(429, QUOTA_PAGE)] }).fetch, newKey(), payload, 't');
     expect(quota).toEqual({ ok: false, error: { reason: 'unavailable', retryable: true } });
-    const limited = await client.submit(api({ 'POST /scores': [error('rate_limited', 429, { retry_after: 20 })] }).fetch, newKey(), {} as never);
+    const limited = await client.submit(api({ 'POST /scores': [error('rate_limited', 429, { retry_after: 20 })] }).fetch, newKey(), payload, 't');
     expect(limited).toMatchObject({ ok: false, error: { reason: 'rate_limited', retry_after: 20 } });
   });
 });

@@ -5,13 +5,13 @@
 // script that has not started within ten seconds counts as "Verification
 // couldn't load"; every attempt asks for a fresh token. The CSP allows the
 // Turnstile host only when the board UI is built in (src/security/headers.ts).
+// The widget declares the contract's action, which siteverify checks.
 
+import { TURNSTILE_ACTION } from '../api/contract.ts';
 import type { Verifier } from './session.ts';
 
 export const TURNSTILE_ORIGIN = 'https://challenges.cloudflare.com';
 export const TURNSTILE_SCRIPT = `${TURNSTILE_ORIGIN}/turnstile/v0/api.js?render=explicit`;
-/** The action siteverify checks (docs/api.md). */
-export const TURNSTILE_ACTION = 'board_submit';
 export const LOAD_TIMEOUT_MS = 10_000;
 
 interface RenderOptions {

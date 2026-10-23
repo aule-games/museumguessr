@@ -6,6 +6,7 @@
 // every other non-JSON or unreadable answer is `unavailable`, told apart by
 // body markers. Server values are checked by plain guards before use.
 
+import { canonicalPayload } from '../api/canonical.ts';
 import {
   API_PREFIX,
   ERRORS,
@@ -18,7 +19,7 @@ import {
   type PublicRow,
   type Reason,
   type Receipt,
-  type ScoreRequest,
+  type ScorePayload,
   type ScoreResponse,
   type Standing,
   type Week,
@@ -140,7 +141,8 @@ export interface Call {
   method: 'GET' | 'POST' | 'DELETE';
   path: string;
   key?: string | null;
-  body?: ScoreRequest;
+  /** The JSON body, already serialized. */
+  body?: string;
   /** Dark-mode smoke context for a test-assisted game (V12-105); not authorization. */
   smoke?: boolean;
 }
@@ -155,7 +157,7 @@ export async function call<T>(fetcher: Fetch, c: Call, guard: (v: unknown) => v 
     res = await fetcher(`${API_PREFIX}${c.path}`, {
       method: c.method,
       headers,
-      body: c.body ? JSON.stringify(c.body) : undefined,
+      body: c.body,
       credentials: 'same-origin',
       cache: 'no-store',
       referrerPolicy: 'no-referrer',
@@ -179,8 +181,13 @@ export async function call<T>(fetcher: Fetch, c: Call, guard: (v: unknown) => v 
   return { ok: false, error: envelope('unavailable') };
 }
 
+/** The POST body: the canonical payload text (src/api/canonical.ts) with the verification token added last. */
+export function scoreBody(payload: ScorePayload, token: string): string {
+  return `${canonicalPayload(payload).slice(0, -1)},"turnstile_token":${JSON.stringify(token)}}`;
+}
+
 export const api = {
   board: (f: Fetch, key: string | null, smoke = false) => call(f, { method: 'GET', path: '/board', key, smoke }, isBoardResponse),
-  submit: (f: Fetch, key: string, body: ScoreRequest) => call(f, { method: 'POST', path: '/scores', key, body }, isScoreResponse),
+  submit: (f: Fetch, key: string, payload: ScorePayload, token: string) => call(f, { method: 'POST', path: '/scores', key, body: scoreBody(payload, token) }, isScoreResponse),
   remove: (f: Fetch, key: string, rowId: string) => call(f, { method: 'DELETE', path: `/scores/${encodeURIComponent(rowId)}`, key }, isDeleteResponse),
 };
