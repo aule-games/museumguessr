@@ -270,21 +270,26 @@ to enable Workers Paid or any paid product. The WAF cannot guarantee daily
 volume. Use Cloudflare's current free allowances and measure index/trigger costs,
 not merely SQL statement counts. [V12-34] [V12-130]
 
-| Path | Read ceiling / request | Write budget / request | Illustrative requests/day | Daily reads / writes |
+| Path | Measured rows read / request | Measured rows written / request | Illustrative requests/day | Daily reads / writes |
 | --- | --- | --- | --- | --- |
-| Public cache miss | 2 projection rows, plus amortized settings | 0 | 1440 | 2880 / 0 |
-| Bearer board or receipt read | at most 100 personal rows (8 weekly bests + standing buckets) + 2 public rows, plus settings | 0 | 10000 | 1020000 / 0 |
-| Accepted score | Integration-measured; target 600 | 10 estimated including indexes/triggers | 2000 | 1200000 / 20000 |
-| Non-improving score | About 2 indexed rows plus mode/version checks; measure | 0 | 8000 | About 16000 / 0 |
-| Removal, moderation and purge | Measure per endpoint and bounded batch | Measure, reserve headroom | Workload-dependent | Not zero; record before release |
+| Public cache miss | 1 (the week's projection row), plus the settings row once per 30 s per isolate | 0 | 1440 | 1440 / 0 |
+| Bearer board read | 11-19 (bound 100: 8 weekly bests, the current receipt, the projection row, at most 81 bucket rows and a capped scan) | 0 | 10000 | 190000 / 0 |
+| Receipt read | 3-17 (same bound) | 0 | included above | — |
+| Accepted score | 220-517 (bucket counts above the total plus the rows of its own bucket, for the exact rank; the top-50 rebuild when the total reaches the cutoff) | 7-9 | 2000 | 1034000 / 18000 |
+| Non-improving score | 1 (this week's best), plus the known-game and tombstone lookups | 0 | 8000 | 8000 / 0 |
+| Removal | 212 (the top-50 rebuild) | 9-10 | rare | — |
+| Purge (hourly cron) | up to 500 rows per table per run | about 500 per run (661 on the run that also drops the week's buckets); a 10,000-row week takes 20 runs | 24 runs, most deleting nothing | under 12000 / 12000 while a large week drains |
 
-This is a planning budget, **not measured capacity**. Above about 10000 accepted
-adds/day, a ten-write estimate alone consumes the daily write allowance; the
-other paths reduce that ceiling. Test concentrated/all-equal 10000-row fixtures
-and collect meta.rows_read and meta.rows_written, including maximum bucket and
-materialized-projection work. Replace estimates with measurements before release.
-D1 Free currently allows 5000000 reads and 100000 writes/day, resetting at UTC
-midnight. [Cloudflare D1 pricing](https://developers.cloudflare.com/d1/platform/pricing/)
+Measured with `meta.rows_read` and `meta.rows_written` on real local D1
+(worker/tests/board-d1.smoke.ts) on 10,000-row weeks with concentrated
+(28000-28499) and all-equal (20000) totals; index and trigger writes are
+included. These are local measurements, not production capacity: recheck the
+D1 dashboard after launch. At 7-9 writes per accepted add, about 11000 adds a
+day use the whole free write allowance; the other paths reduce that ceiling.
+A week whose totals crowd into one 25-point bucket raises an accepted add's
+reads by that bucket's size. D1 Free currently allows 5000000 reads and 100000
+writes/day, resetting at UTC midnight.
+[Cloudflare D1 pricing](https://developers.cloudflare.com/d1/platform/pricing/)
 
 Purge after eight weeks in small repeated batches away from Monday 00:00 UTC;
 old-week triggers skip bucket maintenance and old buckets are removed together.
@@ -373,6 +378,52 @@ D1 and requests a browser-key reset. The fixture end-random is test-assisted.
 Root install does not install Worker dependencies; Worker scripts and verify
 install their exact locked dependencies explicitly when needed. [V12-126]
 [V12-127] [V12-129]
+
+## Board operations
+
+Step 3 commands (`scripts/board.mjs`). Each changes the remote board database
+only with the founder's credentials in the shell and `--yes`; with `--local
+[--persist-to <dir>]` it acts on the local database that `wrangler dev` uses,
+without credentials.
+
+- `npm run board:off`, `board:dark` and `board:on` write the one settings row
+  from a fixed statement file in `scripts/sql/`. Workers see the new mode
+  within 30 seconds; deploys and rollbacks never change it. `board:on`
+  refuses until the content gate passes (contentApproved:
+  `data/content-approval.json` records batches F and T promoted, or F
+  promoted with the approved F-only fallback), then removes every dark-mode
+  test row, receipt and tombstone and prints how many.
+- `npm run board:list [-- --smoke] [--week 2026-W43]` prints the mode, the
+  device count, the top 50, the hidden rows and the saturation tripwire: how
+  many top-50 totals reach 29,500. More than ten prompts a ranking review;
+  seconds are never stored, so the review never uses them. `--smoke` lists
+  dark-mode test rows.
+- `npm run board:hide -- --week <week> --min-total <n> --since <date>
+  [--reason <word>]` first prints how many rows it would hide; with `--yes`
+  it hides them, logs one moderation row each (row id, week, action, reason
+  word and time; no personal data) and rebuilds that week's public top 50 in
+  the same statement file. `npm run board:unhide -- <row-id>` restores one
+  row. Arguments must match strict patterns (week id, whole number, date,
+  12-character row id, lower-case reason word) before they reach a fixed
+  template; anything else is refused with exit 2. Cached copies of the public
+  board converge within 60 seconds (a Worker DELETE also drops the copy where
+  it ran).
+- `npm run board:purge-smoke` removes every dark-mode test row and prints the
+  count.
+- `npm run board:tail` wraps `wrangler tail` and prints only the Worker's own
+  error lines: time, request id, route and error name. It never prints a URL,
+  header, body, key or IP, and it does not turn on stored invocation logs.
+- `npm run worker:dev [-- --port 8787] [--persist-to <dir>] [--mode dark]`
+  applies the local migrations, writes the local mode (dark by default) and
+  runs `wrangler dev` on 127.0.0.1 with Cloudflare's always-pass Turnstile
+  test secret, hostname `example.com` and `TURNSTILE_TEST_KEYS=1`, all local
+  only; the deployed Worker refuses test keys.
+
+The hourly cron (`17 * * * *`) purges rows older than the eight retained
+weeks, 500 rows per table per run, and skips the two hours on either side of
+Monday 00:00 UTC. It also writes the final rank of each closed week's listed
+50 once; rows below the top 50 keep no final rank. [V12-103] [V12-106]
+[V12-107] [V12-110] [V12-112] [V12-136]
 
 ## Board names
 
