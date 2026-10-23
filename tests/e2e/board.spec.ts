@@ -3,7 +3,8 @@ import { join } from 'node:path';
 import type { BrowserContext, Page, Route } from '@playwright/test';
 import { SCORING_VERSION } from '../../src/scoring/config';
 import { STATE_VERSION } from '../../src/state/schema';
-import { expect, playRound, test as base } from './fixtures';
+import { CATALOGUE } from '../../src/analytics/catalogue';
+import { expect, playRound, start, test as base } from './fixtures';
 
 // The weekly board on the page (W6, G1-G5), against the board-test build
 // (dist-board/, VITE_BOARD_UI on). Every /api/ request is answered by the
@@ -497,5 +498,32 @@ test.describe('[W6] the weekly board on the end screen', () => {
     expect(await page.evaluate(() => localStorage.getItem('museumguessr:v1:board-key'))).toBe('AAAAAAAAAAAAAAAAAAAAAA');
     for (const r of board.reads()) expect(r.headers['x-museumguessr-test']).toBe('1');
     expect(new URL(page.url()).search).toBe('');
+  });
+});
+
+test.describe('[G3] the board disclosure', () => {
+  test.use({ freshVisitor: true });
+
+  test('the welcome tour, How to play and About say finished games go on the board automatically under a generated name [V12-120] [V12-135]', async ({ page, board }) => {
+    const disclosure = "Finished games go on this week's board automatically under a generated name.";
+    await start(page);
+    await expect(page.locator('[data-test=tour-body]')).toContainText(disclosure);
+    await page.keyboard.press('Escape');
+    await page.locator('[data-test=menu]').click();
+    await page.locator('[data-test=menu-how]').click();
+    await expect(page.getByRole('dialog')).toContainText(disclosure);
+    await page.keyboard.press('Escape');
+    await page.locator('[data-test=menu]').click();
+    await page.locator('[data-test=menu-about]').click();
+    const about = page.getByRole('dialog');
+    await expect(about).toContainText(disclosure);
+    await expect(about).toContainText('generated three-word name, the score and the date');
+    await expect(about).toContainText("the key goes only to this site's board, never to analytics");
+    await expect(page.locator('[data-test=events] li')).toHaveCount(CATALOGUE.length);
+    await page.keyboard.press('Escape');
+    // "Your board scores" is in the menu too
+    await page.locator('[data-test=menu]').click();
+    await expect(page.locator('[data-test=menu-board-scores]')).toHaveText('Your board scores');
+    expect(board.sent).toHaveLength(0);
   });
 });

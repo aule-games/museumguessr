@@ -72,6 +72,21 @@ describe('[V2] [ENG19] [LIC1] README credits and privacy', () => {
     }
   });
 
+  it('README and the in-game privacy text disclose automatic entry under a stable generated name, the score and date, the device-only key and the weekly marker [V12-120] [V12-135]', () => {
+    const flat = readme.replace(/\s+/g, ' ');
+    expect(flat).toContain(COPY['board.disclosure']);
+    for (const text of [flat, `${COPY['board.disclosure']} ${COPY['board.privacy']} ${COPY['about.device']}`]) {
+      expect(text).toMatch(/generated (three-word )?name/);
+      expect(text).toMatch(/the score and the date/);
+      expect(text).toMatch(/same (for this device across weeks|every week)/);
+      expect(text).toMatch(/only to this site/);
+      expect(text).toMatch(/never to analytics/);
+      expect(text).toMatch(/last week in which it finished a game/);
+    }
+    // no claim that nothing is kept on the device
+    expect(flat).not.toMatch(/stores nothing|keeps nothing on (your|the) device/i);
+  });
+
   it('README and the in-game privacy text both name the technical details PostHog adds and the kept ref parameter', () => {
     for (const text of [readme.replace(/\s+/g, ' '), COPY['about.body']]) {
       for (const detail of ['browser', 'operating system', 'device type', 'screen', 'language', 'time zone', 'site that linked here', 'ref']) {

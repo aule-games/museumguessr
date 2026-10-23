@@ -36,6 +36,7 @@ keep it free of private names.
 | `npm run release:check` | the release scan of the GitHub repository (`-- --dist dist` scans a build) | `.denylist`, `exiftool`, authenticated `gh` |
 | `npm run deploy` / `rollback` / `live:check` / `cf:bootstrap` / `setup:check -- --deploy` | hosting on Cloudflare ([docs/ops.md](docs/ops.md)); founder's machine only, each outward step needs `--yes` | the founder's yes, credentials in the shell |
 | `npm run worker:dev` | run the Worker locally: local D1 migrations, dark board, Turnstile test secret ([docs/ops.md](docs/ops.md#board-operations)) | a build in `dist/`, `npm ci --prefix worker` |
+| `npm run dev:board` | the local board loop: a seeded dark Worker plus Vite with the board on; open `/?fixture=end-random` ([docs/ops.md](docs/ops.md#local-board-loop)) | `npm ci --prefix worker`; a network for the Turnstile test widget |
 | `npm run board:list` / `board:off` / `board:dark` / `board:on` / `board:hide` / `board:unhide` / `board:purge-smoke` / `board:tail` | operate the weekly board; add `--local` for the local database ([docs/ops.md](docs/ops.md#board-operations)) | remote: the founder's credentials and `--yes` |
 | `npm run names:block` | retire a generated board name or word pair ([docs/ops.md](docs/ops.md#board-names)) | — |
 | `npm run items:check` / `items:new` / `items:add-image` / `items:promote` / `items:swap` / `items:retire` / `items:sheet` / `items:record` | work on content ([docs/content.md](docs/content.md)) | network for `add-image` and the reserve photos |

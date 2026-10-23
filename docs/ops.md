@@ -379,6 +379,30 @@ Root install does not install Worker dependencies; Worker scripts and verify
 install their exact locked dependencies explicitly when needed. [V12-126]
 [V12-127] [V12-129]
 
+```sh
+npm ci --prefix worker          # once: the Worker's pinned wrangler
+npm run dev:board               # [-- --reset] [--port 8787] [--vite-port 5173]
+```
+
+`scripts/dev-board.mjs` keeps its own local database in `.wrangler/board-loop`
+and seeds one smoke row of 29,000 this week for the public fixture key
+(`AAAAAAAAAAAAAAAAAAAAAA`, docs/api.md "Local examples"). Vite runs the
+board-test switches: board UI on, Cloudflare's always-pass Turnstile test key
+(the widget loads from Cloudflare, so the loop needs a network) and `/api`
+proxied to the Worker. The development and board-test builds have three
+fixtures, compiled out of every deploy build (check-build fails one that
+still carries them):
+
+| Address | What it does |
+| --- | --- |
+| `/?fixture=end-random` | sets the fixture key, asks the Worker's dark week context, finishes a test-assisted game with random answers: a smoke submission that meets not_best against the seed |
+| `/?fixture=end-best` | the same with exact answers (30,000): a smoke add that beats the seed |
+| `/?fixture=reset-board` | forgets this browser's board key, records, switch and standing line |
+
+The timed row "a fresh clone to a local board submit" (target 3 minutes) runs
+`git clone`, `npm ci`, `npm ci --prefix worker`, `npm run dev:board` and
+opens `/?fixture=end-random` until the card shows the not_best line.
+
 ## Board operations
 
 Step 3 commands (`scripts/board.mjs`). Each changes the remote board database

@@ -310,7 +310,8 @@ test.describe('[DS13] [ENG17] [DS27] overlays and history', () => {
       await page.locator(`[data-test=${item}]`).click();
       await expect(page.getByRole('dialog')).toContainText(check);
       if (item === 'menu-credits') await expect(page.locator('[data-test=credits] li')).toHaveCount(1);
-      if (item === 'menu-about') await expect(page.locator('[data-test=events] li')).toHaveCount(CATALOGUE.length);
+      // the deploy build has no board, so About leaves out the board's two events (V12-125)
+      if (item === 'menu-about') await expect(page.locator('[data-test=events] li')).toHaveCount(CATALOGUE.filter((e) => !e.name.startsWith('board_')).length);
       await page.keyboard.press('Escape');
       await expect(page.getByRole('dialog')).toHaveCount(0);
     }

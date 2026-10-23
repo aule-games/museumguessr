@@ -46,6 +46,7 @@
     "board:purge-smoke": "node scripts/board.mjs purge-smoke",
     "board:tail": "node scripts/board.mjs tail",
     "worker:dev": "node scripts/worker-dev.mjs",
+    "dev:board": "node scripts/dev-board.mjs",
     "test:design": "node --test tests/design/*.test.mjs",
     "design:build": "node scripts/design-directions.mjs",
     "design:check": "node scripts/design-directions.mjs --check",

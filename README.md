@@ -228,8 +228,9 @@ npm run dev       # prints the local URL (the game runs at the root path)
 | `npm run check:build` | checks the built site (move `dist/**/*.map` out first, as CI does) |
 | `npm ci --prefix worker` | installs the Worker tooling (wrangler) apart from the game; `npm run verify` does it when needed |
 | `npx playwright install chromium` | one-time browser download for the E2E tests |
-| `npm run test:e2e` | builds the deploy profile, serves it over HTTPS on 127.0.0.1:4443 (`E2E_PORT` overrides) and runs the browser tests on five viewports |
+| `npm run test:e2e` | builds the deploy profile and the board-test profile (`dist-board/`), serves them over HTTPS on 127.0.0.1:4443 and the next port (`E2E_PORT` overrides) and runs the browser tests on five viewports |
 | `npm run items:check` | validates `data/` and `images/` against the evidence rules |
+| `npm run dev:board` | the weekly board locally: a seeded local Worker in dark mode plus the dev server with the board on (`npm ci --prefix worker` once); open `/?fixture=end-random` for a finished test game ([docs/ops.md](docs/ops.md#local-board-loop)) |
 
 How content is chosen and checked: [docs/content.md](docs/content.md). Screen
 layout, states and copy keys: [docs/screen-spec.md](docs/screen-spec.md).
