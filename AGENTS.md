@@ -52,6 +52,7 @@ keep it free of private names.
 | `worker/`, `wrangler.jsonc` | the museumguessr.com Worker (`/api/v1`), its D1 migrations (`worker/migrations/`), its tests and its own `package.json` with the pinned wrangler |
 | `deploy/profile.json` | every public value of the deployed build |
 | `src/api/`, `src/security/` | the API contract and limits; the security headers (meta CSP and `_headers`) |
+| `src/board/` | the weekly board on the page: device key, API client, payload, card states, Turnstile, the card, overlay and score list (one lazy chunk), and the generated-name module the Worker shares |
 | `src/ui/screens/` | start, round, reveal, end and the other screens ([docs/screen-spec.md](docs/screen-spec.md)) |
 | `src/copy.ts` | every user-facing string, by key |
 | `src/map/` | MapLibre map, bundled fallback map, pins |

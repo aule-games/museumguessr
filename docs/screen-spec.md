@@ -257,7 +257,7 @@ A finished game saved under other answers shows the total and
 | --- | --- | --- |
 | Error | title; "Your progress is saved" when a saved game exists; Reload + New game; a reference line with the error name and build | `error.*` |
 | Continued in another tab | title, body, Play here instead (takes the game over in this tab) | `tab.*` |
-| Menu | How to play, New game (in a game only), Credits, About & privacy | `menu.*`, `app.name` |
+| Menu | How to play, New game (in a game only), Your board scores (with the board built in), Credits, About & privacy | `menu.*`, `board.scores`, `app.name` |
 | How to play | body + the three hints | `how.*`, `hint.*` |
 | Credits | one row per photo with source links: during a game only the rounds already revealed and the sample, never a future round; after the game the whole deck (V1-24); map credit | `credits.*`, `reveal.creditSource` |
 | About & privacy | what is sent, the event list, how `?test=1` stops sending | `about.*` |
