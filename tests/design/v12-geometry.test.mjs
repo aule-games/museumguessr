@@ -5,7 +5,7 @@ import { contrast, v12GeometryIssues } from './v12-geometry.mjs';
 
 // Synthetic boxes test the rules, not the layout; review-built measures the built pages.
 const box = (left, top, width, height) => ({ left, top, width, height, right: left + width, bottom: top + height });
-const base = (width, height) => ({ viewport: { width, height }, visual: { height, top: 0 }, screen: null, dialog: false, cues: [], reveal: null, end: null, paused: null, year: null });
+const base = (width, height) => ({ viewport: { width, height }, visual: { height, top: 0 }, screen: null, dialog: false, cues: [], reveal: null, end: null, dialogs: [], paused: null, year: null });
 const tokens = JSON.parse(readFileSync(new URL('../../src/design/tokens.json', import.meta.url), 'utf8'));
 const rgb = (hex) => { const [r, g, b] = hex.slice(1).match(/../g).map((v) => parseInt(v, 16)); return { r, g, b, a: 1 }; };
 
@@ -87,4 +87,15 @@ test('[DS31] A row whose points break across lines is reported', () => {
   assert.deepEqual(v12GeometryIssues(m), []);
   m.points[1].lines = 2;
   assert.deepEqual(v12GeometryIssues(m), ["[DS31] Each row's points stay on one line"]);
+});
+
+test('[V12-59] A dialog header whose Close or cue leaves the dialog, or overlaps the title, is reported', () => {
+  const m = base(390, 844);
+  m.dialogs = [{ box: box(20, 264, 350, 312), parts: [box(36, 280, 164, 36), box(210, 288, 104, 20), box(326, 278, 40, 40)] }];
+  assert.deepEqual(v12GeometryIssues(m), []);
+  m.dialogs[0].parts[2] = box(350, 278, 44, 44);
+  assert.deepEqual(v12GeometryIssues(m), ['[V12-59] A dialog header keeps its title, cue and Close inside the dialog without overlap']);
+  m.dialogs[0].parts[2] = box(326, 278, 40, 40);
+  m.dialogs[0].parts[1] = box(180, 288, 104, 20);
+  assert.equal(v12GeometryIssues(m).length, 1);
 });

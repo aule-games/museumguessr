@@ -68,6 +68,11 @@ export function measureV12() {
       range.selectNodeContents(n);
       return { text: n.textContent.trim(), lines: new Set([...range.getClientRects()].filter((r) => r.width > 0).map((r) => Math.round(r.top))).size };
     }),
+    // each open dialog's header: the title, the clock cue and Close
+    dialogs: [...document.querySelectorAll('dialog[open]')].map((d) => ({
+      box: box(d),
+      parts: [d.querySelector('.dialog__title'), d.querySelector('.dialog__head [data-test="clock-cue"]'), d.querySelector('.dialog__close')].map(box).filter(Boolean),
+    })),
     paused: one('[data-test="clock-paused-map"]') ? {
       note: one('[data-test="clock-paused-map"]'),
       blockers: [...document.querySelectorAll('.map .maplibregl-ctrl-attrib, .map .map__btn')].map(box).filter(Boolean),
@@ -128,6 +133,11 @@ export function v12GeometryIssues(m, opts = {}) {
   }
 
   check((m.points ?? []).every((p) => p.lines <= 1), '[DS31] Each row\'s points stay on one line');
+
+  for (const d of m.dialogs ?? []) {
+    const clear = d.parts.every((a, i) => d.parts.slice(i + 1).every((b) => !(a.left < b.right - 1 && a.right > b.left + 1 && a.top < b.bottom - 1 && a.bottom > b.top + 1)));
+    check(!!d.box && d.parts.every((p) => within(p, d.box)) && clear, '[V12-59] A dialog header keeps its title, cue and Close inside the dialog without overlap');
+  }
 
   if (m.paused) {
     const overlap = (a, b) => a.left < b.right - 1 && a.right > b.left + 1 && a.top < b.bottom - 1 && a.bottom > b.top + 1;
