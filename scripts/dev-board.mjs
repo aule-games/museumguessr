@@ -94,17 +94,28 @@ export async function devBoard({ root = ROOT, args = [], runner = createRunner({
   writeFileSync(seedFile, seedSql({ week: weekId(now()), hash: fixtureHash(), ids, now: new Date(now()).toISOString() }));
   d1(['execute', 'DB', '--file', seedFile], 'seeding the fixture row');
 
+  // Each child runs in its own process group, so stopping it also stops what
+  // it started (wrangler under worker:dev), whoever asked the loop to stop.
   const children = [];
   const stopAll = () => {
-    for (const c of children) if (c.exitCode === null && !c.killed) c.kill('SIGTERM');
+    for (const c of children) {
+      if (c.exitCode !== null || c.killed) continue;
+      try {
+        if (c.pid) process.kill(-c.pid, 'SIGTERM');
+        else c.kill('SIGTERM');
+      } catch {
+        c.kill('SIGTERM');
+      }
+    }
   };
-  const worker = spawn(process.execPath, ['scripts/worker-dev.mjs', '--port', opts.port, '--persist-to', PERSIST, '--mode', 'dark'], { cwd: root, env: cleanEnv(env), stdio: 'inherit' });
+  const worker = spawn(process.execPath, ['scripts/worker-dev.mjs', '--port', opts.port, '--persist-to', PERSIST, '--mode', 'dark'], { cwd: root, env: cleanEnv(env), stdio: 'inherit', detached: true });
   children.push(worker);
   let workerGone = false;
   worker.on('close', () => {
     workerGone = true;
   });
   for (const sig of ['SIGINT', 'SIGTERM']) signals.on?.(sig, stopAll);
+  signals.on?.('exit', stopAll);
 
   const health = `http://127.0.0.1:${opts.port}/api/v1/health`;
   const started = now();
@@ -127,6 +138,7 @@ export async function devBoard({ root = ROOT, args = [], runner = createRunner({
     cwd: root,
     env: { ...cleanEnv(env), MG_API_ORIGIN: `http://127.0.0.1:${opts.port}`, VITE_BOARD_UI: 'true', VITE_TURNSTILE_SITEKEY: DUMMY_SITEKEYS[0], VITE_BUILD_PURPOSE: 'board-test' },
     stdio: 'inherit',
+    detached: true,
   });
   children.push(vite);
   const page = `http://localhost:${opts.vitePort}/`;
