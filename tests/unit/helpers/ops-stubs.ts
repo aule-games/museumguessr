@@ -3,6 +3,8 @@
 // responses. The real runner (scripts/lib/ops.mjs) runs on a fake spawn,
 // so the tests also exercise its environment rules.
 // @ts-expect-error plain ESM helper without types
+import { parseJsonc } from '../../../scripts/lib/jsonc.mjs';
+// @ts-expect-error plain ESM helper without types
 import { createRunner } from '../../../scripts/lib/ops.mjs';
 
 export interface Answer { status?: number; stdout?: string; stderr?: string }
@@ -50,4 +52,13 @@ export function sink() {
   const lines: string[] = [];
   const text = { write: (s: string) => lines.push(s) };
   return { out: (l: string) => lines.push(l), err: text, lines, all: () => lines.join('\n') };
+}
+
+/** The repository's wrangler.jsonc as it was before the board (no D1 binding), as plain JSON. */
+export function preBoardConfig(text: string): string {
+  const { d1_databases: _d1, ratelimits: _rl, triggers: _tr, ...rest } = parseJsonc(text) as Record<string, unknown>;
+  void _d1;
+  void _rl;
+  void _tr;
+  return `${JSON.stringify(rest, null, 2)}\n`;
 }

@@ -93,6 +93,45 @@ export const freshId = () => {
   return `${body.padEnd(21, 'x').slice(0, 21)}A`;
 };
 
+export type PayloadOptions = Partial<ScorePayload> & { turnstile_token?: string; offset?: number };
+
+/** A valid request whose rescored total is exactly `total` (a multiple of 1,000) for `week`. */
+export function buildPayload(total: number, week: Week | null, over: PayloadOptions = {}) {
+  if (total % 1000 !== 0 || total < 0 || total > 30000) throw new Error('payload totals are multiples of 1,000');
+  const start = over.offset ?? 0;
+  const items = POOL.slice(start, start + 10);
+  let left = total / 1000;
+  const answers = items.map((it) => {
+    const take = Math.min(3, left);
+    left -= take;
+    return {
+      made: take >= 1 ? { lat: it.made.lat, lng: it.made.lng } : null,
+      when: take >= 2 ? normalizeAnswerYear(it.when.start) : null,
+      kept: take >= 3 ? { lat: it.kept.lat, lng: it.kept.lng } : null,
+    };
+  });
+  const timed = answers.map((a) => ({ made: a.made === null, when: a.when === null, kept: a.kept === null }));
+  const { offset: _offset, turnstile_token, ...rest } = over;
+  void _offset;
+  return {
+    game_id: freshId(),
+    deck_kind: 'random' as const,
+    fresh: true,
+    deck_hash: '0a1b2c3d',
+    answers_revs: items.map(() => 1) as unknown as Ten<number>,
+    scoring_version: SCORING_VERSION,
+    item_ids: items.map((it) => it.id) as unknown as Ten<string>,
+    answers: answers as unknown as ScorePayload['answers'],
+    skipped: items.map(() => false) as unknown as Ten<boolean>,
+    timed_out: timed as unknown as ScorePayload['timed_out'],
+    board_week: week,
+    client_version: CONTRACT_VERSION,
+    test_assisted: false,
+    ...rest,
+    turnstile_token: turnstile_token ?? 'token',
+  };
+}
+
 export function harness(make: (c: Clock) => PlatformParts, options: { start?: number; env?: Partial<Env> } = {}) {
   const c = clock(options.start);
   const parts = make(c);
@@ -139,42 +178,7 @@ export function harness(make: (c: Clock) => PlatformParts, options: { start?: nu
 
   const week = (): Week => weekId(c.now());
 
-  /** A valid request whose rescored total is exactly `total` (a multiple of 1,000). */
-  function payload(total: number, over: Partial<ScorePayload> & { turnstile_token?: string; offset?: number } = {}) {
-    if (total % 1000 !== 0 || total < 0 || total > 30000) throw new Error('payload totals are multiples of 1,000');
-    const start = over.offset ?? 0;
-    const items = POOL.slice(start, start + 10);
-    let left = total / 1000;
-    const answers = items.map((it) => {
-      const take = Math.min(3, left);
-      left -= take;
-      return {
-        made: take >= 1 ? { lat: it.made.lat, lng: it.made.lng } : null,
-        when: take >= 2 ? normalizeAnswerYear(it.when.start) : null,
-        kept: take >= 3 ? { lat: it.kept.lat, lng: it.kept.lng } : null,
-      };
-    });
-    const timed = answers.map((a) => ({ made: a.made === null, when: a.when === null, kept: a.kept === null }));
-    const { offset: _offset, turnstile_token, ...rest } = over;
-    void _offset;
-    return {
-      game_id: freshId(),
-      deck_kind: 'random' as const,
-      fresh: true,
-      deck_hash: '0a1b2c3d',
-      answers_revs: items.map(() => 1) as unknown as Ten<number>,
-      scoring_version: SCORING_VERSION,
-      item_ids: items.map((it) => it.id) as unknown as Ten<string>,
-      answers: answers as unknown as ScorePayload['answers'],
-      skipped: items.map(() => false) as unknown as Ten<boolean>,
-      timed_out: timed as unknown as ScorePayload['timed_out'],
-      board_week: week(),
-      client_version: CONTRACT_VERSION,
-      test_assisted: false,
-      ...rest,
-      turnstile_token: turnstile_token ?? 'token',
-    };
-  }
+  const payload = (total: number, over: PayloadOptions = {}) => buildPayload(total, week(), over);
 
   async function setMode(mode: BoardMode | null) {
     const raw = parts.db;

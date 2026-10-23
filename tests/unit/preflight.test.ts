@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 // @ts-expect-error plain ESM helper without types
 import { formatPreflight, preflight } from '../../scripts/lib/preflight.mjs';
-import { type Recorded, recordedFetch, type Rule, stubRunner } from './helpers/ops-stubs';
+import { type Recorded, recordedFetch, type Rule, stubRunner, preBoardConfig } from './helpers/ops-stubs';
 
 const REPO = join(import.meta.dirname, '../..');
 const API = 'https://api.cloudflare.com/client/v4';
@@ -23,6 +23,8 @@ beforeEach(() => {
   root = mkdtempSync(join(tmpdir(), 'mg-preflight-'));
   mkdirSync(join(root, 'worker'));
   for (const f of ['.nvmrc', 'wrangler.jsonc', 'worker/package.json']) cpSync(join(REPO, f), join(root, f));
+  // These tests start from the pre-board config; the board cases add their own D1 binding.
+  writeFileSync(join(root, 'wrangler.jsonc'), preBoardConfig(readFileSync(join(REPO, 'wrangler.jsonc'), 'utf8')));
   installWrangler();
 });
 afterEach(() => rmSync(root, { recursive: true, force: true }));

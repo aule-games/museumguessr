@@ -3,17 +3,18 @@
 // Dark: disabled for ordinary clients; with the test header, the server
 // week (and, with a key, that owner's smoke bests), private and uncached.
 // On: the public top 50 (cached copy or the one projection row); with a
-// key, the device part is added uncached (`private, no-store`): its name,
+// key, the device part is added uncached (`private, no-store`), from the
+// current projection row, never the cached copy: its name,
 // this week's best with its standing and at most one best per retained
 // week, newest first. No history paging; game ids never appear.
 
 import { LIMITS } from '../../src/api/limits.ts';
-import { SMOKE_READ_HEADER, type BoardMode, type DarkBoard, type PersonalBoard, type PublicBoard, type Week, type WeekBest } from '../../src/api/contract.ts';
+import { SMOKE_READ_HEADER, type BoardMode, type DarkBoard, type PersonalBoard, type Week, type WeekBest } from '../../src/api/contract.ts';
 import { nameFromHash } from '../../src/board/names.ts';
 import { bearer, clientIp, playerHash } from './auth.ts';
 import { Refused, store } from './errors.ts';
 import type { Ctx, D1Database } from './platform.ts';
-import { cachedPublicBoard, type Projection } from './projection.ts';
+import { cachedPublicBoard, readProjection, type Projection } from './projection.ts';
 import { json, privateJson } from './respond.ts';
 import { MAX_BUCKET_ROWS, standingOf } from './standing.ts';
 import { chargeIp } from './throttle.ts';
@@ -81,8 +82,6 @@ export async function smokePersonal(ctx: Ctx, db: D1Database, hash: string): Pro
   };
 }
 
-export const projectionOf = (b: PublicBoard): Projection => ({ week: b.week, n: b.count, rows: [...b.rows], cutoff: b.cutoff_total, updated_at: b.updated_at });
-
 export async function getBoard(request: Request, ctx: Ctx, modes: Modes): Promise<Response> {
   const auth = bearer(request);
   if (auth.kind === 'bad') throw new Refused('invalid');
@@ -98,6 +97,8 @@ export async function getBoard(request: Request, ctx: Ctx, modes: Modes): Promis
   }
   const board = await cachedPublicBoard(ctx, () => store(ctx), new URL(request.url).origin, week, mode);
   if (auth.kind === 'none') return json(board);
-  const personal = await personalBoard(ctx, store(ctx), await playerHash(auth.key), projectionOf(board));
+  // The device part never uses the cached copy: its standing reads the current projection row.
+  const db = store(ctx);
+  const personal = await personalBoard(ctx, db, await playerHash(auth.key), await readProjection(db, week, ctx.now()));
   return privateJson({ ...board, personal });
 }

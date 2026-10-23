@@ -12,11 +12,11 @@ import { nameFromHash } from '../../src/board/names.ts';
 import { SCORING_VERSION } from '../../src/scoring/config.ts';
 import { checkRevisions, rescore } from './answers.ts';
 import { bearer, clientIp, ipKey, playerHash } from './auth.ts';
-import { projectionOf, wantsSmoke, type Modes } from './board.ts';
+import { wantsSmoke, type Modes } from './board.ts';
 import { Refused, store } from './errors.ts';
 import type { Ctx, D1Database } from './platform.ts';
 import { parseScoreRequest, payloadHash, readBody } from './payload.ts';
-import { cachedPublicBoard, dropCachedBoard, exactRankSql, readProjection, rebuild, rebuildSql, CUTOFF_SQL } from './projection.ts';
+import { dropCachedBoard, exactRankSql, readProjection, rebuild, rebuildSql, CUTOFF_SQL } from './projection.ts';
 import { json, privateJson } from './respond.ts';
 import { MAX_BUCKET_ROWS, standingOf } from './standing.ts';
 import { charge, chargeIp } from './throttle.ts';
@@ -256,7 +256,7 @@ export async function getReceipt(request: Request, ctx: Ctx, modes: Modes): Prom
     const body: ReceiptResponse = { receipt: receiptOf(r, row, { row_id: row.row_id, total: row.total, standing: null }), standing: null, final_rank: null, count: 0, week: row.week, resets_at: resetsAt(row.week), cutoff_total: null };
     return privateJson(body);
   }
-  const p = row.week === week && mode === 'on' ? projectionOf(await cachedPublicBoard(ctx, () => db, new URL(request.url).origin, week, mode)) : await readProjection(db, row.week, ctx.now());
+  const p = await readProjection(db, row.week, ctx.now());
   const standing = row.week === week ? await standingOf(db, p, row, LIMITS.personalReadRows - 4 - MAX_BUCKET_ROWS - 2) : null;
   const body: ReceiptResponse = {
     receipt: receiptOf(r, row, { row_id: row.row_id, total: row.total, standing }),

@@ -7,7 +7,7 @@ import { deploy } from '../../scripts/deploy.mjs';
 // @ts-expect-error plain ESM helper without types
 import { runMain } from '../../scripts/lib/ops.mjs';
 import { TOKEN_PLACEHOLDER } from '../../scripts/lib/profile.mjs';
-import { type Rule, sink, stubRunner } from './helpers/ops-stubs';
+import { type Rule, sink, stubRunner, preBoardConfig } from './helpers/ops-stubs';
 
 const REPO = join(import.meta.dirname, '../..');
 const HEAD = 'abc1234def5678abc1234def5678abc1234def56';
@@ -19,6 +19,8 @@ let root: string;
 beforeEach(() => {
   root = mkdtempSync(join(tmpdir(), 'mg-deploy-'));
   for (const f of ['.nvmrc', 'wrangler.jsonc']) cpSync(join(REPO, f), join(root, f));
+  // These tests start from the pre-board config; the board cases add their own D1 binding.
+  writeFileSync(join(root, 'wrangler.jsonc'), preBoardConfig(readFileSync(join(REPO, 'wrangler.jsonc'), 'utf8')));
   mkdirSync(join(root, 'deploy'));
   const profile = JSON.parse(readFileSync(join(REPO, 'deploy/profile.json'), 'utf8'));
   writeFileSync(join(root, 'deploy/profile.json'), JSON.stringify({ ...profile, VITE_POSTHOG_PROJECT_TOKEN: 'phc_realprojecttoken' }));

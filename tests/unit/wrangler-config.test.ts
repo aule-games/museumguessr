@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { LIMITS } from '../../src/api/limits';
 // @ts-expect-error plain ESM helper without types
 import { parseJsonc, readWranglerConfig } from '../../scripts/lib/jsonc.mjs';
 
@@ -15,8 +16,24 @@ describe('the Worker configuration (wrangler.jsonc)', () => {
     expect(existsSync(join(ROOT, config.main))).toBe(true);
     expect(config.assets).toEqual({ directory: './dist', binding: 'ASSETS', run_worker_first: ['/api/*'], not_found_handling: '404-page' });
     expect(config.compatibility_date >= '2025-04-01').toBe(true);
-    expect(config.d1_databases).toBeUndefined();
     expect(config.site).toBeUndefined();
+  });
+
+  it('the board binds one D1 database with its migrations, three rate limits equal to the limits module and an hourly purge, and keeps secrets out of the file [V12-103] [V12-91] [V12-107]', () => {
+    expect(config.d1_databases).toEqual([{ binding: 'DB', database_name: 'museumguessr', database_id: 'set-by-cf-bootstrap', migrations_dir: 'worker/migrations' }]);
+    expect(existsSync(join(ROOT, 'worker/migrations/0001_board.sql'))).toBe(true);
+    const { windowSeconds, requestsPerIp, newRowsPerIp, submissionsPerKey } = LIMITS.bindings;
+    expect(config.ratelimits.map((r: { name: string; simple: unknown }) => [r.name, r.simple])).toEqual([
+      ['IP_LIMIT', { limit: requestsPerIp, period: windowSeconds }],
+      ['NEW_ROW_LIMIT', { limit: newRowsPerIp, period: windowSeconds }],
+      ['KEY_LIMIT', { limit: submissionsPerKey, period: windowSeconds }],
+    ]);
+    expect(new Set(config.ratelimits.map((r: { namespace_id: string }) => r.namespace_id)).size).toBe(3);
+    expect(config.triggers).toEqual({ crons: ['17 * * * *'] });
+    expect(config.vars).toEqual({ WORKER_VERSION: 'dev', TURNSTILE_HOSTNAME: 'museumguessr.com' });
+    const text = readFileSync(join(ROOT, 'wrangler.jsonc'), 'utf8');
+    for (const secret of ['"TURNSTILE_SECRET"', '"BOARD_FORCE_OFF"', 'TURNSTILE_TEST_KEYS"']) expect(text).not.toContain(secret);
+    expect(config.secrets).toBeUndefined();
   });
 
   it('the Worker answers only at the custom domain museumguessr.com [V12-11]', () => {

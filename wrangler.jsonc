@@ -21,6 +21,23 @@
   "upload_source_maps": false,
   "send_metrics": false,
   // npm run deploy sets the build's commit with --var WORKER_VERSION:<sha>.
-  "vars": { "WORKER_VERSION": "dev" }
-  // Step 3 adds the D1 binding, the rate-limit bindings and the Turnstile secret.
+  // TURNSTILE_HOSTNAME is the hostname siteverify must report here; local
+  // wrangler dev overrides it (and TURNSTILE_TEST_KEYS) for Cloudflare's test keys.
+  "vars": { "WORKER_VERSION": "dev", "TURNSTILE_HOSTNAME": "museumguessr.com" },
+  // The board database (worker/migrations). npm run cf:bootstrap -- --board
+  // creates it and prints its id, a public value to put here and commit;
+  // local wrangler dev uses a local database whatever the id says.
+  "d1_databases": [
+    { "binding": "DB", "database_name": "museumguessr", "database_id": "set-by-cf-bootstrap", "migrations_dir": "worker/migrations" }
+  ],
+  // Rate-limit bindings (ENG15; the numbers are in src/api/limits.ts).
+  "ratelimits": [
+    { "name": "IP_LIMIT", "namespace_id": "1201", "simple": { "limit": 30, "period": 60 } },
+    { "name": "NEW_ROW_LIMIT", "namespace_id": "1202", "simple": { "limit": 5, "period": 60 } },
+    { "name": "KEY_LIMIT", "namespace_id": "1203", "simple": { "limit": 3, "period": 60 } }
+  ],
+  // The eight-week purge, hourly; it skips the two hours each side of Monday 00:00 UTC.
+  "triggers": { "crons": ["17 * * * *"] }
+  // Secrets are never in this file: TURNSTILE_SECRET (cf:bootstrap pipes it to
+  // wrangler secret put) and BOARD_FORCE_OFF (only in an emergency).
 }

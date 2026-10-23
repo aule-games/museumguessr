@@ -372,6 +372,17 @@ export function boardSuite(label: string, make: (c: Clock) => PlatformParts, opt
         expect(Object.keys(res.body).sort()).toEqual(['count', 'cutoff_total', 'personal', 'resets_at', 'rows', 'updated_at', 'week']);
       });
 
+      it('the device part\'s standing comes from the current projection, never from the cached public copy [V12-119] [V12-100]', async () => {
+        const h = await setup();
+        await h.post(KEYS[0], h.payload(20000));
+        expect((await h.board()).body.count).toBe(1);
+        await h.post(KEYS[1], h.payload(29000));
+        const res = await h.board(KEYS[1]);
+        expect(res.body.count, 'the public part may be the cached copy').toBe(1);
+        expect(res.body.personal.best.standing).toEqual({ kind: 'exact', rank: 1, tied: false });
+        expect((await h.board(KEYS[0])).body.personal.best.standing).toEqual({ kind: 'exact', rank: 2, tied: false });
+      });
+
       it('the mode is read before any cache or ranking access: off and ordinary dark reads are disabled, missing settings mean off, unreadable settings mean unavailable [V12-99] [V12-103]', async () => {
         const h = await setup(null);
         expect((await h.board()).body).toEqual({ disabled: true });
