@@ -5,7 +5,7 @@ import { contrast, v12GeometryIssues } from './v12-geometry.mjs';
 
 // Synthetic boxes test the rules, not the layout; review-built measures the built pages.
 const box = (left, top, width, height) => ({ left, top, width, height, right: left + width, bottom: top + height });
-const base = (width, height) => ({ viewport: { width, height }, visual: { height, top: 0 }, screen: null, dialog: false, cues: [], reveal: null, end: null, year: null });
+const base = (width, height) => ({ viewport: { width, height }, visual: { height, top: 0 }, screen: null, dialog: false, cues: [], reveal: null, end: null, paused: null, year: null });
 const tokens = JSON.parse(readFileSync(new URL('../../src/design/tokens.json', import.meta.url), 'utf8'));
 const rgb = (hex) => { const [r, g, b] = hex.slice(1).match(/../g).map((v) => parseInt(v, 16)); return { r, g, b, a: 1 }; };
 
@@ -71,4 +71,20 @@ test('[V12-71] The keyboard rule keeps the year field, both eras, the cue and Co
   }
   assert.equal(v12GeometryIssues({ ...m, year: { ...m.year, eras: [m.year.eras[0]] } }, { keyboard: true }).length, 1);
   assert.deepEqual(v12GeometryIssues({ ...m, year: { ...m.year, confirm: box(16, 600, 358, 52) } }), []);
+});
+
+test('[V12-42] The paused-clock note must not sit on the map credits or a map control', () => {
+  const m = base(390, 844);
+  m.paused = { note: box(12, 732, 366, 36), blockers: [box(301, 776, 89, 24), box(327, 386, 50, 44)] };
+  assert.deepEqual(v12GeometryIssues(m), []);
+  m.paused.blockers[0] = box(301, 755, 89, 24);
+  assert.deepEqual(v12GeometryIssues(m), ['[V12-42] The paused-clock note stays clear of the map credits and controls']);
+});
+
+test('[DS31] A row whose points break across lines is reported', () => {
+  const m = base(390, 844);
+  m.points = [{ text: '730', lines: 1 }, { text: '1,000', lines: 1 }];
+  assert.deepEqual(v12GeometryIssues(m), []);
+  m.points[1].lines = 2;
+  assert.deepEqual(v12GeometryIssues(m), ["[DS31] Each row's points stay on one line"]);
 });

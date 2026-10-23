@@ -21,7 +21,40 @@ export function deckOf(first) {
 /** The first pool object of each difficulty (1 Easy, 2 Medium, 3 Hard). */
 export const byDifficulty = (d) => ITEMS.find((it) => it.difficulty === d).id;
 
-const hash = (ids) => itemsVersion(ids.map((id) => item(id)));
+/** The deck hash, with any capture-only date overrides (`{ id: { start, end } }`) the page also sees. */
+const hash = (ids, dates = {}) => itemsVersion(ids.map((id) => (dates[id] ? { ...item(id), when: { ...item(id).when, ...dates[id] } } : item(id))));
+
+/**
+ * An object whose dates begin before the year control's 4000 BCE stop, for
+ * the reveal's broken axis (D11). The pool's own, when it has one; else a
+ * donor object (the oldest with no date note and a unique date pair) whose dates the capture
+ * rewrites in the built bundle and item chunk, so scoring, the deck hash
+ * and the reveal all agree.
+ */
+export function earlyObject() {
+  const real = ITEMS.find((it) => it.when.start < -4000);
+  if (real) return { id: real.id, fixture: null };
+  const unique = (it) => ITEMS.filter((o) => o.when.start === it.when.start && o.when.end === it.when.end).length === 1;
+  const donor = [...ITEMS].sort((a, b) => a.when.start - b.when.start).find((it) => it.when.start < 0 && !it.when.note && unique(it));
+  return { id: donor.id, fixture: { from: { start: donor.when.start, end: donor.when.end }, start: -9500, end: -9000, label: 'capture fixture: 9500–9000 BC' } };
+}
+
+/** Rewrite the donor's dates in the main bundle and the item chunk for this context (see earlyObject). */
+export async function routeEarlyObject(context, early, problems) {
+  if (!early.fixture) return;
+  const { from, start, end, label } = early.fixture;
+  await context.route(/\/assets\/(index|items)-[\w-]+\.js$/, async (route) => {
+    const res = await route.fetch();
+    let n = 0;
+    const body = (await res.text()).replace(/when:\{start:(-?[\d.e+]+),end:(-?[\d.e+]+)(,label:`[^`]*`)?/g, (m, s, e, l) => {
+      if (Number(s) !== from.start || Number(e) !== from.end) return m;
+      n += 1;
+      return `when:{start:${start},end:${end}${l ? `,label:\`${label}\`` : ''}`;
+    });
+    if (n !== 1) problems.push(`the early-object fixture matched ${n} date pairs in ${new URL(route.request().url()).pathname}`);
+    await route.fulfill({ response: res, body });
+  });
+}
 
 export const WEEK = '2026-W43';
 export const LAST_WEEK = '2026-W42';
@@ -31,18 +64,18 @@ const blank = () => ({ kept: null, made: null, when: null });
 const row = (points) => ({ made: { points: 600, km: 120 }, when: { points: 300, yearsOff: 15 }, kept: { points: Math.max(0, points - 900), km: 3 }, points, skipped: false });
 
 /** A game in progress at round `round` (0-based), Made step, no clock yet: the page opens straight into it. */
-export function gameInProgress(ids, { id = 'game-review-0000000001', round = 0 } = {}) {
+export function gameInProgress(ids, { id = 'game-review-0000000001', round = 0, dates = {} } = {}) {
   return {
     state_version: STATE_VERSION,
     scoring_version: SCORING_VERSION,
-    items_version: hash(ids),
+    items_version: hash(ids, dates),
     game_id: id,
     game_ref: `ref-${id}`,
     rev: 1,
     src: 'none',
     item_ids: ids,
     deck_kind: 'random',
-    deck_hash: hash(ids),
+    deck_hash: hash(ids, dates),
     fresh: true,
     first_seen: ids.map(() => true),
     challenge: null,
@@ -120,11 +153,13 @@ export async function resetStorage(page, url, entries = {}) {
   }, entries);
 }
 
-/** Open a saved game in progress: the page goes straight back to its round. */
-export async function openGame(page, url, ids, extra = {}) {
-  const save = gameInProgress(ids);
+/** Open a saved game in progress at round 1: Start offers Continue, which opens the round. */
+export async function openGame(page, url, ids, { dates = {}, extra = {} } = {}) {
+  const save = gameInProgress(ids, { dates });
   await resetStorage(page, url, { 'museumguessr:v1:save': JSON.stringify(save), ...extra });
   await page.goto(url);
+  await page.locator('[data-test=continue]').click();
+  await page.locator('[data-screen=round][data-step=made]').waitFor();
 }
 
 /** Seed a finished game and open its end screen with "Review your 10". */

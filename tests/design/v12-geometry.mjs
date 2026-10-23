@@ -62,6 +62,16 @@ export function measureV12() {
       share: one('[data-test="share"]'),
       another: one('[data-test="play-another"]'),
     } : null,
+    // lines each row's points take: a number must never break across lines
+    points: [...document.querySelectorAll('.score__points')].filter((n) => box(n)).map((n) => {
+      const range = document.createRange();
+      range.selectNodeContents(n);
+      return { text: n.textContent.trim(), lines: new Set([...range.getClientRects()].filter((r) => r.width > 0).map((r) => Math.round(r.top))).size };
+    }),
+    paused: one('[data-test="clock-paused-map"]') ? {
+      note: one('[data-test="clock-paused-map"]'),
+      blockers: [...document.querySelectorAll('.map .maplibregl-ctrl-attrib, .map .map__btn')].map(box).filter(Boolean),
+    } : null,
     year: document.querySelector('.year__field') ? {
       field: one('.year__field'),
       eras: [...document.querySelectorAll('.year__era')].map(box),
@@ -115,6 +125,13 @@ export function v12GeometryIssues(m, opts = {}) {
     const fold = { left: 0, right: m.viewport.width, top: 0, bottom: m.viewport.height };
     check([e.total, e.tier, e.share].every((b) => within(b, fold)), '[V12-162] The end total, tier and Share are above the fold');
     if (size === '390x844') check(within(e.another, fold), '[V12-162] Play another 10 is above the fold on the tall phone');
+  }
+
+  check((m.points ?? []).every((p) => p.lines <= 1), '[DS31] Each row\'s points stay on one line');
+
+  if (m.paused) {
+    const overlap = (a, b) => a.left < b.right - 1 && a.right > b.left + 1 && a.top < b.bottom - 1 && a.bottom > b.top + 1;
+    check(m.paused.blockers.every((b) => !overlap(b, m.paused.note)), '[V12-42] The paused-clock note stays clear of the map credits and controls');
   }
 
   if (opts.keyboard && m.year) {
