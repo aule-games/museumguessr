@@ -59,7 +59,7 @@
       ],
       "contested": false,
       "claimant_source": null,
-      "heritage_image_law": false,
+      "heritage_image_law": true,
       "retrieved": "2026-10-13"
     }
   ]

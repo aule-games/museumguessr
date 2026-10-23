@@ -23,6 +23,8 @@ const PLACES = [
   ['Cape Town', 'South Africa', -33.92, 18.42],
 ] as const;
 const DATES = [-2500, -1200, -500, -10, 300, 800, 1200, 1500, 1700, 1880];
+// Countries whose heritage image rules flag an object held or made there (docs/content.md "Heritage").
+const HERITAGE = ['Italy', 'Greece', 'Vatican City', 'Egypt', 'Mexico', 'Russia', 'Turkey', 'Peru', 'Iraq'];
 
 function record(i: number, id = String(i + 1).padStart(2, '0')) {
   const [city, country, lat, lng] = PLACES[i % 10] as (typeof PLACES)[number];
@@ -63,7 +65,7 @@ function record(i: number, id = String(i + 1).padStart(2, '0')) {
     conflicts: [],
     contested: false,
     claimant_source: null,
-    heritage_image_law: false,
+    heritage_image_law: HERITAGE.includes(country) || HERITAGE.includes(mcountry),
     retrieved: '2026-10-13',
   };
 }
@@ -139,7 +141,7 @@ describe('[E7] [DX5] items:check', () => {
     ['[DS37] date in the caption', (d: any) => (d.items[4].caption = 'Stone panel with two figures, 1450'), 'item 05 · caption'],
     ['[DS37] caption over 70', (d: any) => (d.items[4].caption = 'x'.repeat(71)), 'item 05 · caption'],
     ['[DS37] missing caption', (d: any) => delete d.items[4].caption, 'item 05 · (record)'],
-    ['heritage flag missing', (d: any) => (d.items[4].made.country = 'Italy'), 'item 05 · heritage_image_law'],
+    ['heritage flag missing', (d: any) => (d.items[0].made.country = 'Italy'), 'item 01 · heritage_image_law'],
     ['[V1-08] region-level round 2 (difficulty 1)', (d: any) => (d.items[1].made.precision = 'region'), 'item 02 · difficulty'],
     ['[V1-08] conflict in round 3 (difficulty 1)', (d: any) => (d.items[2].conflicts = ['x']), 'item 03 · difficulty'],
     ['[V1-08] a harder object in round 1 of the fixed set', (d: any) => (d.items[0].difficulty = 2), 'item 01 · difficulty'],
@@ -152,6 +154,38 @@ describe('[E7] [DX5] items:check', () => {
     const ps = await problemsOf();
     expect(ps.map((p) => p.where)).toContain(where);
   });
+
+  it('flags an object held in or made in Italy, Greece, Vatican City, Egypt, Mexico, Russia, Turkey, Peru or Iraq [V12-142]', async () => {
+    // Item 01 is kept in New York and made in Madrid: no flag.
+    const original = read('data/items.json');
+    for (const country of HERITAGE) {
+      for (const side of ['kept', 'made'] as const) {
+        const data = structuredClone(original);
+        data.items[0][side].country = country;
+        write('data/items.json', data);
+        const unflagged = (await problemsOf()).find((p) => p.where === 'item 01 · heritage_image_law');
+        expect(unflagged?.problem, `${side} in ${country}`).toBe('is false but should be true');
+        expect(unflagged?.id).toBe('V12-142');
+      }
+    }
+    const flagged = structuredClone(original);
+    flagged.items[0].kept.country = 'Turkey';
+    flagged.items[0].heritage_image_law = true;
+    write('data/items.json', flagged);
+    expect(await problemsOf()).toEqual([]);
+  }, 60_000);
+
+  it('does not flag an object held and made where no heritage image rule was found [V12-142]', async () => {
+    const original = read('data/items.json');
+    for (const country of ['United States', 'Spain', 'Taiwan', 'Germany', 'France', 'Japan']) {
+      const data = structuredClone(original);
+      data.items[0].made.country = country;
+      data.items[0].heritage_image_law = true;
+      write('data/items.json', data);
+      const flagged = (await problemsOf()).find((p) => p.where === 'item 01 · heritage_image_law');
+      expect(flagged?.problem, country).toBe('is true but should be false');
+    }
+  }, 30_000);
 
   it('rejects a holding city used more than twice and fewer than 6 cities', async () => {
     const data = read('data/items.json');

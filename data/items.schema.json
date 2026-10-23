@@ -426,7 +426,7 @@
           ]
         },
         "heritage_image_law": {
-          "description": "True when held in or made in Italy or Greece (H1).",
+          "description": "True when held in or made in Italy, Greece, Vatican City, Egypt, Mexico, Russia, Turkey, Peru or Iraq (H1, V12-142).",
           "type": "boolean"
         },
         "retrieved": {

@@ -110,7 +110,7 @@ export interface Item1 {
    */
   claimant_source: SourcedText | null;
   /**
-   * True when held in or made in Italy or Greece (H1).
+   * True when held in or made in Italy, Greece, Vatican City, Egypt, Mexico, Russia, Turkey, Peru or Iraq (H1, V12-142).
    */
   heritage_image_law: boolean;
   retrieved: string;

@@ -3351,7 +3351,16 @@
         "W7"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/items-cli.test.ts",
+          "title": "flags an object held in or made in Italy, Greece, Vatican City, Egypt, Mexico, Russia, Turkey, Peru or Iraq"
+        },
+        {
+          "file": "tests/unit/items-cli.test.ts",
+          "title": "does not flag an object held and made where no heritage image rule was found"
+        }
+      ]
     },
     {
       "id": "V12-143",

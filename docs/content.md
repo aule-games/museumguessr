@@ -126,9 +126,16 @@ next to the museum's account.
 
 ## Heritage
 
-`heritage_image_law` is true when the object is held in, or was made in, Italy
-or Greece. Those countries restrict commercial use of images of their cultural
-heritage; the flag marks items to revisit before any monetisation.
+`heritage_image_law` is true when the object is held in, or was made in, Italy,
+Greece, Vatican City, Egypt, Mexico, Russia, Turkey, Peru or Iraq. These
+countries have a law or official rule that restricts at least commercial use of
+images of objects in their collections (Iraq's reach is unclear and is treated
+as restricting until the Arabic text is checked). The flag is conservative:
+the rules attach to objects held in the country, and the "made in" half is a
+project choice. A flagged object can ship in the free game; the flag marks
+items to revisit before any monetisation, a risk the founder accepted on
+2026-10-14. The sourced finding for each country is in "Heritage image rules
+by country" below. [V12-142]
 
 ## Images
 
@@ -296,15 +303,30 @@ photos. [V12-152] [V12-153]
 
 ### Heritage image rules by country
 
-These entries are unresolved research gates, not legal clearance. No affected
-candidate ships without a sourced jurisdiction finding and its resulting flag.
-The existing Italy/Greece flag remains until reviewed; free-photo licensing
-alone does not settle cultural-heritage restrictions. [V12-142]
+Research findings of 2026-10-22, not legal advice. Every country where a new
+object is held or made needs a row here before that object ships; a country
+without a row is pending, not clear. Free-photo licensing alone does not settle
+cultural-heritage restrictions. [V12-142]
 
-| Jurisdiction | Finding | Release treatment |
-| --- | --- | --- |
-| Turkey | Finding pending (batch research) | Hold affected records for review |
-| Mexico | Finding pending (batch research) | Hold affected records for review |
-| Egypt | Finding pending (batch research) | Hold affected records for review |
-| Taiwan | Finding pending (batch research) | Hold affected records for review |
-| Vatican City | Finding pending (batch research) | Hold affected records for review |
+| Country | Finding | Source | Treatment |
+| --- | --- | --- | --- |
+| Italy | Named among the EU states whose heritage law requires permission and a fee for specific uses of reproductions of public-domain heritage in national collections. | [COMMUNIA policy paper #20](https://communia-association.org/policy-paper/policy-paper-20-on-the-right-to-use-public-domain-heritage/) | Flag when held or made there |
+| Greece | Named in the same list as Italy. | [COMMUNIA policy paper #20](https://communia-association.org/policy-paper/policy-paper-20-on-the-right-to-use-public-domain-heritage/) | Flag when held or made there |
+| Vatican City | Law N. CXCVII (2017) art. 4 §1: only the custodian institutions may reproduce cultural property, by photography or otherwise; visitors may photograph for strictly personal use. No non-commercial exemption found. | [Law N. CXCVII](https://www.vaticanstate.va/phocadownload/leggi-decreti/normativa-altre-materie/Legge%20N.%20CXCVII%20All.%2025.pdf) | Flag when held or made there |
+| Egypt | Law 117/1983 as amended by Law 3/2010, art. 36: the Supreme Council of Antiquities holds the exploitation rights in photos of archaeological objects it owns; non-commercial photography is free since 2022. | [Law 3/2010 (UNESCO)](https://media.unesco.org/sites/default/files/webform/mhm001/egypt_law3_2010_entof.pdf) | Flag when held or made there |
+| Mexico | Federal monuments law art. 17: reproducing monuments for commercial purposes needs the institute's permission; art. 28 defines archaeological monuments by origin. | [LFMZAAH art. 17](https://mley.mx/LFMZAAH/articulo/17/) | Flag when held or made there |
+| Russia | Federal Law 54-FZ art. 36: commercial use of reproductions and merchandise need the museum's permission; the museum holds the right of first publication. | [54-FZ art. 36](https://www.consultant.ru/document/cons_doc_LAW_10496/18bda5f8624e149693f3546fdf94dcf70f7c9bda/) | Flag when held or made there |
+| Turkey | Law 2863 art. 34: photographing objects in Ministry museums and sites needs permission; Ministry directive 2020/10 governs commercial use of their images; the National Palaces (Topkapı) have similar rules. No rule found on reusing a visitor's photo non-commercially. | [Law 2863 (FAOLEX)](https://faolex.fao.org/docs/pdf/tur43200.pdf) | Flag when held or made there (also private museums and objects kept abroad, conservatively) |
+| Peru | Ministry of Culture tariff RM 000346-2025-MC charges for commercial use of images of movable cultural property; its reach to third-party photos is unclear. | [RM 000346-2025-MC annex](https://transparencia.cultura.gob.pe/sites/default/files/transparencia/2025/12/resoluciones-ministeriales/rm000346-2025-mc-anexo.pdf) | Flag when held or made there (also private museums, conservatively) |
+| Iraq | Law No. 55 of 2002 art. 36 bars media or commercial use of photographs of antiquity sites or heritage property without approval; whether museum objects are covered is unclear. | [Law No. 55 of 2002](https://www.iraqheritage.org/pdf/antiquities.pdf) | Flag when held or made there until the Arabic text is checked |
+| Taiwan | Cultural Heritage Preservation Act art. 71 restricts reproducing public antiquities, which its regulation defines as re-making them in the original material: physical replicas, not photos. | [Act art. 71](https://law.moj.gov.tw/LawClass/LawAll.aspx?pcode=H0170001) | No flag |
+| China | Cultural Relics Protection Law art. 62 and its regulations govern taking photos of museum relics for publications, not reuse of existing photos. | [Law text (People's Daily)](https://paper.people.com.cn/rmrb/pc/content/202501/08/content_30050618.html) | No flag |
+| Japan | Supreme Court, 20 January 1984: owning an object gives no control over its image once copyright has expired. | [Judgment](https://www.courts.go.jp/assets/hanrei/hanrei-pdf-52181.pdf) | No flag |
+| India | Ancient Monuments Rules 1959 rule 8(d) licenses paid photography at protected monuments only; no rule on museum objects found (primary texts unreachable). | [Factly summary](https://factly.in/photographers-at-monuments) | No flag |
+| Germany | No heritage image law; Copyright Act § 68 gives reproductions of public-domain visual works no related right. A museum's photo ban binds only the visitor who agreed to it. | [UrhG § 68](https://www.gesetze-im-internet.de/urhg/__68.html) | No flag |
+| France | Heritage Code art. L621-42 covers commercial images of buildings in the national domains only, not museum objects. | [Decision 2017-687 QPC](https://www.conseil-constitutionnel.fr/decision/2018/2017687QPC.htm) | No flag |
+| United Kingdom | No heritage image law found; a faithful digitised image of an older work is unlikely to be original. | [IPO copyright notice](https://www.gov.uk/government/publications/copyright-notice-digital-images-photographs-and-the-internet/copyright-notice-digital-images-photographs-and-the-internet) | No flag |
+| Netherlands | The Heritage Act has no provision on reproductions or photos. | [Erfgoedwet](https://wetten.overheid.nl/BWBR0037521/) | No flag |
+| Spain | Royal Decree 620/1987 art. 24 lets state museums set conditions for authorising reproductions; it does not reach reuse of an existing photo. | [RD 620/1987](https://www.boe.es/buscar/pdf/1987/BOE-A-1987-11621-consolidado.pdf) | No flag |
+| Austria | The Monument Protection Act has no image or reproduction provision. | [Denkmalschutzgesetz](https://www.ris.bka.gv.at/GeltendeFassung.wxe?Abfrage=Bundesnormen&Gesetzesnummer=10009184) | No flag |
+| United States | No heritage image law; exact photos of public-domain works lack originality (*Bridgeman v. Corel*, 1999). | [Opinion](https://www.courtlistener.com/opinion/2413183/bridgeman-art-library-ltd-v-corel-corp/) | No flag |

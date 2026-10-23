@@ -37,7 +37,11 @@ const UA = 'MuseumGuessr/0.1 (https://github.com/aule-games/museumguessr; conten
 export const ROUNDS = 10;
 export const MAX_IMAGE_PX = 1600;
 export const MAX_IMAGE_BYTES = 250 * 1024;
-const HERITAGE_COUNTRIES = ['italy', 'greece'];
+// Countries whose heritage rules restrict at least commercial use of images of
+// objects in their collections (docs/content.md "Heritage", V12-142). An object
+// held in, or made in, one of them carries heritage_image_law: true.
+export const HERITAGE_COUNTRIES = ['Italy', 'Greece', 'Vatican City', 'Egypt', 'Mexico', 'Russia', 'Turkey', 'Türkiye', 'Peru', 'Iraq'];
+const HERITAGE_KEYS = new Set(HERITAGE_COUNTRIES.map((c) => c.toLowerCase()));
 const SAMPLE_LICENCES = ['CC0 1.0', 'Public domain', 'PD-Art'];
 const STOPWORDS = new Set(
   'the and with from this that their there museum museo musee gallery national collection collections city kingdom states united state republic about into made kept over under near'.split(
@@ -143,16 +147,16 @@ function checkRecord(item, index, kind, problems, warnings) {
       ),
     );
   }
-  // H1: heritage flag when held in or made in Italy or Greece
+  // H1, V12-142: heritage flag when held in or made in a country with a heritage image rule
   const k = item.kept ?? {};
-  const expectHeritage = [k.country, m.country].some((c) => HERITAGE_COUNTRIES.includes(String(c ?? '').toLowerCase()));
+  const expectHeritage = [k.country, m.country].some((c) => HERITAGE_KEYS.has(String(c ?? '').toLowerCase()));
   if (typeof item.heritage_image_law === 'boolean' && item.heritage_image_law !== expectHeritage) {
     problems.push(
       problem(
         where('heritage_image_law'),
         `is ${item.heritage_image_law} but should be ${expectHeritage}`,
-        'items held in or made in Italy or Greece carry the flag',
-        'H1',
+        `items held in or made in ${HERITAGE_COUNTRIES.filter((c) => c !== 'Türkiye').join(', ')} carry the flag`,
+        'V12-142',
         `set it to ${expectHeritage}`,
         'heritage',
       ),
