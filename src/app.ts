@@ -585,7 +585,7 @@ export class App {
           this.begin(deck);
         });
       });
-    if (this.state && !this.state.finished) this.overlay(opener, (m) => m.confirmNewGame(opener, go));
+    if (this.state && !this.state.finished) this.overlay((m) => m.confirmNewGame(opener, go));
     else go();
   }
 
@@ -708,12 +708,13 @@ export class App {
     if (view === 'play' || view === 'review') preload(CHUNKS.reveal, CHUNKS.menu, CHUNKS.end);
   }
 
-  /** Open an overlay from the menu chunk; if time runs out or its opener leaves the screen while the chunk loads, it stays closed (ENG7). */
-  private overlay(opener: HTMLElement | null, open: (m: Menu) => void) {
+  /** Open an overlay from the menu chunk; if time runs out or the view changes while the chunk loads, it stays closed (ENG7). */
+  private overlay(open: (m: Menu) => void) {
     const gen = overlayGeneration();
+    const view = this.view;
     withModule(CHUNKS.menu, (m) =>
       this.guard(() => {
-        if (gen === overlayGeneration() && (!opener || opener.isConnected)) open(m);
+        if (gen === overlayGeneration() && this.view === view) open(m);
       }),
     );
   }
@@ -835,7 +836,7 @@ export class App {
       onReview: () => this.guard(() => this.show('review')),
       onChallenge: (opener) => this.guard(() => this.playChallenge(opener)),
       onReplay: () => this.replayDeck(this.snapshot?.snapshot.item_ids ?? []),
-      onAbout: (opener) => this.overlay(opener, (m) => m.aboutPrivacy(opener)),
+      onAbout: (opener) => this.overlay((m) => m.aboutPrivacy(opener)),
     });
   }
 
@@ -908,7 +909,7 @@ export class App {
     // During a game, Credits lists only the photos already revealed, never a future round (V1-24).
     const credited = s.finished ? items : items.filter((_, i) => s.results[i] != null);
     const onMenu = (opener: HTMLElement) =>
-      this.overlay(opener, (m) =>
+      this.overlay((m) =>
         m.openMenu(opener, {
           items: credited,
           sample: SAMPLE,
