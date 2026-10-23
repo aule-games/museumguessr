@@ -578,9 +578,14 @@ export async function boardStates(kit, width, height, { text200 = false } = {}) 
       await shoot('board-overlay-top50-you', { keepScroll: true });
     });
     await step('board-overlay-tied-below', async () => {
+      // rows 47 to 50 share one total; this device's equal score was added after them
+      const rows = boardRows(50);
+      const tie = rows[46].total;
+      for (const r of rows.slice(46)) Object.assign(r, { total: tie, rank: 47 });
       api.count = 300;
-      api.best = { row_id: 'mine', total: 12000, standing: exact(47, true) };
-      await fromStart(12000, 47);
+      api.rows = rows;
+      api.best = { row_id: 'mine', total: tie, standing: exact(47, true) };
+      await fromStart(tie, 47);
       const own = page.locator('[data-test=board-own]');
       await expect(own).toContainText(t('board.tiedOutside', { rank: 47 }));
       await own.scrollIntoViewIfNeeded();

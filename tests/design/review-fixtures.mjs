@@ -175,13 +175,16 @@ export async function openEnd(page, url, game, extra = {}) {
   await page.locator('[data-screen=end]').waitFor();
 }
 
-/** Fifty generated names, long ones first among the lower rows, so wrapping shows. */
+/** The board's listed rows: generated names, totals falling by rank, this device's row in its place. */
 export function boardRows(count = 50, mine = null) {
   const rows = [];
+  const top = mine ? mine.total + (mine.rank - 1) * 173 : 27120;
   for (let i = 0; i < count; i++) {
     const name = `${QUALITIES[(i * 7 + 3) % QUALITIES.length]} ${MATERIALS[(i * 11 + 5) % MATERIALS.length]} ${THINGS[(i * 13 + 1) % THINGS.length]}`;
-    rows.push({ row_id: `top-${i + 1}`, name, total: 27120 - i * 173, rank: i + 1, date: '2026-10-20' });
+    rows.push({ row_id: `top-${i + 1}`, name, total: top - i * 173, rank: i + 1, date: '2026-10-20' });
   }
+  // the longest names the word lists make, so wrapping shows
+  for (const [i, name] of [[1, 'Diligent Vermilion Sandpiper'], [6, 'Fearless Cerulean Nightjar']]) if (rows[i]) rows[i].name = name;
   if (mine) rows.splice(mine.rank - 1, 1, { row_id: mine.row_id, name: mine.name, total: mine.total, rank: mine.rank, date: '2026-10-22' });
   return rows;
 }

@@ -135,7 +135,8 @@ async function shoot(page, state, opts = {}) {
         if (r.top < 0 || r.bottom > innerHeight + 1) issues.push('forward action outside viewport');
       }
       for (const node of document.querySelectorAll('button,input:not([type="hidden"])')) {
-        const r = node.getBoundingClientRect();
+        // a control wrapped in its label is pressed through the label too: measure the larger
+        const r = [node, ...(node.labels ?? [])].map((n) => n.getBoundingClientRect()).sort((a, b) => b.width * b.height - a.width * a.height)[0];
         if (r.width && r.height && (r.width < 44 || r.height < 44)) issues.push(`small target: ${node.getAttribute('data-test') || node.className}`);
       }
       const badge = document.querySelector('.badge');
@@ -148,7 +149,10 @@ async function shoot(page, state, opts = {}) {
     const v12 = await page.evaluate(measureV12);
     issues.push(...v12GeometryIssues(v12, { fold, keyboard: !!opts.keyboard }));
     const name = `${width}x${height}-${state}.png`;
-    await page.screenshot({ path: new URL(name, out).pathname, ...(opts.clip ? { clip: opts.clip } : { fullPage: true }) });
+    // An open dialog or the photo viewer is shot at the viewport: a full-page shot would show
+    // the page below the fold undimmed, which no player sees.
+    const overlay = await page.evaluate(() => !!document.querySelector('dialog[open], .pswp'));
+    await page.screenshot({ path: new URL(name, out).pathname, ...(opts.clip ? { clip: opts.clip } : { fullPage: !overlay }) });
     records.push({ width, height, state, image: name, issues, ...(opts.note ? { note: opts.note } : {}), ...(opts.keyboard ? { measured: { visual: v12.visual, year: v12.year } } : {}) });
   } finally {
     if (!held) await thaw(page);
