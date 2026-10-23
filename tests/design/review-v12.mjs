@@ -9,7 +9,7 @@ import { expect } from '@playwright/test';
 import { t } from '../../src/copy.ts';
 import { confirm, enterYear, mapReady, placePin } from '../e2e/fixtures.ts';
 import {
-  BoardMock, LAST_WEEK, NEXT_WEEK, WEEK, boardRows, byDifficulty, deckOf, earlyObject, finishedGame, item,
+  BoardMock, LAST_WEEK, NEXT_WEEK, WEEK, boardRows, byDifficulty, deckOf, earlyObject, exactAnswers, finishedGame,
   openEnd, openGame, resetStorage, routeEarlyObject, stubTurnstile,
 } from './review-fixtures.mjs';
 
@@ -64,14 +64,13 @@ async function hide(page, hidden) {
 const drawn = (page) => expect(page.locator('.map')).toHaveAttribute('data-reveal', 'drawn', { timeout: 8000 });
 const dialogOpen = (page) => async () => (await page.locator('dialog[open]').count()) > 0;
 
-/** Answer the round on screen exactly: both places at their coordinates, the year mid-range. */
-async function answerExactly(page, id) {
-  const it = item(id);
-  await placePin(page, it.made.lat, it.made.lng, 2);
-  await confirm(page);
-  await enterYear(page, Math.round((it.when.start + it.when.end) / 2) || 1);
-  await confirm(page);
-  await placePin(page, it.kept.lat, it.kept.lng, 2);
+/**
+ * A round answered exactly, opened at Kept with every answer in place (a
+ * click cannot hit a coordinate exactly at every viewport), then revealed.
+ */
+async function playExactly(kit, page, id) {
+  await openGame(page, kit.url, deckOf([id]), { step: 'kept', first: exactAnswers(id) });
+  await mapReady(page);
   await confirm(page);
 }
 
@@ -243,9 +242,7 @@ export async function ruleStates(kit, width, height) {
       });
     }
     await kit.attempt(page, 'reveal-hard-nailed', async () => {
-      const id = byDifficulty(3);
-      await openGame(page, kit.url, deckOf([id]));
-      await answerExactly(page, id);
+      await playExactly(kit, page, byDifficulty(3));
       await drawn(page);
       await expect(page.locator('[data-test=hard-nailed]')).toBeVisible();
       await shoot('reveal-hard-nailed');
@@ -338,9 +335,7 @@ export async function text200States(kit, width, height) {
       await shoot('reveal-timed-out');
     });
     await kit.attempt(page, 'reveal-hard-nailed-text200', async () => {
-      const id = byDifficulty(3);
-      await openGame(page, kit.url, deckOf([id]));
-      await answerExactly(page, id);
+      await playExactly(kit, page, byDifficulty(3));
       await drawn(page);
       await expect(page.locator('[data-test=hard-nailed]')).toBeVisible();
       await shoot('reveal-hard-nailed');

@@ -63,8 +63,18 @@ export const NEXT_WEEK = '2026-W44';
 const blank = () => ({ kept: null, made: null, when: null });
 const row = (points) => ({ made: { points: 600, km: 120 }, when: { points: 300, yearsOff: 15 }, kept: { points: Math.max(0, points - 900), km: 3 }, points, skipped: false });
 
-/** A game in progress at round `round` (0-based), Made step, no clock yet: the page opens straight into it. */
-export function gameInProgress(ids, { id = 'game-review-0000000001', round = 0, dates = {} } = {}) {
+/** The answers a perfect round gives: both places at their coordinates, the year mid-range. */
+export function exactAnswers(id) {
+  const it = item(id);
+  return { made: { lat: it.made.lat, lng: it.made.lng }, when: Math.round((it.when.start + it.when.end) / 2) || 1, kept: { lat: it.kept.lat, lng: it.kept.lng } };
+}
+
+/**
+ * A game in progress at round `round` (0-based), no clock yet. `step` and
+ * `first` (the current round's answers so far) open a later question with
+ * its answers in place, as Back would.
+ */
+export function gameInProgress(ids, { id = 'game-review-0000000001', round = 0, dates = {}, step = 'made', first = null } = {}) {
   return {
     state_version: STATE_VERSION,
     scoring_version: SCORING_VERSION,
@@ -80,9 +90,9 @@ export function gameInProgress(ids, { id = 'game-review-0000000001', round = 0, 
     first_seen: ids.map(() => true),
     challenge: null,
     round,
-    step: 'made',
+    step,
     phase: 'answering',
-    answers: ids.map((_, i) => (i < round ? { kept: { lat: 48.85, lng: 2.35 }, made: { lat: 41.9, lng: 12.5 }, when: 1500 } : blank())),
+    answers: ids.map((_, i) => (i < round ? { kept: { lat: 48.85, lng: 2.35 }, made: { lat: 41.9, lng: 12.5 }, when: 1500 } : i === round && first ? first : blank())),
     results: ids.map((_, i) => (i < round ? row(1800) : null)),
     sent: [],
     finished: false,
@@ -153,13 +163,13 @@ export async function resetStorage(page, url, entries = {}) {
   }, entries);
 }
 
-/** Open a saved game in progress at round 1: Start offers Continue, which opens the round. */
-export async function openGame(page, url, ids, { dates = {}, extra = {} } = {}) {
-  const save = gameInProgress(ids, { dates });
+/** Open a saved game in progress: Start offers Continue, which opens the round. */
+export async function openGame(page, url, ids, { dates = {}, extra = {}, step = 'made', first = null } = {}) {
+  const save = gameInProgress(ids, { dates, step, first });
   await resetStorage(page, url, { 'museumguessr:v1:save': JSON.stringify(save), ...extra });
   await page.goto(url);
   await page.locator('[data-test=continue]').click();
-  await page.locator('[data-screen=round][data-step=made]').waitFor();
+  await page.locator(`[data-screen=round][data-step=${step}]`).waitFor();
 }
 
 /** Seed a finished game and open its end screen with "Review your 10". */
