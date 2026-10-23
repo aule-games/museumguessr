@@ -3,6 +3,7 @@
 // (V1-02, src/ui/lazy.ts); the error and other-tab screens are in error.ts.
 
 import { CATALOGUE } from '../../analytics/catalogue.ts';
+import { BOARD_UI } from '../../config.ts';
 import { t } from '../../copy.ts';
 import type { Item } from '../../types/item.ts';
 import { ext, h } from '../dom.ts';
@@ -11,6 +12,7 @@ import { closeDialog, openDialog } from '../overlay.ts';
 export function howToPlay(opener: HTMLElement | null) {
   openDialog(t('how.title'), [
     h('p', {}, t('how.body')),
+    ...(BOARD_UI ? [h('p', { 'data-test': 'board-disclosure' }, t('board.disclosure'))] : []),
     h('ul', {}, h('li', {}, t('hint.kept')), h('li', {}, t('hint.made')), h('li', {}, t('hint.when'))),
   ], opener);
 }
@@ -27,8 +29,10 @@ export function credits(items: readonly Item[], sample: Item, opener: HTMLElemen
 export function aboutPrivacy(opener: HTMLElement | null) {
   openDialog(t('about.title'), [
     h('p', {}, t('about.body')),
-    h('ul', { class: 'about__events', 'data-test': 'events' }, ...CATALOGUE.map((e) => h('li', {}, h('code', {}, e.name), ': ', e.fires))),
+    // the board's two events exist only when the board is built in
+    h('ul', { class: 'about__events', 'data-test': 'events' }, ...CATALOGUE.filter((e) => BOARD_UI || !e.name.startsWith('board_')).map((e) => h('li', {}, h('code', {}, e.name), ': ', e.fires))),
     h('p', {}, t('about.device')),
+    ...(BOARD_UI ? [h('p', { 'data-test': 'board-disclosure' }, t('board.disclosure'), ' ', t('board.privacy'))] : []),
     h('p', {}, t('about.testMode')),
   ], opener);
 }
@@ -49,6 +53,8 @@ export interface MenuActions {
   onNewGame(): void;
   /** Offered on the round screen: replay the game tour (DS34). */
   onTour?: () => void;
+  /** "Your board scores", when the board is built in (G3). */
+  onScores?: (opener: HTMLElement) => void;
 }
 
 export function openMenu(opener: HTMLElement, a: MenuActions) {
@@ -64,6 +70,7 @@ export function openMenu(opener: HTMLElement, a: MenuActions) {
         item(t('menu.how'), 'menu-how', () => howToPlay(opener)),
         a.onTour ? item(t('menu.tour'), 'menu-tour', a.onTour) : null,
         a.inGame ? item(t('menu.new'), 'menu-new', () => confirmNewGame(opener, a.onNewGame)) : null,
+        a.onScores ? item(t('board.scores'), 'menu-board-scores', () => a.onScores?.(opener)) : null,
         item(t('menu.credits'), 'menu-credits', () => credits(a.items, a.sample, opener)),
         item(t('menu.about'), 'menu-about', () => aboutPrivacy(opener)),
       ),

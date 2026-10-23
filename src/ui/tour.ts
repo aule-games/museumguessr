@@ -4,6 +4,7 @@
 // Escape or the browser's Back skips it (one history entry, like every
 // overlay), and focus returns to where it was. No third-party code.
 
+import { BOARD_UI } from '../config.ts';
 import { t, type CopyKey } from '../copy.ts';
 import * as tokens from '../design/tokens.json';
 import { clockMirror } from './clock.ts';
@@ -155,6 +156,8 @@ export function startTour(o: TourOptions): () => void {
     progress.textContent = t('tour.progress', { n: index + 1, total: steps.length });
     title.textContent = t(`tour.${step.key}.title` as CopyKey);
     body.textContent = t(`tour.${step.key}.body` as CopyKey);
+    // the welcome card discloses automatic board entry when the board is built in (G3)
+    if (BOARD_UI && step.key === 'welcome') body.textContent += ` ${t('board.disclosure')}`;
     back.hidden = index === 0;
     next.textContent = last ? t('tour.start') : t('tour.next');
     dialog.dataset.step = step.key;

@@ -75,7 +75,7 @@ export type Action =
   | { type: 'back'; round: number; step: Step; now?: number }
   | { type: 'draft'; round: number; step: Step; value: Draft; now: number }
   | { type: 'skip'; round: number; now?: number }
-  | { type: 'next'; round: number; now?: number }
+  | { type: 'next'; round: number; now?: number; boardWeek?: string | null }
   | { type: 'clockStart'; round: number; now: number; limitMs: number | null; paused: boolean; readyMs: number }
   | { type: 'clockPause'; round: number; now: number }
   | { type: 'clockResume'; round: number; now: number }
@@ -458,7 +458,7 @@ export function reduce(state: GameState | null, action: Action, keys: readonly A
     case 'next': {
       if (action.round !== state.round || state.phase !== 'reveal') return { state, effects };
       // Next is pressed on the reveal, so the reveal was shown even if nothing recorded it yet.
-      let shown = revealShown(state, effects, state.round, action.now ?? Date.now(), null);
+      let shown = revealShown(state, effects, state.round, action.now ?? Date.now(), action.boardWeek ?? null);
       const last = state.round === state.item_ids.length - 1;
       if (!last) {
         shown = {

@@ -96,4 +96,6 @@ export const CHUNKS = {
   tour: lazy(() => import('./tour.ts')),
   menu: lazy(() => import('./screens/misc.ts')),
   end: lazy(() => import('./screens/end.ts')),
+  /** The weekly board: its overlay, "Your board scores", pending retries and the week context (V12-80). */
+  board: lazy(() => import('../board/board.ts')),
 };

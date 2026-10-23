@@ -41,6 +41,8 @@ export interface StartProps {
   /** The reply result's "Replay these 10 (not ranked)". */
   onReplay(): void;
   onAbout(opener: HTMLElement): void;
+  /** This week's last confirmed board standing and a link to the board (R5, N15); null without one. */
+  board?: { line: string; onOpen(opener: HTMLElement): void } | null;
 }
 
 const W = 320;
@@ -94,6 +96,13 @@ export function wordmark(): HTMLElement {
     h('span', { class: 'wordmark__mark', 'aria-hidden': 'true' }, pin),
     h('span', { class: 'wordmark__name' }, split > 0 ? name.slice(0, split) : name, split > 0 ? h('span', { class: 'wordmark__accent' }, name.slice(split)) : null),
   );
+}
+
+/** "Your best this week: 21,340 · Last confirmed: #12 · resets in 2 days" and the board link (V12-123). */
+function boardLine(b: NonNullable<StartProps['board']>): HTMLElement {
+  const link = h('button', { type: 'button', class: 'link', 'data-test': 'start-board' }, t('board.heading'));
+  link.addEventListener('click', () => b.onOpen(link));
+  return h('p', { class: 'start__board', 'data-test': 'start-standing' }, h('span', {}, b.line), ' ', link);
 }
 
 export function startScreen(p: StartProps): HTMLElement {
@@ -187,6 +196,7 @@ export function startScreen(p: StartProps): HTMLElement {
     ),
     actions,
     p.collection ? h('p', { class: 'start__collection', 'data-test': 'collection' }, p.collection) : null,
+    p.board ? boardLine(p.board) : null,
     h('p', { class: 'start__meta' }, meta),
     h('footer', { class: 'start__privacy' }, t('start.privacy'), ' ', about),
   );

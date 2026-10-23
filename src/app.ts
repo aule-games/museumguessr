@@ -7,7 +7,10 @@ import { EVENTS, STEPS, type FeedbackQ } from './analytics/events.ts';
 import { weekActive } from './analytics/week-active.ts';
 import { ANSWER_KEYS, DECK_ITEMS, ITEMS_VERSION, ITEM_IDS, POOL, SAMPLE, deckItems, hasItem, imageUrl, itemsLoaded, loadItems } from './content/items.ts';
 import { challengeUrl, parseChallenge, scoreToBeat, type ChallengeLink, type ParsedChallenge, type ShareKind } from './challenge/link.ts';
-import { SITE_URL } from './config.ts';
+import type { BoardEnv, CardProps } from './board/board.ts';
+import type { Shown } from './board/session.ts';
+import { startLine } from './board/standing-line.ts';
+import { BOARD_UI, SITE_URL } from './config.ts';
 import { formatNumber, t } from './copy.ts';
 import { drawDeck, seededRng } from './deck/planner.ts';
 import { stripMessage, takeErrorBudget, toReport, type ErrorReport } from './errors/boundary.ts';
@@ -31,7 +34,7 @@ import type { KV } from './storage/guarded.ts';
 import { announce, currentClockFace, renderClockFace, timerCopy } from './ui/clock.ts';
 import { clear, focus, reducedMotion } from './ui/dom.ts';
 import { testBadge } from './ui/badge.ts';
-import { CHUNKS, loaded, preload, withModule, type Lazy } from './ui/lazy.ts';
+import { CHUNKS, loaded, preload, whenIdle, withModule, type Lazy } from './ui/lazy.ts';
 import { overlayGeneration } from './ui/overlay.ts';
 import type { EndProps } from './ui/screens/end.ts';
 import { errorScreen, frozenScreen } from './ui/screens/error.ts';
@@ -62,6 +65,7 @@ export interface AppDeps {
 const START_IMAGE_WAIT_MS = 4000;
 
 type Menu = NonNullable<typeof CHUNKS.menu.module>;
+type Board = NonNullable<typeof CHUNKS.board.module>;
 
 // The reveal and end screens are lazy chunks; show() loads a screen's chunk before drawing it (V1-02).
 const revealScreen = (p: RevealProps) => loaded(CHUNKS.reveal).revealScreen(p);
@@ -121,6 +125,10 @@ export class App {
   private opened: { key: string; at: number } | null = null;
   private readonly runner: ClockRunner;
   private readonly drafts: DraftQueue;
+  /** The last server week this page learned; a game freezes it when its round-ten reveal opens (V12-108). */
+  private serverWeek: string | null = null;
+  /** The game whose round-ten week context this page asked for. */
+  private weekAsked = '';
 
   constructor(private d: AppDeps) {
     this.webgl = hasWebGL2();
@@ -196,6 +204,8 @@ export class App {
     if (resume && this.d.lock.held) this.show('play');
     else if (resume) this.show('frozen');
     else this.show('start');
+    // pending board submissions retry on load, in the background (V12-113)
+    if (BOARD_UI && (this.d.local.get(KEYS.board) ?? '').includes('"pending"')) whenIdle(() => this.board((m) => void m.resume(this.boardEnv())));
     return { resumed: resume && this.d.lock.held };
   }
 
@@ -297,7 +307,7 @@ export class App {
     if (!s || s.finished || s.phase !== 'reveal' || this.view !== 'play' || !CHUNKS.reveal.module) return;
     // a reveal rendered in a hidden tab counts once the tab is visible again (clockEvent)
     if (document.visibilityState === 'hidden') return;
-    this.dispatch({ type: 'revealShown', gameId: s.game_id, round: s.round, now: Date.now(), boardWeek: null });
+    this.dispatch({ type: 'revealShown', gameId: s.game_id, round: s.round, now: Date.now(), boardWeek: this.serverWeek });
   }
 
   /** The first time-up reveal on this device shows a one-time tip; the same reveal keeps it after a reload (V12-63). */
@@ -544,7 +554,7 @@ export class App {
         if (!skills.has(s.round)) skills.set(s.round, Math.random());
         const action: Action =
           s.phase === 'reveal'
-            ? { type: 'next', round: s.round }
+            ? { type: 'next', round: s.round, boardWeek: this.serverWeek }
             : { type: 'confirm', round: s.round, step: s.step, value: testGuess(s.step, key, skills.get(s.round) ?? 1, Math.random) };
         const { state, effects } = reduce(s, action, ANSWER_KEYS);
         if (!this.persist(s, state, effects, false)) return;
@@ -690,6 +700,7 @@ export class App {
     if (focusTarget) focus(focusTarget);
     if (view === 'play') requestAnimationFrame(() => this.guard(() => this.maybeTour()));
     if (view === 'play' && this.state?.phase === 'reveal') this.revealOpened();
+    if (view === 'play') this.askWeek();
     this.runner.check();
     this.preload(view);
   }
@@ -715,6 +726,43 @@ export class App {
     withModule(CHUNKS.menu, (m) =>
       this.guard(() => {
         if (gen === overlayGeneration() && this.view === view) open(m);
+      }),
+    );
+  }
+
+  // ----- the weekly board (W6): its code is a lazy chunk; only the start line is in the main bundle -----
+
+  private boardEnv(): BoardEnv {
+    return { kv: this.d.local, src: this.d.tab.src, track: (name, props) => this.d.analytics.track(name, props) };
+  }
+
+  private board(use: (m: Board) => void) {
+    withModule(CHUNKS.board, (m) => this.guard(() => use(m)));
+  }
+
+  /** "See the board" and the start screen's link: a deliberate open (G4). */
+  private openBoard(opener: HTMLElement) {
+    this.board((m) => m.openBoard(opener, this.boardEnv()));
+  }
+
+  /** The end card for a finished game, when the board is built in (G2). */
+  private boardCard(shown: Shown): CardProps | null {
+    return BOARD_UI ? { shown, env: this.boardEnv(), onView: (opener) => this.openBoard(opener) } : null;
+  }
+
+  /**
+   * When round ten opens, ask the server's week once, anonymously and without
+   * blocking play; skipped when the switch is off. The reveal freezes the last
+   * week learned; a later answer cannot change a finished game (V12-108).
+   */
+  private askWeek() {
+    const s = this.state;
+    if (!BOARD_UI || !s || s.finished || s.finished_at !== null || s.round !== s.item_ids.length - 1) return;
+    if (this.weekAsked === s.game_id || this.d.local.get(KEYS.boardAuto) === 'off') return;
+    this.weekAsked = s.game_id;
+    this.board((m) =>
+      void m.weekContext(this.boardEnv(), s.test_assisted).then((c) => {
+        if (c.week) this.serverWeek = c.week;
       }),
     );
   }
@@ -837,7 +885,15 @@ export class App {
       onChallenge: (opener) => this.guard(() => this.playChallenge(opener)),
       onReplay: () => this.replayDeck(this.snapshot?.snapshot.item_ids ?? []),
       onAbout: (opener) => this.overlay((m) => m.aboutPrivacy(opener)),
+      board: this.startBoard(mode),
     });
+  }
+
+  /** The start screen's board line from the device's last confirmed rank, without a request (R5, N15). */
+  private startBoard(mode: StartMode): { line: string; onOpen(opener: HTMLElement): void } | null {
+    if (!BOARD_UI || !['new', 'finished', 'continue'].includes(mode.kind)) return null;
+    const line = startLine(this.d.local, Date.now());
+    return line ? { line, onOpen: (opener) => this.openBoard(opener) } : null;
   }
 
   private renderReview(): HTMLElement {
@@ -861,7 +917,14 @@ export class App {
       waiting: null,
       onAnother: () => this.newGame(),
       onReplay: () => this.replayDeck(game?.item_ids ?? []),
+      board: game && snap?.current ? this.boardCard({ game_id: game.game_id, total: game.total, game: this.finishedSave(game.game_id) }) : null,
     });
+  }
+
+  /** The finished game's own save, while it is still the one stored (the board needs its full record). */
+  private finishedSave(gameId: string): GameState | null {
+    const saved = parseSave(this.d.local.get(KEYS.save), POOL);
+    return saved?.game_id === gameId && saved.finished ? saved : null;
   }
 
   /** A share from "Review your 10": the finished game's own save still holds its ledger. */
@@ -916,6 +979,7 @@ export class App {
           inGame: !s.finished,
           onNewGame: () => this.newGame(),
           onTour: !s.finished && s.phase === 'answering' ? () => this.openTour(true) : undefined,
+          onScores: BOARD_UI ? (opener: HTMLElement) => this.board((b) => b.openScores(opener, this.boardEnv())) : undefined,
         }),
       );
 
@@ -954,6 +1018,7 @@ export class App {
             : null,
           onAnother: () => this.newGame(),
           onReplay: () => this.replayDeck(s.item_ids),
+          board: this.boardCard({ game_id: s.game_id, total, game: s }),
         }),
         focus: null,
       };
@@ -993,7 +1058,7 @@ export class App {
         timeUp: s.timed_out[s.round] ?? null,
         tip: this.timeUpTip(s),
         onPulse: (a) => this.dispatch({ type: 'pulse', q: 'difficulty' as FeedbackQ, a }),
-        onNext: () => this.dispatch({ type: 'next', round: s.round, now: Date.now() }),
+        onNext: () => this.dispatch({ type: 'next', round: s.round, now: Date.now(), boardWeek: this.serverWeek }),
         onMenu,
       });
       const round = s.round;

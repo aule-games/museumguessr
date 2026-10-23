@@ -4,8 +4,12 @@
 // the "Most fun" row, the 10-row recap, "Replay these 10". A challenge game
 // shows both totals and the result, and its share block sends the score
 // back. Desktop puts the summary and actions left and the recap right.
+// With the board UI built in, the compact board card follows Play another
+// 10 (G2): Share stays the first action and the only filled primary.
 
 import { FEEDBACK } from '../../analytics/events.ts';
+import { boardCard, type CardProps } from '../../board/board.ts';
+import { BOARD_UI } from '../../config.ts';
 import { formatNumber, t, type CopyKey } from '../../copy.ts';
 import { imageUrl } from '../../content/items.ts';
 import { hardNailedCount } from '../../game/hard.ts';
@@ -43,6 +47,8 @@ export interface EndProps {
   waiting: { name: string | null; onPlay(): void; onDismiss(): void } | null;
   onAnother(): void;
   onReplay(): void;
+  /** The weekly board card for this finished game; null when there is none. */
+  board?: CardProps | null;
 }
 
 export function endScreen(p: EndProps): HTMLElement {
@@ -132,6 +138,7 @@ export function endScreen(p: EndProps): HTMLElement {
     ),
     p.detailed && p.share ? shareBlock(p.share, c ? 'sendBack.button' : 'share.button') : null,
     h('button', { type: 'button', class: 'btn btn--secondary btn--wide end__another', 'data-test': 'play-another', onclick: p.onAnother }, t('end.another')),
+    BOARD_UI && p.board ? boardCard(p.board) : null,
     waiting,
     p.collection ? h('p', { class: 'end__collection', 'data-test': 'collection' }, collectionLine(p.collection)) : null,
     mostFun,
