@@ -113,4 +113,18 @@ export const CATALOGUE: CatalogueEntry[] = [
     dedupe: 'once per device and week',
     feeds: 'week-2 return',
   },
+  {
+    name: EVENTS.boardSubmitted,
+    props: 'game_ref; src; reason: the outcome, added | replaced or the board API\'s reason (not_best, week_closed, edge_limited, unavailable and the others); auto: true (every board entry is automatic)',
+    fires: 'when a finished game\'s automatic board entry gets an outcome, final or pending',
+    dedupe: 'once per game and outcome (retries never repeat one)',
+    feeds: 'board operations; never an engagement measure',
+  },
+  {
+    name: EVENTS.boardViewed,
+    props: 'src',
+    fires: 'when the player opens the weekly board ("See the board" or the start screen\'s link)',
+    dedupe: 'none (every open counts)',
+    feeds: 'board views per finished game, next to shares per finished game',
+  },
 ];

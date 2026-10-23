@@ -54,6 +54,14 @@ export const KEYS = {
   timeUpTip: 'museumguessr:v1:time-up-tip',
   /** The last ISO week (UTC, Monday start) in which this device completed a game (V12-132). */
   weekActive: 'museumguessr:v1:week-active',
+  /** The board's device key: random 128 bits, sent only as a bearer header to this site's API (N3, V12-81). */
+  boardKey: 'museumguessr:v1:board-key',
+  /** The board's receipts and pending submissions (G1, ENG23, V12-113). */
+  board: 'museumguessr:v1:board',
+  /** "Add my games to the board": "off" once the player switched it off; on by default (G3, V12-120). */
+  boardAuto: 'museumguessr:v1:board-auto',
+  /** This week's last confirmed best and rank, for the start screen without a request (R5, N15, V12-123). */
+  boardStanding: 'museumguessr:v1:board-standing',
 } as const;
 
 export type Phase = 'answering' | 'reveal';

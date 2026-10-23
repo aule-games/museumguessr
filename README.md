@@ -110,6 +110,24 @@ the name in it. It also keeps the last week in which it finished a game, so
 the first finished game of a week can say whether you also played the week
 before (`week_active`).
 
+### The weekly board
+
+Finished games go on this week's board automatically under a generated name.
+The board shows a generated three-word name, the score and the date: the name
+comes from a random key this browser creates for the board, so it stays the
+same for this device across weeks while the browser keeps site data. Nobody
+types a name. The key is sent only to this site's own API (as a request
+header, never in an address) and never to analytics; the server stores a hash
+of it, one best score per device and week, and never the answer pins, your IP
+address or your browser's user-agent string. The game only adds a random or
+challenge game you finished this week; replays, challenges of objects you had
+all seen before and test games are not ranked. Switch "Add my games to the
+board" off under "Your board scores" to stop future games going on the board;
+the same place lists your weekly bests and removes them (removing this week's
+score also stops another one from this browser until the board resets on
+Monday). Two more events come with the board: `board_submitted` (the outcome
+of an automatic entry) and `board_viewed` (you opened the board).
+
 Open the site with `?test=1` to stop sending events from your browser for 24
 hours; `?test=0` turns them back on sooner.
 

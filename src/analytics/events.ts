@@ -18,6 +18,8 @@ export const EVENTS = {
   challengeCompleted: 'challenge_completed',
   tourEnded: 'tour_ended',
   weekActive: 'week_active',
+  boardSubmitted: 'board_submitted',
+  boardViewed: 'board_viewed',
 } as const;
 
 export type EventName = (typeof EVENTS)[keyof typeof EVENTS];
@@ -73,4 +75,7 @@ export interface EventProps {
   challenge_completed: { game_ref: string; src: string; beat: boolean | null };
   tour_ended: { src: string; outcome: 'done' | 'skipped'; step: number; replay: boolean };
   week_active: { src: string; week: string; active_last_week: boolean };
+  /** An automatic board submission's outcome: an API reason, or added / replaced (G5). */
+  board_submitted: { game_ref: string; reason: string; auto: true; src: string };
+  board_viewed: { src: string };
 }

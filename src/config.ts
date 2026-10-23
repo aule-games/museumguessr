@@ -18,3 +18,16 @@ export const ANALYTICS_HOSTS: readonly string[] = (import.meta.env.VITE_ANALYTIC
  * meta tags in index.html move with it.
  */
 export const SITE_URL: string = import.meta.env.VITE_SITE_URL || 'https://museumguessr.com/';
+
+/**
+ * The weekly board's page side (W6, V12-125): off removes the end-screen
+ * card, the start-screen standing, the menu entry, the disclosure and the
+ * Turnstile CSP. A build constant, so the board code is compiled out when off.
+ */
+export const BOARD_UI: boolean = import.meta.env.VITE_BOARD_UI === 'true';
+
+/** The public Turnstile site key; required by the build when the board UI is on. */
+export const TURNSTILE_SITEKEY: string = import.meta.env.VITE_TURNSTILE_SITEKEY ?? '';
+
+/** dev, board-test or deploy (M3): development fixtures exist only outside deploy builds. */
+export const BUILD_PURPOSE: string = import.meta.env.VITE_BUILD_PURPOSE ?? 'dev';
