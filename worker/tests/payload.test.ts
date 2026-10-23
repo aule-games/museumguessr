@@ -133,3 +133,16 @@ describe('credentials and addresses', () => {
     for (const bad of [null, '', 'nonsense', '1:2:3:4:5:6:7:8:9', '256.1.1.1', '1::2::3']) expect(ipKey(bad), String(bad)).toBe('unknown');
   });
 });
+
+describe('retired objects', () => {
+  it('a retired id never ranks (update_page), and its recorded key stays available for 14 days for diagnostics only [V12-137]', async () => {
+    const { retiredKey } = await import('../src/answers');
+    const p = valid();
+    const key = { id: '07', difficulty: 1 as const, kept: { city: 'X', lat: 1, lng: 2 }, made: { lat: 3, lng: 4, precision: 'city' as const, full_marks_km: null, country: 'XX' }, when: { start: 1500, end: 1600 }, answers_rev: 2 };
+    const entries = [{ id: '07', retired: '2026-10-10', key }];
+    expect(retiredKey('07', Date.UTC(2026, 9, 23), entries)).toMatchObject({ rev: 2, key: { id: '07', start: 1500 } });
+    expect(retiredKey('07', Date.UTC(2026, 9, 24), entries)).toBeNull();
+    expect(retiredKey('08', Date.UTC(2026, 9, 12), entries)).toBeNull();
+    expect(checkRevisions(['998', ...p.item_ids.slice(1)], p.answers_revs, undefined, new Set(['998']))).toBe('update_page');
+  });
+});

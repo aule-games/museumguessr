@@ -204,10 +204,13 @@ A saved game and the "Review your 10" recap hold their own 10 objects. They
 stay valid while the kept, made and when answers of those 10 are unchanged:
 adding objects to the pool keeps them, and changing one of those answers drops
 them, so the player starts a fresh game instead of being scored against an
-answer they never saw. Every item also has a positive answers_rev; changing
-kept, made or when requires a higher revision against data/answer-revs.json.
-The step-3 items:record command refreshes that baseline. The Worker retains
-retired answer keys for fourteen days but refuses newly submitted retired ids.
+answer they never saw. Every item has a positive answer revision
+(`answers_rev`, 1 when absent); changing kept, made or when requires a higher
+revision than the one recorded in data/answer-revs.json, and items:check fails
+otherwise. `npm run items:record` refreshes that baseline after review; it
+refuses while a changed answer lacks a raised revision. A retirement records
+the object's answer key in data/retired.json; the Worker keeps it for fourteen
+days for diagnostics but refuses newly submitted retired ids.
 Text and fact edits never drop a game. [V12-137] Saves from the
 fixed set of 10 carry over only while those 10 answers are the original ones.
 

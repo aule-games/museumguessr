@@ -293,6 +293,11 @@
             3
           ]
         },
+        "answers_rev": {
+          "description": "Answer revision (V12-137): raise it whenever kept, made or when changes, so the board refuses submissions scored against the old answers. Absent means 1. npm run items:record records the reviewed baseline in data/answer-revs.json.",
+          "type": "integer",
+          "minimum": 1
+        },
         "object_type": {
           "description": "What kind of object it is, for the pool's spread rules (V1-12).",
           "enum": [

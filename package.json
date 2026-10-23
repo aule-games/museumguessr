@@ -21,6 +21,7 @@
     "items:swap": "node scripts/items.mjs swap",
     "items:retire": "node scripts/items.mjs retire",
     "items:sheet": "node scripts/items.mjs sheet",
+    "items:record": "node scripts/items.mjs record",
     "dev": "vite",
     "build": "vite build",
     "build:deploy": "node scripts/build.mjs",

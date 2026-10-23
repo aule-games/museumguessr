@@ -1,0 +1,125 @@
+{
+  "note": "Reviewed answer revisions (npm run items:record). An item whose kept, made or when changes needs a higher answers_rev before this file is recorded again.",
+  "items": {
+    "10": {
+      "rev": 1,
+      "answers": "e67f449b"
+    },
+    "11": {
+      "rev": 1,
+      "answers": "5d0e52c2"
+    },
+    "12": {
+      "rev": 1,
+      "answers": "6ec89467"
+    },
+    "13": {
+      "rev": 1,
+      "answers": "b758111a"
+    },
+    "14": {
+      "rev": 1,
+      "answers": "9ab711a3"
+    },
+    "16": {
+      "rev": 1,
+      "answers": "1d84509a"
+    },
+    "17": {
+      "rev": 1,
+      "answers": "de025b13"
+    },
+    "18": {
+      "rev": 1,
+      "answers": "ab4e8ee3"
+    },
+    "19": {
+      "rev": 1,
+      "answers": "db4929b0"
+    },
+    "20": {
+      "rev": 1,
+      "answers": "43e61d76"
+    },
+    "21": {
+      "rev": 1,
+      "answers": "5d1bfe7a"
+    },
+    "22": {
+      "rev": 1,
+      "answers": "82f6dc7a"
+    },
+    "23": {
+      "rev": 1,
+      "answers": "faf070a9"
+    },
+    "24": {
+      "rev": 1,
+      "answers": "ed300a07"
+    },
+    "25": {
+      "rev": 1,
+      "answers": "565e7334"
+    },
+    "26": {
+      "rev": 1,
+      "answers": "5792722d"
+    },
+    "27": {
+      "rev": 1,
+      "answers": "5dd76d06"
+    },
+    "28": {
+      "rev": 1,
+      "answers": "1ccf5e9c"
+    },
+    "29": {
+      "rev": 1,
+      "answers": "7336783f"
+    },
+    "30": {
+      "rev": 1,
+      "answers": "a7047d50"
+    },
+    "31": {
+      "rev": 1,
+      "answers": "0b967857"
+    },
+    "01": {
+      "rev": 1,
+      "answers": "233bd76f"
+    },
+    "02": {
+      "rev": 1,
+      "answers": "fa3c2166"
+    },
+    "03": {
+      "rev": 1,
+      "answers": "a157eaff"
+    },
+    "04": {
+      "rev": 1,
+      "answers": "8782f2e6"
+    },
+    "05": {
+      "rev": 1,
+      "answers": "a570b49c"
+    },
+    "06": {
+      "rev": 1,
+      "answers": "9862b6bd"
+    },
+    "07": {
+      "rev": 1,
+      "answers": "2e22b4f3"
+    },
+    "08": {
+      "rev": 1,
+      "answers": "f63a2438"
+    },
+    "09": {
+      "rev": 1,
+      "answers": "06a59dd1"
+    }
+  }
+}

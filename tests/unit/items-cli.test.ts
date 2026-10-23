@@ -267,7 +267,7 @@ describe('[V1-12] promote and retire', () => {
     cli('retire', '07', '--replace', '14', '--reason', 'rights withdrawn', '--image', src);
     expect(read('data/items.json').items[6].id).toBe('14');
     expect(ids('data/reserve.json')).toEqual([]);
-    expect(read('data/retired.json').ids).toMatchObject([{ id: '07', reason: 'rights withdrawn' }]);
+    expect(read('data/retired.json').ids).toMatchObject([{ id: '07', reason: 'rights withdrawn', key: { id: '07', answers_rev: 1 } }]);
     expect(existsSync(join(root, 'images/07.jpg'))).toBe(false);
     // the retired id can never come back
     const data = read('data/reserve.json');

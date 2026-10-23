@@ -41,6 +41,10 @@ export interface Item1 {
    */
   difficulty: 1 | 2 | 3;
   /**
+   * Answer revision (V12-137): raise it whenever kept, made or when changes, so the board refuses submissions scored against the old answers. Absent means 1. npm run items:record records the reviewed baseline in data/answer-revs.json.
+   */
+  answers_rev?: number;
+  /**
    * What kind of object it is, for the pool's spread rules (V1-12).
    */
   object_type: 'painting' | 'print' | 'drawing' | 'sculpture' | 'vessel' | 'textile' | 'architecture' | 'other';

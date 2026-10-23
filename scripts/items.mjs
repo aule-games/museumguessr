@@ -20,6 +20,9 @@ import { fileURLToPath } from 'node:url';
 import Ajv2020 from 'ajv/dist/2020.js';
 import addFormats from 'ajv-formats';
 import sharp from 'sharp';
+import { baselineOf, REVS_FILE, revisionRules } from './lib/answer-revs.mjs';
+import { coreOf } from './lib/items-core.mjs';
+import { answersRev } from '../src/content/revs.ts';
 import { poolRules } from './lib/pool-rules.mjs';
 import { printProblems } from './lib/report.mjs';
 import { DECK } from '../src/deck/config.ts';
@@ -67,6 +70,7 @@ const paths = (root) => ({
   sample: join(root, 'data/sample.json'),
   regions: join(root, 'data/regions.json'),
   retired: join(root, 'data/retired.json'),
+  revs: join(root, REVS_FILE),
   images: join(root, 'images'),
   image: (id) => join(root, 'images', `${id}.jpg`),
 });
@@ -274,6 +278,9 @@ export async function check(root, { quiet = false } = {}) {
   const pool = poolRules(items, [...reserve.map((it) => ['reserve', it]), ...sample.map((it) => ['sample', it])], regions, retired, problem);
   problems.push(...pool.problems);
   warnings.push(...pool.warnings);
+  const revs = revisionRules(items, existsSync(p.revs) ? readJson(p.revs, problems, REVS_FILE) : null, problem);
+  problems.push(...revs.problems);
+  warnings.push(...revs.warnings);
   if (files.sample && sample.length !== 1) {
     problems.push(problem('data/sample.json', `has ${sample.length} records, not 1`, 'the start screen shows one sample object', 'DS9', 'keep exactly one record', 'files'));
   }
@@ -592,7 +599,9 @@ async function retire(root, id, a) {
     nextReserve = reserve.items.filter((r) => r.id !== a.replace);
     images[a.replace] = got.image;
   }
-  const entry = { id, title: items.items[at].title, retired: new Date().toISOString().slice(0, 10), reason: a.reason };
+  // The answer key stays with the entry: the Worker keeps it for 14 days for diagnostics, never for ranking (V12-137).
+  const gone = items.items[at];
+  const entry = { id, title: gone.title, retired: new Date().toISOString().slice(0, 10), reason: a.reason, key: { ...coreOf(gone), answers_rev: answersRev(gone) } };
   const ok = await applyChange(root, 'retire', {
     items: { ...items, items: nextItems },
     reserve: { ...reserve, items: nextReserve },
@@ -684,6 +693,21 @@ function skeleton(id) {
   };
 }
 
+/** npm run items:record: write the reviewed answer baseline; refuses while a changed answer lacks a raised revision. */
+export async function record(root) {
+  const p = paths(root);
+  const items = JSON.parse(readFileSync(p.items, 'utf8')).items;
+  const old = existsSync(p.revs) ? JSON.parse(readFileSync(p.revs, 'utf8')) : null;
+  const { problems } = revisionRules(items, old, problem);
+  if (problems.length) {
+    printProblems(problems);
+    return 1;
+  }
+  writeFileSync(p.revs, `${JSON.stringify(baselineOf(items), null, 2)}\n`);
+  console.log(`recorded ${items.length} answer revisions in ${REVS_FILE}`);
+  return 0;
+}
+
 const HELP = `usage: node scripts/items.mjs <command> [--root <dir>]
 
   check                          validate data/*.json and images/ (npm run items:check)
@@ -698,6 +722,7 @@ const HELP = `usage: node scripts/items.mjs <command> [--root <dir>]
        [--image <file>]          record goes back to data/reserve.json
   retire <id> --reason "<why>"   take an object out for good; its id goes to data/retired.json
          [--replace <reserve-id>] and is never reused; required when the pool is at its minimum
+  record                         write the reviewed answer baseline (data/answer-revs.json)
   sheet [--ids <id>,...]         the founder's contact sheet as one JPEG: photo, title, made,
         [--out <file.jpg>]       kept, date and difficulty per record (pool then reserve)
 
@@ -723,6 +748,7 @@ if (isMain) {
   else if (cmd === 'swap') code = await swap(a.root, x, y, a.image);
   else if (cmd === 'retire') code = await retire(a.root, x, a);
   else if (cmd === 'sheet') code = await sheet(a.root, a);
+  else if (cmd === 'record') code = await record(a.root);
   else {
     console.error(`unknown command: ${cmd}\n\n${HELP}`);
     code = 2;

@@ -8,6 +8,7 @@
 import items from '../../data/items.json';
 import retired from '../../data/retired.json';
 import type { CoreItem } from '../../src/content/core.ts';
+import { answersRev } from '../../src/content/revs.ts';
 import { answerKey, scoreRound, skippedRound, type AnswerKey } from '../../src/scoring/game.ts';
 import type { ScorePayload } from '../../src/api/contract.ts';
 
@@ -18,15 +19,34 @@ interface Entry {
 
 type Record = CoreItem & { answers_rev?: number };
 
-/** The answer revision of an item; an item without one is at revision 1. */
-export const answersRev = (it: { answers_rev?: number | null }): number => it.answers_rev ?? 1;
-
 export function answerTable(records: readonly Record[]): ReadonlyMap<string, Entry> {
   return new Map(records.map((it) => [it.id, { key: answerKey(it), rev: answersRev(it) }]));
 }
 
 const POOL = answerTable((items as unknown as { items: Record[] }).items);
-const RETIRED: ReadonlySet<string> = new Set((retired as { ids: { id: string }[] }).ids.map((r) => r.id));
+
+interface RetiredEntry {
+  id: string;
+  retired: string;
+  key?: Record;
+}
+const RETIRED_ENTRIES = (retired as { ids: RetiredEntry[] }).ids;
+const RETIRED: ReadonlySet<string> = new Set(RETIRED_ENTRIES.map((r) => r.id));
+
+/** Days a retired object's answer key stays in the Worker, for diagnostics only. */
+export const RETIRED_KEY_DAYS = 14;
+
+/**
+ * A retired object's answer key while it is under 14 days retired (null
+ * after, or without a recorded key). Only for diagnostics: a submission that
+ * names a retired id is refused with update_page whatever this returns.
+ */
+export function retiredKey(id: string, now: number, entries: readonly RetiredEntry[] = RETIRED_ENTRIES): Entry | null {
+  const e = entries.find((r) => r.id === id);
+  if (!e?.key) return null;
+  const age = now - Date.parse(`${e.retired}T00:00:00Z`);
+  return age >= 0 && age < RETIRED_KEY_DAYS * 86_400_000 ? { key: answerKey(e.key), rev: answersRev(e.key) } : null;
+}
 
 export type RevisionCheck = 'ok' | 'update_page' | 'try_later';
 
