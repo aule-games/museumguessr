@@ -142,6 +142,9 @@ describe('[E7] [DX5] items:check', () => {
     ['[DS37] caption over 70', (d: any) => (d.items[4].caption = 'x'.repeat(71)), 'item 05 · caption'],
     ['[DS37] missing caption', (d: any) => delete d.items[4].caption, 'item 05 · (record)'],
     ['heritage flag missing', (d: any) => (d.items[0].made.country = 'Italy'), 'item 01 · heritage_image_law'],
+    ['[DX6] a photo crop without a crop note', (d: any) => (d.items[1].photo.crop = [0, 0, 0.1, 0]), 'item 02 · photo.crop_note'],
+    ['[DX6] a photo crop that cuts away most of a side', (d: any) => (d.items[1].photo = { ...d.items[1].photo, crop: [0.5, 0, 0.45, 0], crop_note: 'label' }), 'item 02 · photo.crop'],
+    ['[DX6] a photo crop without four fractions', (d: any) => (d.items[1].photo = { ...d.items[1].photo, crop: [0, 0.1, 0], crop_note: 'label' }), 'item 02 · photo.crop'],
     ['[V1-08] region-level round 2 (difficulty 1)', (d: any) => (d.items[1].made.precision = 'region'), 'item 02 · difficulty'],
     ['[V1-08] conflict in round 3 (difficulty 1)', (d: any) => (d.items[2].conflicts = ['x']), 'item 03 · difficulty'],
     ['[V1-08] a harder object in round 1 of the fixed set', (d: any) => (d.items[0].difficulty = 2), 'item 01 · difficulty'],
@@ -258,6 +261,17 @@ describe('[DX23] swap', () => {
     expect(() => cli('swap', '14', '05', '--image', join(root, 'does-not-exist.jpg'))).toThrow();
     expect(readFileSync(join(root, 'data/items.json'), 'utf8')).toBe(before[0]);
     expect(readFileSync(join(root, 'data/reserve.json'), 'utf8')).toBe(before[1]);
+  });
+
+  it('[DX6] cuts the reserve record\'s recorded photo crop from its photo', async () => {
+    const reserve = read('data/reserve.json');
+    reserve.items[0].photo = { ...reserve.items[0].photo, crop: [0, 0.5, 0, 0], crop_note: 'Right half cut away: a wall label' };
+    write('data/reserve.json', reserve);
+    const src = join(root, 'src14.jpg');
+    writeFileSync(src, await jpeg(14, 400, 300));
+    cli('swap', '14', '05', '--image', src);
+    const meta = await sharp(join(root, 'images/14.jpg')).metadata();
+    expect([meta.width, meta.height]).toEqual([200, 300]);
   });
 
   it('puts a reserve record where a pool item was and moves the displaced record to the reserve', () => {

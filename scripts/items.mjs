@@ -162,6 +162,17 @@ function checkRecord(item, index, kind, problems, warnings) {
       ),
     );
   }
+  // DX6: a recorded photo crop says why and leaves a picture
+  const crop = item.photo?.crop;
+  if (Array.isArray(crop) && crop.length === 4) {
+    const [t, r, b, l] = crop;
+    if (t + b >= 0.9 || l + r >= 0.9) {
+      problems.push(problem(where('photo.crop'), `cuts away ${Math.round(Math.max(t + b, l + r) * 100)}% of one side`, 'a crop trims edges; it must leave most of the photo', 'DX6', 'check the four fractions: top, right, bottom, left', 'images'));
+    }
+    if (!item.photo.crop_note) {
+      problems.push(problem(where('photo.crop_note'), 'is empty but photo.crop is set', 'every crop records why it was made', 'DX6', 'say what the crop removes, for example a wall label', 'images'));
+    }
+  }
   // DS6 / A1 / DS37: the round's alt text and photo caption carry no place, title phrase or date
   for (const [field, id] of [['alt_neutral', 'DS6'], ['caption', 'DS37']]) {
     const text = item[field];
@@ -432,6 +443,7 @@ async function addImage(root, id, src, force, crop) {
   const meta = await sharp(out).metadata();
   console.log(`wrote images/${id}.jpg (${meta.width}x${meta.height}, ${Math.round(out.length / 1024)} KB, metadata stripped)`);
   console.log('fill in: photo.source_url, photo.file_url, photo.author, photo.licence, photo.pd_basis');
+  if (crop) console.log(`record the crop: "crop": [${crop.join(', ')}] in photo, and why in photo.crop_note (promote applies it to reserve photos)`);
   return 0;
 }
 
@@ -470,9 +482,10 @@ async function applyChange(root, label, { items, reserve, retired = null, images
   return true;
 }
 
+/** The reserve photo through the add-image pipeline, with the record's own crop (photo.crop) applied. */
 async function fetchReserveImage(rec, imageOverride) {
   try {
-    return { image: await processImage(await fetchInput(imageOverride ?? rec.photo.file_url)) };
+    return { image: await processImage(await fetchInput(imageOverride ?? rec.photo.file_url), rec.photo.crop ?? null) };
   } catch (e) {
     return { error: problem(`reserve ${rec.id} · photo.file_url`, e.message, 'the reserve image must be fetched before the change', 'DX23', 'fix the URL; nothing was changed', 'swap') };
   }
@@ -648,7 +661,7 @@ async function sheet(root, a) {
   for (const [i, [kind, it]] of list.entries()) {
     let photo;
     try {
-      const src = existsSync(p.image(it.id)) ? readFileSync(p.image(it.id)) : await fetchInput(it.photo.file_url);
+      const src = existsSync(p.image(it.id)) ? readFileSync(p.image(it.id)) : await processImage(await fetchInput(it.photo.file_url), it.photo.crop ?? null);
       photo = await sharp(src).rotate().resize({ width: W - 20, height: PH - 20, fit: 'contain', background: '#202a3a' }).jpeg().toBuffer();
     } catch (e) {
       photo = await sharp({ create: { width: W - 20, height: PH - 20, channels: 3, background: '#5a2a2a' } }).jpeg().toBuffer();
@@ -688,7 +701,7 @@ function skeleton(id) {
     moved: true,
     journey_fact: { text: 'TODO (<= 240 characters; documented transfers with sources; gaps as "not documented")', source_url: 'https://TODO' },
     facts: [{ text: 'TODO (<= 200 characters)', source_url: 'https://TODO' }],
-    photo: { source_url: 'https://TODO', file_url: 'https://TODO', author: 'TODO', licence: 'CC0 1.0', pd_basis: 'TODO', crop_note: null },
+    photo: { source_url: 'https://TODO', file_url: 'https://TODO', author: 'TODO', licence: 'CC0 1.0', pd_basis: 'TODO', crop_note: null, crop: null },
     conflicts: [],
     contested: false,
     claimant_source: null,
@@ -718,7 +731,8 @@ const HELP = `usage: node scripts/items.mjs <command> [--root <dir>]
   new <id>                       print a complete record skeleton for a new item
   add-image <id> <url|file>      fetch, strip metadata, resize to <= 1600 px and <= 250 KB
             [--force]            replace an existing image
-            [--crop t,r,b,l]     cut away fractions of each edge first (record it in photo.crop_note)
+            [--crop t,r,b,l]     cut away fractions of each edge first (record them in photo.crop
+                                 and why in photo.crop_note; promote applies photo.crop)
   promote --ids <id>[,<id>...]   append reserve records to the pool, checking the whole
           [--image <file>]       batch once; nothing changes on failure (--image: one id,
                                  a local file instead of photo.file_url)

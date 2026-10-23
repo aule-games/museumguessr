@@ -141,9 +141,12 @@ by country" below. [V12-142]
 
 `npm run items:add-image -- <id> <url|file>` downloads the photo, rotates it
 upright, converts it to sRGB, strips all metadata and resizes it to at most
-1600 px and 250 KB. `--crop t,r,b,l` cuts fractions off each edge first (record
-why in `photo.crop_note`). Photos must not show wall labels, signage, accession
-numbers, watermarks, colour charts or a recognisable gallery room.
+1600 px and 250 KB. `--crop t,r,b,l` cuts fractions off each edge first: record
+the four fractions in `photo.crop` and why in `photo.crop_note`. A reserve record
+commits no image, so `promote`, `swap`, `retire` and the contact sheet cut its
+`photo.crop` from the downloaded photo the same way. Photos must not show wall
+labels, signage, accession numbers, watermarks, colour charts or a recognisable
+gallery room.
 
 ## Ids
 
@@ -229,7 +232,8 @@ or public domain.
 ## Reserve
 
 Reserve records are complete except for the committed image; `promote` fetches
-the image from `photo.file_url` when the record moves into a round.
+the image from `photo.file_url` (and applies `photo.crop`) when the record moves
+into a round.
 
 ## Swap
 

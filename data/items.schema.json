@@ -245,6 +245,20 @@
             "string",
             "null"
           ]
+        },
+        "crop": {
+          "description": "Optional fractions [top, right, bottom, left] cut from the source photo before resizing, as add-image --crop takes them; promote, swap, retire and the contact sheet apply it to reserve photos. crop_note says why.",
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 0.9
+          },
+          "minItems": 4,
+          "maxItems": 4
         }
       }
     },

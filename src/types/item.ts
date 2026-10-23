@@ -199,6 +199,13 @@ export interface Photo {
    */
   pd_basis: string;
   crop_note?: string | null;
+  /**
+   * Optional fractions [top, right, bottom, left] cut from the source photo before resizing, as add-image --crop takes them; promote, swap, retire and the contact sheet apply it to reserve photos. crop_note says why.
+   *
+   * @minItems 4
+   * @maxItems 4
+   */
+  crop?: [number, number, number, number] | null;
 }
 /**
  * This interface was referenced by `ItemsFile`'s JSON-Schema
