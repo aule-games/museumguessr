@@ -48,7 +48,7 @@ describe('[V1-12] the pool rules in items:check', () => {
     expect(texts(run(validPool().slice(0, 12)))).toMatch(/has 12 items/);
   });
 
-  it('caps each Kept city at max(3, floor(0.08 × N)) objects: 3 at N = 30, 5 at N = 63 to 74, 6 at N = 75 [V12-143]', () => {
+  it('caps each Kept city at max(3, floor(0.08 × N)) objects: 3 at N = 30, 5 at N = 63 to 74, 6 at N = 75 [V12-143] [V12-150]', () => {
     expect([30, 49, 50, 62, 63, 74, 75, 100].map(cityCap)).toEqual([3, 3, 4, 4, 5, 5, 6, 8]);
     const pool = validPool();
     pool[29] = { ...pool[29], kept: { city: 'Amsterdam', country: 'Netherlands' } };
@@ -68,7 +68,7 @@ describe('[V1-12] the pool rules in items:check', () => {
     expect(deckProblems(twice, deckPool)).toContain('a Kept city appears twice');
   });
 
-  it('fails a pool where more than 5% of 1000 seeded decks repeat a Made country more than twice [V12-74]', () => {
+  it('fails a pool where more than 5% of 1000 seeded decks repeat a Made country more than twice [V12-74] [V12-150]', () => {
     const fair = run(validPool());
     expect(texts(fair)).toBe('');
     expect(fair.info.join('\n')).toMatch(/made countries: \d+ of 1000 seeded decks/);
@@ -76,7 +76,7 @@ describe('[V1-12] the pool rules in items:check', () => {
     expect(texts(run(lopsided))).toMatch(/deck split: \d+ of 1000 seeded decks \(\d+(\.\d)?%\) hold a Made country more than 2 times, more than 5%; most often Italy \(\d+ decks, 15 objects\)/);
   });
 
-  it('needs Kept museums on 4 continents, Made places in min(8, N / 5) sub-regions and a spread of dates', () => {
+  it('needs Kept museums on 4 continents, Made places in min(8, N / 5) sub-regions and a spread of dates [V12-146]', () => {
     const pool = validPool().map((it) => ({ ...it, kept: { city: `${it.kept.city}`, country: 'France' }, made: { ...it.made, country: 'France' }, when: { start: 1500, end: 1510 } }));
     const t = texts(run(pool));
     expect(t).toMatch(/1 continents, fewer than 4/);
@@ -94,12 +94,17 @@ describe('[V1-12] the pool rules in items:check', () => {
     expect(texts(run(pool))).toMatch(/data\/items.json: 4 objects begin before 4000 BCE \(20, 21, 22, 23\), more than 3/);
   });
 
-  it('allows at most half the pool to be paintings', () => {
+  it('allows at most half the pool to be paintings [V12-146]', () => {
     const pool = validPool().map((it) => ({ ...it, object_type: 'painting' }));
     expect(texts(run(pool))).toMatch(/30 of 30 objects are paintings/);
   });
 
-  it('needs 30% difficulty-1 objects and names the culprit when the pool cannot split into decks', () => {
+  it('allows at most 30% difficulty-3 objects [V12-146]', () => {
+    const pool = validPool().map((it, i) => (i % 10 === 5 || i % 10 === 6 ? { ...it, difficulty: 3 } : it));
+    expect(texts(run(pool))).toMatch(/12 difficulty-3 objects, more than 9 \(30%\)/);
+  });
+
+  it('needs 30% difficulty-1 objects and names the culprit when the pool cannot split into decks [V12-146]', () => {
     const pool = validPool().map((it, i) => (i === 0 ? { ...it, difficulty: 2 } : it));
     const t = texts(run(pool));
     expect(t).toMatch(/8 difficulty-1 objects, fewer than 9/);
@@ -126,7 +131,7 @@ describe('[V1-08] difficulty rules', () => {
 });
 
 describe('[V1-12] ids and regions', () => {
-  it('never reuses a retired id', () => {
+  it('never reuses a retired id [V12-151]', () => {
     const t = texts(run(validPool(), { retired: { ids: [{ id: '25', retired: '2026-10-16', reason: 'test' }] } }));
     expect(t).toMatch(/item 25 · id: was retired on 2026-10-16/);
   });

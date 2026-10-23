@@ -221,6 +221,13 @@ describe('[E7] [DX5] items:check', () => {
     expect((await problemsOf()).map((p) => p.where)).toContain('sample 00 · photo.licence');
   });
 
+  it('warns when fewer than two ready reserve records remain [V12-151]', async () => {
+    const warned = async () => (await check(root, { quiet: true })).warnings.some((w: { where: string; id: string }) => w.where === 'data/reserve.json' && w.id === 'V12-151');
+    expect(await warned()).toBe(true);
+    write('data/reserve.json', { items: [record(4, '14'), record(5, '15')] });
+    expect(await warned()).toBe(false);
+  });
+
   it('reports the holding-city spread and the baselines', async () => {
     const { info } = await check(root, { quiet: true });
     expect(info[0]).toBe('holding cities: 10 distinct, max 1 per city');
@@ -308,7 +315,7 @@ describe('[V1-12] promote and retire', () => {
     expect(existsSync(join(root, 'images/14.jpg'))).toBe(false);
   });
 
-  it('retire needs a replacement at the minimum, then records the id so it is never reused', async () => {
+  it('retire needs a replacement at the minimum, then records the id so it is never reused [V12-151]', async () => {
     expect(() => cli('retire', '07', '--reason', 'rights withdrawn')).toThrow();
     const src = join(root, 'src14.jpg');
     writeFileSync(src, readFileSync(join(root, 'images/05.jpg')));

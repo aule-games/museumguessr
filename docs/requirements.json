@@ -3428,7 +3428,24 @@
         "W7"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/pool-rules.test.ts",
+          "title": "needs Kept museums on 4 continents, Made places in min(8, N / 5) sub-regions and a spread of dates"
+        },
+        {
+          "file": "tests/unit/pool-rules.test.ts",
+          "title": "allows at most half the pool to be paintings"
+        },
+        {
+          "file": "tests/unit/pool-rules.test.ts",
+          "title": "allows at most 30% difficulty-3 objects"
+        },
+        {
+          "file": "tests/unit/pool-rules.test.ts",
+          "title": "needs 30% difficulty-1 objects and names the culprit when the pool cannot split into decks"
+        }
+      ]
     },
     {
       "id": "V12-147",
@@ -3470,7 +3487,16 @@
         "ENG12"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/pool-rules.test.ts",
+          "title": "caps each Kept city at max(3, floor(0.08 × N)) objects: 3 at N = 30, 5 at N = 63 to 74, 6 at N = 75"
+        },
+        {
+          "file": "tests/unit/pool-rules.test.ts",
+          "title": "fails a pool where more than 5% of 1000 seeded decks repeat a Made country more than twice"
+        }
+      ]
     },
     {
       "id": "V12-151",
@@ -3480,7 +3506,20 @@
         "V1-retirement"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/items-cli.test.ts",
+          "title": "retire needs a replacement at the minimum, then records the id so it is never reused"
+        },
+        {
+          "file": "tests/unit/pool-rules.test.ts",
+          "title": "never reuses a retired id"
+        },
+        {
+          "file": "tests/unit/items-cli.test.ts",
+          "title": "warns when fewer than two ready reserve records remain"
+        }
+      ]
     },
     {
       "id": "V12-152",

@@ -293,6 +293,11 @@ export async function check(root, { quiet = false } = {}) {
   const pool = poolRules(items, [...reserve.map((it) => ['reserve', it]), ...sample.map((it) => ['sample', it])], regions, retired, problem);
   problems.push(...pool.problems);
   warnings.push(...pool.warnings);
+  // V12-151: a retirement at the pool minimum needs a ready replacement, so keep two ready reserve records
+  const ready = reserve.filter((it) => it?.id && !problems.some((x) => x.where.startsWith(`reserve ${it.id} ·`)));
+  if (files.reserve && ready.length < 2) {
+    warnings.push(problem('data/reserve.json', `holds ${ready.length} ready record(s), fewer than 2`, 'retiring an object at the pool minimum needs a ready replacement', 'V12-151', 'research and add reserve records', 'reserve'));
+  }
   const revs = revisionRules(items, existsSync(p.revs) ? readJson(p.revs, problems, REVS_FILE) : null, problem);
   problems.push(...revs.problems);
   warnings.push(...revs.warnings);
