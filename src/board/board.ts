@@ -9,8 +9,6 @@ import type { PublicRow, Week } from '../api/contract.ts';
 import { weekStart } from '../api/week.ts';
 import { EVENTS } from '../analytics/events.ts';
 import { TURNSTILE_SITEKEY } from '../config.ts';
-import { deckItems } from '../content/items.ts';
-import { answersRev } from '../content/revs.ts';
 import { formatNumber, t } from '../copy.ts';
 import type { KV } from '../storage/guarded.ts';
 import { h } from '../ui/dom.ts';
@@ -24,11 +22,13 @@ import { autoAddOn, markRemoved, readBoard, setAutoAdd } from './store.ts';
 import { backgroundVerifier, turnstileVerifier } from './turnstile.ts';
 import { standingText } from './wording.ts';
 
-/** What the app hands the board: storage, analytics and the channel. */
+/** What the app hands the board: storage, analytics, the channel and the deck's answer revisions. */
 export interface BoardEnv {
   kv: KV;
   src: string;
   track(name: string, props: Record<string, unknown>): void;
+  /** answers_rev of ten objects, in deck order (from the full records the end screen has loaded). */
+  revs(ids: readonly string[]): number[];
 }
 
 function depsFor(env: BoardEnv, slot: HTMLElement | null): BoardDeps {
@@ -40,7 +40,7 @@ function depsFor(env: BoardEnv, slot: HTMLElement | null): BoardDeps {
     verifier: slot && TURNSTILE_SITEKEY ? turnstileVerifier(slot, TURNSTILE_SITEKEY) : null,
     background: TURNSTILE_SITEKEY ? backgroundVerifier(TURNSTILE_SITEKEY) : null,
     track: env.track,
-    revs: (ids) => deckItems(ids).map(answersRev),
+    revs: env.revs,
     setTimer: (fn, ms) => setTimeout(fn, ms),
     clearTimer: (handle) => clearTimeout(handle as ReturnType<typeof setTimeout>),
   };

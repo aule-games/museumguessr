@@ -6,7 +6,7 @@ import { defineConfig, type Plugin } from 'vite';
 import { itemsCore } from './scripts/lib/items-core.mjs';
 import { switchProblems, switchValues } from './scripts/lib/profile.mjs';
 import { notFoundHtml } from './src/not-found.ts';
-import { headersFile, META_CSP } from './src/security/headers.ts';
+import { headersFile, metaCspFor } from './src/security/headers.ts';
 
 const require = createRequire(import.meta.url);
 const MAPLIBRE_DIR = dirname(require.resolve('maplibre-gl/package.json'));
@@ -17,6 +17,10 @@ const BASE = process.env.BASE_PATH ?? '/';
 const BUILD_ID = process.env.VITE_BUILD_ID || 'dev';
 const SWITCHES = switchValues(process.env);
 const PURPOSE = SWITCHES.VITE_BUILD_PURPOSE as string;
+/** The board UI is built in (V12-125): its card, and Turnstile in the CSP. */
+const BOARD = SWITCHES.VITE_BOARD_UI === 'true';
+/** `npm run dev:board` points the dev server's /api at the local Worker (H4). */
+const API_ORIGIN = process.env.MG_API_ORIGIN ?? '';
 const THEME_COLOR: string = JSON.parse(readFileSync(new URL('./src/design/tokens.json', import.meta.url), 'utf8')).color.bg;
 
 // DX30, M3: only the public project token may enter the build, never a
@@ -28,8 +32,8 @@ if (SWITCH_PROBLEMS.length) {
   );
 }
 
-/** The meta CSP; the header form in `_headers` adds frame-ancestors (src/security/headers.ts). */
-export const CSP = META_CSP;
+/** The meta CSP; the header form in `_headers` adds frame-ancestors (src/security/headers.ts). Turnstile only with the board UI. */
+export const CSP = metaCspFor(BOARD);
 
 /** MapLibre's three ES modules are served unbundled from a versioned folder, so the page and the worker share one module (ENG32). */
 function maplibreFiles(): Plugin {
@@ -65,6 +69,7 @@ function buildMeta(): Plugin {
         const tags = [
           { tag: 'meta', attrs: { name: 'build-id', content: BUILD_ID }, injectTo: 'head-prepend' as const },
           { tag: 'meta', attrs: { name: 'build-purpose', content: PURPOSE }, injectTo: 'head' as const },
+          { tag: 'meta', attrs: { name: 'board-ui', content: BOARD ? 'on' : 'off' }, injectTo: 'head' as const },
           { tag: 'meta', attrs: { name: 'theme-color', content: THEME_COLOR }, injectTo: 'head' as const },
         ];
         if (!ctx.server) {
@@ -103,7 +108,7 @@ function securityHeaders(): Plugin {
   return {
     name: 'museumguessr:security-headers',
     generateBundle() {
-      this.emitFile({ type: 'asset', fileName: '_headers', source: headersFile() });
+      this.emitFile({ type: 'asset', fileName: '_headers', source: headersFile(BOARD) });
     },
   };
 }
@@ -119,7 +124,7 @@ function notFoundPage(): Plugin {
     generateBundle() {
       const css = ['tokens.css', 'not-found.css'].map((f) => readFileSync(new URL(`./src/styles/${f}`, import.meta.url), 'utf8')).join('\n');
       const ref = this.emitFile({ type: 'asset', name: '404.css', source: css });
-      const html = notFoundHtml({ base: BASE, csp: META_CSP, themeColor: THEME_COLOR, stylesheet: this.getFileName(ref) });
+      const html = notFoundHtml({ base: BASE, csp: CSP, themeColor: THEME_COLOR, stylesheet: this.getFileName(ref) });
       this.emitFile({ type: 'asset', fileName: '404.html', source: html });
     },
   };
@@ -144,7 +149,7 @@ export default defineConfig({
     __MAPLIBRE_VERSION__: JSON.stringify(MAPLIBRE_VERSION),
   },
   plugins: [itemsCore(), maplibreFiles(), buildMeta(), securityHeaders(), notFoundPage(), shareImage(), licenceNotices()],
-  server: { port: 5173, strictPort: false },
+  server: { port: 5173, strictPort: false, proxy: API_ORIGIN ? { '/api': { target: API_ORIGIN, changeOrigin: true } } : undefined },
   preview: { port: 4173 },
   build: {
     target: 'es2022',

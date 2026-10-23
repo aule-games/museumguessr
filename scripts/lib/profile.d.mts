@@ -16,3 +16,4 @@ export function resolveBuild(options: { profile: unknown; buildId: string; shell
   values: Record<string, string>;
   problems: SwitchProblem[];
 };
+export function boardTestValues(profile: Record<string, string>): Record<string, string>;

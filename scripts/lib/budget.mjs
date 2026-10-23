@@ -42,8 +42,9 @@ export function itemRecordsProblem(files, read, captions) {
 }
 
 /**
- * Code only the reveal, the tour, the menu overlays, the share block and the
- * end screen use, each found by a data-test value only that code carries.
+ * Code only the reveal, the tour, the menu overlays, the share block, the
+ * end screen and the weekly board use, each found by a data-test value only
+ * that code carries.
  */
 export const LAZY_SCREENS = {
   reveal: 'round-score',
@@ -51,6 +52,7 @@ export const LAZY_SCREENS = {
   menu: 'menu-credits',
   share: 'share-block',
   end: 'end-total',
+  board: 'board-card',
 };
 
 /** A static import of another chunk (dynamic imports use `import(`). */

@@ -30,7 +30,8 @@ describe('the tracked public profile (H1)', () => {
     for (const k of PROFILE_KEYS) expect(ci.env[k]).toBe(deploy.env[k]);
     // Both paths run scripts/build.mjs: verify's build step and npm run deploy.
     const pkg = JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf8')) as { scripts: Record<string, string> };
-    expect(pkg.scripts['build:e2e']).toBe('node scripts/build.mjs --build-id e2e');
+    // the browser tests also build the board-test profile into dist-board/ (V12-125)
+    expect(pkg.scripts['build:e2e']).toBe('node scripts/build.mjs --build-id e2e && node scripts/build.mjs --build-id e2e --board-test');
     expect(readFileSync(join(ROOT, 'scripts/verify.mjs'), 'utf8')).toContain("sh('npm', ['run', '-s', 'build:e2e'])");
     expect(readFileSync(join(ROOT, 'scripts/deploy.mjs'), 'utf8')).toContain('profileBuild({ root, buildId: sha, shellEnv: env, deploy: true })');
   });

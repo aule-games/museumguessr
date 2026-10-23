@@ -1,10 +1,12 @@
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { COPY } from '../../src/copy';
 import { notFoundHtml } from '../../src/not-found';
-import { cspMismatch, HEADER_CSP, headersFile, META_CSP, parseHeadersFile, SECURITY_HEADERS } from '../../src/security/headers';
+import { cspDirectives, cspMismatch, directivesFor, HEADER_CSP, headersFile, META_CSP, metaCspFor, parseHeadersFile, SECURITY_HEADERS, securityHeadersFor, TURNSTILE_HOST } from '../../src/security/headers';
 import { CSP } from '../../vite.config';
 // @ts-expect-error plain ESM helper without types
-import { buildPurpose, deployMarkerProblems, headerProblems, metaCsp } from '../../scripts/lib/artifact.mjs';
+import { boardUi, buildPurpose, deployMarkerProblems, headerProblems, metaCsp, turnstileCspProblems } from '../../scripts/lib/artifact.mjs';
+import { boardTestValues, loadProfile, switchProblems } from '../../scripts/lib/profile.mjs';
 
 const page = (csp: string, extra = '') => `<html><head><meta http-equiv="Content-Security-Policy" content="${csp.replace(/'/g, '&#39;')}" />${extra}</head></html>`;
 
@@ -62,5 +64,40 @@ describe('build purpose (M3)', () => {
     expect(deployMarkerProblems('dev', files, read)).toEqual([]);
     expect(buildPurpose('<meta name="build-purpose" content="deploy">')).toBe('deploy');
     expect(buildPurpose('<html>')).toBeNull();
+  });
+});
+
+describe('the board switch in the artifact (V12-125)', () => {
+  it('a build without the board UI names Turnstile nowhere; with it, the CSP allows its script and frame only, and the build check enforces both [V12-125]', () => {
+    expect(directivesFor(false)).toEqual(cspDirectives(META_CSP));
+    expect(metaCspFor(false)).toBe(META_CSP);
+    expect(securityHeadersFor(false)).toEqual(SECURITY_HEADERS);
+    const on = metaCspFor(true);
+    expect(on).toContain(`script-src 'self' ${TURNSTILE_HOST}`);
+    expect(on).toContain(`frame-src ${TURNSTILE_HOST}`);
+    expect(on).toContain("connect-src 'self' https://tiles.openfreemap.org https://eu.i.posthog.com");
+    expect(turnstileCspProblems(META_CSP, false)).toEqual([]);
+    expect(turnstileCspProblems(on, true)).toEqual([]);
+    expect(turnstileCspProblems(on, false)).toEqual([`the board UI is off but script-src, frame-src allow ${TURNSTILE_HOST}`]);
+    expect(turnstileCspProblems(META_CSP, true)).toHaveLength(2);
+    expect(turnstileCspProblems(on.replace("connect-src 'self'", `connect-src 'self' ${TURNSTILE_HOST}`), true)).toEqual([`connect-src allows ${TURNSTILE_HOST}, which only scripts and frames need`]);
+    // the board build's header file and pages agree, and are checked against the board's headers
+    const pages = [['index.html', page(on)], ['404.html', page(on)]];
+    expect(headerProblems(headersFile(true), pages, securityHeadersFor(true))).toEqual([]);
+    expect(headerProblems(headersFile(true), pages).length).toBeGreaterThan(0);
+    expect(boardUi('<meta name="board-ui" content="on">')).toBe(true);
+    expect(boardUi('<meta name="board-ui" content="off">')).toBe(false);
+    expect(boardUi('<html>')).toBeNull();
+    // the board-test profile is valid; it is the deploy profile with the board on and a Turnstile test key
+    const values = boardTestValues(loadProfile(join(import.meta.dirname, '../..')));
+    expect(values).toMatchObject({ VITE_BOARD_UI: 'true', VITE_BUILD_PURPOSE: 'board-test', VITE_TURNSTILE_SITEKEY: '1x00000000000000000000AA' });
+    expect(switchProblems(values)).toEqual([]);
+  });
+
+  it('a deploy build that still carries the board end fixture fails the build check [V12-127]', () => {
+    const read = (f: string) => (f === 'assets/index-AbCd1234.js' ? 'console.info(`__mgFixture ${n}`)' : 'ok');
+    const files = ['assets/index-AbCd1234.js'];
+    expect(deployMarkerProblems('deploy', files, read)).toEqual([{ where: 'assets/index-AbCd1234.js', problem: 'a deploy build contains the board end fixture (?fixture=end-random)', id: 'V12-127' }]);
+    expect(deployMarkerProblems('board-test', files, read)).toEqual([]);
   });
 });

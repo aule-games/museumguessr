@@ -33,7 +33,19 @@ export const DUMMY_SITEKEYS = [
  * scans every shipped script for these markers. Step 2 adds the `?clock=off`
  * marker and step 3 the board-test surfaces.
  */
-export const DEPLOY_FORBIDDEN_MARKERS = [{ pattern: /__mgDev|dev\/fixtures/, what: 'the development fixture', id: 'DX7' }];
+export const DEPLOY_FORBIDDEN_MARKERS = [
+  { pattern: /__mgDev|dev\/fixtures/, what: 'the development fixture', id: 'DX7' },
+  { pattern: /__mgFixture/, what: 'the board end fixture (?fixture=end-random)', id: 'V12-127' },
+];
+
+/**
+ * The board-test profile (V12-125): the tracked deploy profile with the board
+ * UI on, Cloudflare's always-pass Turnstile test key and its own purpose. The
+ * browser tests build it into dist-board/ next to the deploy build.
+ */
+export function boardTestValues(profile) {
+  return { ...profile, VITE_BOARD_UI: 'true', VITE_TURNSTILE_SITEKEY: DUMMY_SITEKEYS[0], VITE_BUILD_PURPOSE: 'board-test' };
+}
 
 /** Variables a build, install or test child may never see (N6, V12-23). */
 export const isCredential = (name) => /^CLOUDFLARE_/i.test(name);

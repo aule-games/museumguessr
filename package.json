@@ -26,7 +26,7 @@
     "build": "vite build",
     "build:deploy": "node scripts/build.mjs",
     "preview": "vite preview",
-    "build:e2e": "node scripts/build.mjs --build-id e2e",
+    "build:e2e": "node scripts/build.mjs --build-id e2e && node scripts/build.mjs --build-id e2e --board-test",
     "test:e2e": "npm run -s build:e2e && playwright test",
     "lint": "eslint src tests scripts worker && stylelint \"src/**/*.css\"",
     "check:build": "node scripts/check-build.mjs",

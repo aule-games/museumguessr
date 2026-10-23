@@ -14,12 +14,14 @@ import { BOARD_UI, SITE_URL } from './config.ts';
 import { formatNumber, t } from './copy.ts';
 import { drawDeck, seededRng } from './deck/planner.ts';
 import { stripMessage, takeErrorBudget, toReport, type ErrorReport } from './errors/boundary.ts';
+import { boardFixture } from './game/fixture.ts';
 import { newGameId } from './game/ids.ts';
 import { ClockRunner } from './game/clock-runner.ts';
 import { DraftQueue, type PendingDraft } from './game/drafts.ts';
 import type { WriterLock } from './game/lock.ts';
 import { hardNailedCount } from './game/hard.ts';
 import { isListed, nameList } from './game/names.ts';
+import { answersRev } from './content/revs.ts';
 import { collectionLine, resultLine, shareHook, shareText } from './game/text.ts';
 import { SeenLists } from './game/seen.ts';
 import type { TabSession } from './game/session.ts';
@@ -206,6 +208,22 @@ export class App {
     else this.show('start');
     // pending board submissions retry on load, in the background (V12-113)
     if (BOARD_UI && (this.d.local.get(KEYS.board) ?? '').includes('"pending"')) whenIdle(() => this.board((m) => void m.resume(this.boardEnv())));
+    // the local board loop's fixtures; compiled out of deploy builds (V12-127)
+    if (BOARD_UI) {
+      boardFixture(this.d.params, {
+        kv: this.d.local,
+        week: () =>
+          new Promise<void>((done) =>
+            this.board((m) =>
+              void m.weekContext(this.boardEnv(), true).then((c) => {
+                if (c.week) this.serverWeek = c.week;
+                done();
+              }),
+            ),
+          ),
+        finish: (skill) => this.finishForTest(skill),
+      });
+    }
     return { resumed: resume && this.d.lock.held };
   }
 
@@ -541,8 +559,8 @@ export class App {
     });
   }
 
-  /** Test mode only: finish the game in progress, or a new one, with random answers and show the end screen. */
-  async finishForTest() {
+  /** Test mode only: finish the game in progress, or a new one, with random answers (or answers at one skill) and show the end screen. */
+  async finishForTest(skill: number | null = null) {
     if (!this.state || this.state.finished) await this.startGame();
     this.dispatch({ type: 'testAssist' });
     this.guard(() => {
@@ -551,7 +569,7 @@ export class App {
         const s = this.state;
         const key = ANSWER_KEYS.find((k) => k.id === s.item_ids[s.round]);
         if (!key) return;
-        if (!skills.has(s.round)) skills.set(s.round, Math.random());
+        if (!skills.has(s.round)) skills.set(s.round, skill ?? Math.random());
         const action: Action =
           s.phase === 'reveal'
             ? { type: 'next', round: s.round, boardWeek: this.serverWeek }
@@ -733,7 +751,7 @@ export class App {
   // ----- the weekly board (W6): its code is a lazy chunk; only the start line is in the main bundle -----
 
   private boardEnv(): BoardEnv {
-    return { kv: this.d.local, src: this.d.tab.src, track: (name, props) => this.d.analytics.track(name, props) };
+    return { kv: this.d.local, src: this.d.tab.src, track: (name, props) => this.d.analytics.track(name, props), revs: (ids) => deckItems(ids).map(answersRev) };
   }
 
   private board(use: (m: Board) => void) {

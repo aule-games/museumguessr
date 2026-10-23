@@ -13,7 +13,8 @@
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { buildPurpose, deployMarkerProblems, headerProblems } from './lib/artifact.mjs';
+import { boardUi, buildPurpose, deployMarkerProblems, headerProblems, turnstileCspProblems } from './lib/artifact.mjs';
+import { securityHeadersFor } from '../src/security/headers.ts';
 import { itemRecordsProblem, lazyScreenProblems, mainBundleProblem } from './lib/budget.mjs';
 import { printProblems } from './lib/report.mjs';
 
@@ -90,6 +91,7 @@ else {
   if (/unsafe-eval/.test(csp)) fail('index.html CSP', 'allows unsafe-eval', 'no eval in the CSP', 'ENG23', 'remove it');
   if (/posthog/.test(csp.replace(connect, ''))) fail('index.html CSP', 'lists PostHog outside connect-src', 'no PostHog script host is allowed', 'PH1', 'remove it');
   if (!/worker-src 'self'/.test(csp)) fail('index.html CSP', "lacks worker-src 'self'", 'the map worker is self-hosted', 'ENG32', 'add it');
+  for (const p of turnstileCspProblems(csp, boardUi(html) === true)) fail('index.html CSP', p, 'Turnstile may load only in a build with the board UI, and only as a script and a frame', 'V12-125', 'build the CSP with metaCspFor() in vite.config.ts');
 }
 // Security headers (V12-13, V12-170): `_headers` carries the one source's
 // values and its CSP equals each page's meta CSP apart from frame-ancestors.
@@ -100,7 +102,8 @@ else {
   for (const m of notFound.matchAll(/(?:src|href)="(\/[^"]*)"/g)) if (!m[1].startsWith(BASE)) fail('404.html', `URL ${m[1]} is outside ${BASE}`, 'the Worker serves the site under the base path', 'DX12', 'use the base path');
 }
 const headersText = existsSync(join(DIST, '_headers')) ? readFileSync(join(DIST, '_headers'), 'utf8') : null;
-for (const p of headerProblems(headersText, [['index.html', html], ...(notFound ? [['404.html', notFound]] : [])])) {
+if (boardUi(html) === null) fail('index.html', 'no board-ui meta', 'the artifact says whether the board UI is built in', 'V12-125', 'check the build-meta plugin in vite.config.ts');
+for (const p of headerProblems(headersText, [['index.html', html], ...(notFound ? [['404.html', notFound]] : [])], securityHeadersFor(boardUi(html) === true))) {
   fail(p.where, p.problem, 'security headers come from one source as real HTTP headers; the meta CSP stays for local previews', 'V12-170', 'regenerate them from src/security/headers.ts (vite.config.ts writes both)');
 }
 // Build purpose (M3): a deploy build carries no test or development code.
@@ -126,6 +129,7 @@ for (const f of files.filter((x) => /\.(js|mjs|css|html|txt|json|svg)$/.test(x))
   if (/phx_[A-Za-z0-9]{8,}/.test(text)) fail(f, 'contains a PostHog personal API key pattern (phx_)', 'personal keys never ship', 'PH1', 'remove the key and rotate it');
   if (/tiles\.openfreemap\.org\/planet\/\d{8}/.test(text)) fail(f, 'contains a dated tile URL', 'use the TileJSON URL so tiles update', 'ENG9', 'reference https://tiles.openfreemap.org/planet');
   if (f.startsWith('assets/index-') && /__mgDev|dev\/fixtures/.test(text)) fail(f, 'contains development fixtures', 'dev fixtures never ship', 'DX7', 'import them only under import.meta.env.DEV');
+  if (f.startsWith('assets/index-') && /challenges\.cloudflare\.com/.test(text)) fail(f, 'the main bundle names the Turnstile host', 'Turnstile loads only with the board, from its lazy chunk', 'V12-115', 'keep src/board/turnstile.ts behind CHUNKS.board');
 }
 
 if (problems.length) {
