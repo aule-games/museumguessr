@@ -65,8 +65,10 @@ ships no development fixture code, the build id in the page matches
 stays within its gzip budget (`scripts/lib/budget.mjs`: its size when the v1
 deck work began plus 25%), the item records stay in their own lazy chunk
 (`assets/items-*.js`; the main bundle carries only the item core built by
-`scripts/lib/items-core.mjs`), and no personal API key or dated tile URL is
-present.
+`scripts/lib/items-core.mjs`), the reveal, the tour, the menu overlays and
+the end screen with its share block stay out of the main bundle in chunks
+that load on demand (`src/ui/lazy.ts`), the main bundle imports no other
+chunk statically, and no personal API key or dated tile URL is present.
 
 ## CI
 

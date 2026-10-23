@@ -5,7 +5,8 @@
 // the CSP meta, the `_headers` file and its CSP against every page's meta
 // CSP, the 404 page, the build id and purpose, no test code in a deploy
 // build, the PostHog chunk name, the main-bundle size budget, the lazy item
-// records chunk, no dated tile URLs and no secret patterns.
+// records chunk, the lazy screen chunks, no dated tile URLs and no secret
+// patterns.
 //
 // Usage: node scripts/check-build.mjs [distDir]
 
@@ -13,7 +14,7 @@ import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { buildPurpose, deployMarkerProblems, headerProblems } from './lib/artifact.mjs';
-import { itemRecordsProblem, mainBundleProblem } from './lib/budget.mjs';
+import { itemRecordsProblem, lazyScreenProblems, mainBundleProblem } from './lib/budget.mjs';
 import { printProblems } from './lib/report.mjs';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
@@ -59,6 +60,9 @@ if (bundle) fail(bundle.where, bundle.problem, 'every page load downloads the ma
 const captions = JSON.parse(readFileSync(join(ROOT, 'data/items.json'), 'utf8')).items.map((it) => it.caption);
 const records = itemRecordsProblem(files, (f) => readFileSync(join(DIST, f)), captions);
 if (records) fail(records.where, records.problem, 'the item records load as a lazy chunk so the pool does not grow every page load', 'V1-02', 'import data/items.json only through loadItems() in src/content/items.ts');
+for (const p of lazyScreenProblems(files, (f) => readFileSync(join(DIST, f)))) {
+  fail(p.where, p.problem, 'the start screen and a round load only the main bundle; other screens load on demand', 'V1-02', 'open the screen through CHUNKS in src/ui/lazy.ts, and keep code the main bundle shares with it out of its own module');
+}
 if (!files.some((f) => /^assets\/posthog-[\w-]{8}\.js$/.test(f))) {
   fail('assets/posthog-*.js', 'PostHog chunk not found under its fixed prefix', 'telemetry filters rely on the chunk name', 'PH1', 'check the dynamic import of src/analytics/posthog.ts');
 }
