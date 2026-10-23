@@ -12,11 +12,15 @@ export const LOW_COUNT = 10;
 /** Rows the board lists. */
 export const LISTED = 50;
 
-/** The standing as words, or null when the server gave none. */
-export function standingText(s: Standing | null | undefined, count: number): string | null {
+/**
+ * The standing as words, or null when the server gave none. `unlisted`: the
+ * row is known to be outside the listed rows, so a tie at #47 whose row the
+ * submission order put after the fiftieth says so.
+ */
+export function standingText(s: Standing | null | undefined, count: number, unlisted = false): string | null {
   if (!s) return null;
   if (s.kind === 'exact') {
-    if (s.tied && s.rank > LISTED) return t('board.tiedOutside', { rank: formatNumber(s.rank) });
+    if (s.tied && (unlisted || s.rank > LISTED)) return t('board.tiedOutside', { rank: formatNumber(s.rank) });
     return count >= LOW_COUNT ? t('board.rank', { rank: formatNumber(s.rank), count: formatNumber(count) }) : t('board.rankLow', { rank: formatNumber(s.rank) });
   }
   if (s.kind === 'percentile') return t('board.percentile', { percent: Math.min(50, Math.max(1, Math.ceil(s.top_percent))) });

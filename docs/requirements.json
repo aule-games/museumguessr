@@ -2843,6 +2843,10 @@
         {
           "file": "tests/e2e/board.spec.ts",
           "title": "an empty board says so; below ten devices the board says so and ranks drop \"of N\""
+        },
+        {
+          "file": "tests/e2e/board.spec.ts",
+          "title": "below the top 50 this device keeps its own row, and a tie whose row is not listed says so"
         }
       ]
     },
@@ -2963,6 +2967,10 @@
         {
           "file": "tests/e2e/board.spec.ts",
           "title": "the board lists ranks and totals in tabular figures with headers; this device's row is \"You\" with aria-current, and a cached list says so"
+        },
+        {
+          "file": "tests/e2e/board.spec.ts",
+          "title": "below the top 50 this device keeps its own row, and a tie whose row is not listed says so"
         }
       ]
     },

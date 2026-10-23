@@ -216,7 +216,7 @@ async function drawBoard(env: BoardEnv, snap: Snapshot, status: HTMLElement, are
     const standing = standingText(mine.standing ?? (mine.receipt_rank ? { kind: 'exact', rank: mine.receipt_rank, tied: false } : null), b.count) ?? '';
     table.append(h('tbody', { class: 'board-table__own' }, row({ name, total: mine.total, rank: standing }, true)));
   } else if (best && !b.rows.some((r) => r.row_id === best.row_id)) {
-    table.append(h('tbody', { class: 'board-table__own' }, row({ name, total: best.total, rank: standingText(best.standing, b.count) ?? '' }, true)));
+    table.append(h('tbody', { class: 'board-table__own' }, row({ name, total: best.total, rank: standingText(best.standing, b.count, true) ?? '' }, true)));
   }
   area.append(table);
 }

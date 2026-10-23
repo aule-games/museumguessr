@@ -112,6 +112,9 @@ describe('rank wording', () => {
     expect(standingText({ kind: 'exact', rank: 3, tied: false }, 9)).toBe('#3 this week');
     expect(standingText({ kind: 'exact', rank: 47, tied: true }, 300)).toBe('#47 of 300 this week');
     expect(standingText({ kind: 'exact', rank: 61, tied: true }, 300)).toBe('#61 (tied) · the board lists the first 50');
+    // a tie at #47 whose row the submission order put after the fiftieth listed row
+    expect(standingText({ kind: 'exact', rank: 47, tied: true }, 300, true)).toBe('#47 (tied) · the board lists the first 50');
+    expect(standingText({ kind: 'exact', rank: 47, tied: false }, 300, true)).toBe('#47 of 300 this week');
     expect(standingText({ kind: 'percentile', top_percent: 12.2 }, 4000)).toBe('Top 13%');
     expect(standingText({ kind: 'percentile', top_percent: 80 }, 4000)).toBe('Top 50%');
     expect(standingText({ kind: 'distance', points_to_top_50: 1240 }, 4000)).toBe('1,240 points from the top 50');

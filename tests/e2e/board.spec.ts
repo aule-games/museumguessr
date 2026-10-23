@@ -392,6 +392,27 @@ test.describe('[W6] the weekly board on the end screen', () => {
     expect(board.posts()).toHaveLength(1);
   });
 
+  test('below the top 50 this device keeps its own row, and a tie whose row is not listed says so [V12-118] [V12-124]', async ({ page, board }) => {
+    board.count = 300;
+    board.best = { row_id: 'mine', total: 12000, standing: { kind: 'exact', rank: 47, tied: true } };
+    await page.goto('./');
+    await page.evaluate(() => localStorage.setItem('museumguessr:v1:board-key', 'BBBBBBBBBBBBBBBBBBBBBB'));
+    const resets = new Date(Date.now() + 2.4 * 86_400_000).toISOString();
+    await page.evaluate((r) => localStorage.setItem('museumguessr:v1:board-standing', JSON.stringify({ week: '2026-W43', resets_at: r, total: 12000, rank: 47 })), resets);
+    await page.reload();
+    await page.locator('[data-test=start-board]').click();
+    const you = page.locator('.board-table__own [data-test=board-you]');
+    await expect(you).toContainText('#47 (tied) · the board lists the first 50');
+    await expect(you).toHaveAttribute('aria-current', 'true');
+    await expect(page.locator('[data-test=board-row]')).toHaveCount(2);
+    // names in the body face; no medals, only ranks
+    const face = await page.locator('.board-table__name bdi').first().evaluate((el) => getComputedStyle(el).fontFamily);
+    const body = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--font-body'));
+    expect(face.split(',')[0]).toBe(body.split(',')[0]!.trim());
+    await expect(page.locator('[data-test=board-table]')).not.toContainText(/🥇|🥈|🥉/);
+    expect(board.reads()[0]!.headers.authorization).toBe('Bearer BBBBBBBBBBBBBBBBBBBBBB');
+  });
+
   test('an empty board says so; below ten devices the board says so and ranks drop "of N" [V12-117] [V12-118]', async ({ page, board }) => {
     board.count = 0;
     board.rows = [];
