@@ -322,7 +322,7 @@ test.describe('[W6] the weekly board on the end screen', () => {
     await expect.poll(() => page.evaluate(() => (window as unknown as { __ts: { executes: number; resets: number } }).__ts)).toMatchObject({ executes: 2, resets: 1 });
   });
 
-  test('the edge\'s 429 page keeps the score pending to retry; the 1027 quota page reads as unavailable with Retry; a retry sends a fresh token [V12-111] [V12-114]', async ({ page, board }) => {
+  test('the edge\'s 429 page keeps the score pending to retry; the 1027 quota page reads as unavailable with Retry; a retry sends a fresh token, and background retries never take focus [V12-111] [V12-114] [V12-119]', async ({ page, board }) => {
     const waf = '<!DOCTYPE html><html><head><title>Access denied</title></head><body>Error 1015 You are being rate limited</body></html>';
     const quota = '<!DOCTYPE html><html><body><span>Error code: 1027</span> This website has been temporarily rate limited</body></html>';
     let n = 0;
@@ -335,8 +335,11 @@ test.describe('[W6] the weekly board on the end screen', () => {
     await openEnd(page);
     await expect(status(page)).toHaveText('Saved on this device; waiting to retry');
     expect((await store(page)).games['game-board-0000000001']).toMatchObject({ status: 'pending', outcome: 'edge_limited' });
+    // the player is on Share while the automatic retry runs: it never takes focus (V12-119)
+    await page.locator('[data-test=share]').focus();
     // Retry-After passes: the automatic retry meets the quota page
     await expect(status(page)).toHaveText('The board is unavailable right now', { timeout: 15_000 });
+    await expect(page.locator('[data-test=share]')).toBeFocused();
     await page.locator('[data-test=board-retry]').click();
     await expect(status(page)).toHaveText('Added: #12 of 40 this week');
     const tokens = board.posts().map((p) => p.body!.turnstile_token);
@@ -387,6 +390,25 @@ test.describe('[W6] the weekly board on the end screen', () => {
     await expect(you).toContainText('18,240');
     expect(await table.locator('td.board-table__total').first().evaluate((el) => getComputedStyle(el).fontVariantNumeric)).toContain('tabular-nums');
     expect(board.posts()).toHaveLength(1);
+  });
+
+  test('an empty board says so; below ten devices the board says so and ranks drop "of N" [V12-117] [V12-118]', async ({ page, board }) => {
+    board.count = 0;
+    board.rows = [];
+    const resets = new Date(Date.now() + 2.4 * 86_400_000).toISOString();
+    await page.goto('./');
+    await page.evaluate((r) => localStorage.setItem('museumguessr:v1:board-standing', JSON.stringify({ week: '2026-W43', resets_at: r, total: 21340, rank: 1 })), resets);
+    await page.reload();
+    await page.locator('[data-test=start-board]').click();
+    await expect(page.locator('[data-test=board-overlay-status]')).toHaveText('No scores yet this week');
+    await expect(page.locator('[data-test=board-table]')).toHaveCount(0);
+    board.count = 6;
+    board.rows = [{ row_id: 'top-1', name: 'Quiet Amber Heron', total: 27120, rank: 1, date: '2026-10-20' }];
+    await openEnd(page);
+    await expect(status(page)).toHaveText('Added: #12 this week');
+    await page.locator('[data-test=board-view]').click();
+    await expect(page.locator('[data-test=board-overlay-status]')).toHaveText("Fewer than 10 on this week's board · Updated a minute ago");
+    await expect(page.locator('[data-test=board-you]')).toContainText('#12 this week');
   });
 
   test('a test game reads "Not ranked (test game)" after ?test=0 and is never sent; a replay and an all-seen challenge are not ranked [V12-80]', async ({ page, board }) => {

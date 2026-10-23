@@ -2566,6 +2566,10 @@
         {
           "file": "tests/e2e/board.spec.ts",
           "title": "a Sunday 23:59 UTC finish whose POST failed is retried on Monday's load and refused as last week"
+        },
+        {
+          "file": "tests/unit/board-week.test.ts",
+          "title": "the round-ten reveal freezes the last server week; a later answer, or Next with another week, never rewrites it, and a null week stays null"
         }
       ]
     },
@@ -2675,7 +2679,7 @@
         },
         {
           "file": "tests/e2e/board.spec.ts",
-          "title": "the edge's 429 page keeps the score pending to retry; the 1027 quota page reads as unavailable with Retry; a retry sends a fresh token"
+          "title": "the edge's 429 page keeps the score pending to retry; the 1027 quota page reads as unavailable with Retry; a retry sends a fresh token, and background retries never take focus"
         }
       ]
     },
@@ -2742,7 +2746,7 @@
         },
         {
           "file": "tests/e2e/board.spec.ts",
-          "title": "the edge's 429 page keeps the score pending to retry; the 1027 quota page reads as unavailable with Retry; a retry sends a fresh token"
+          "title": "the edge's 429 page keeps the score pending to retry; the 1027 quota page reads as unavailable with Retry; a retry sends a fresh token, and background retries never take focus"
         }
       ]
     },
@@ -2767,6 +2771,10 @@
         {
           "file": "tests/e2e/board.spec.ts",
           "title": "verification that fails shows \"Verification couldn't load\" with Retry, and Retry asks again"
+        },
+        {
+          "file": "tests/unit/board-week.test.ts",
+          "title": "the script loads only when a token is needed, a widget that never starts fails after the timeout, and every token is fresh with the board action"
         }
       ]
     },
@@ -2811,6 +2819,10 @@
         {
           "file": "tests/e2e/board.spec.ts",
           "title": "a game that does not beat this week's best is refused and keeps nothing to send; the card names both totals"
+        },
+        {
+          "file": "tests/e2e/board.spec.ts",
+          "title": "an empty board says so; below ten devices the board says so and ranks drop \"of N\""
         }
       ]
     },
@@ -2827,6 +2839,10 @@
         {
           "file": "tests/unit/board-card.test.ts",
           "title": "omits \"of N\" below ten devices, says when a tie falls outside the fifty listed rows, and bounds estimates to the top half"
+        },
+        {
+          "file": "tests/e2e/board.spec.ts",
+          "title": "an empty board says so; below ten devices the board says so and ranks drop \"of N\""
         }
       ]
     },
@@ -2846,6 +2862,10 @@
         {
           "file": "tests/e2e/board.spec.ts",
           "title": "the board lists ranks and totals in tabular figures with headers; this device's row is \"You\" with aria-current, and a cached list says so"
+        },
+        {
+          "file": "tests/e2e/board.spec.ts",
+          "title": "the edge's 429 page keeps the score pending to retry; the 1027 quota page reads as unavailable with Retry; a retry sends a fresh token, and background retries never take focus"
         }
       ]
     },
