@@ -5,7 +5,7 @@ import { contrast, v12GeometryIssues } from './v12-geometry.mjs';
 
 // Synthetic boxes test the rules, not the layout; review-built measures the built pages.
 const box = (left, top, width, height) => ({ left, top, width, height, right: left + width, bottom: top + height });
-const base = (width, height) => ({ viewport: { width, height }, visual: { height, top: 0 }, screen: null, dialog: false, cues: [], reveal: null, end: null, dialogs: [], paused: null, year: null });
+const base = (width, height) => ({ viewport: { width, height }, visual: { height, top: 0 }, screen: null, dialog: false, cues: [], reveal: null, end: null, dialogs: [], topbar: null, paused: null, year: null });
 const tokens = JSON.parse(readFileSync(new URL('../../src/design/tokens.json', import.meta.url), 'utf8'));
 const rgb = (hex) => { const [r, g, b] = hex.slice(1).match(/../g).map((v) => parseInt(v, 16)); return { r, g, b, a: 1 }; };
 
@@ -108,4 +108,15 @@ test('[V12-62] A time-up notice wider than the score table, or past its side mar
   assert.deepEqual(v12GeometryIssues(m), []);
   m.reveal.notes[1] = box(0, 600, 330, 20);
   assert.deepEqual(v12GeometryIssues(m), ["[V12-62] The time-up notices (away, tip) keep the score table's side margins"]);
+});
+
+test('[V12-60] A top bar whose total wraps or whose parts leave one row is reported, except at doubled text', () => {
+  const m = base(375, 667);
+  m.topbar = { totalLines: 1, parts: [box(16, 12, 150, 24), box(176, 18, 40, 12), box(230, 8, 80, 32), box(320, 2, 44, 44)] };
+  assert.deepEqual(v12GeometryIssues(m), []);
+  const rule = '[V12-60] The top bar keeps the counter or cue, the pips, the total and the menu on one line';
+  assert.deepEqual(v12GeometryIssues({ ...m, topbar: { ...m.topbar, totalLines: 2 } }), [rule]);
+  const wrapped = { ...m, topbar: { ...m.topbar, parts: [...m.topbar.parts.slice(0, 3), box(320, 60, 44, 44)] } };
+  assert.deepEqual(v12GeometryIssues(wrapped), [rule]);
+  assert.deepEqual(v12GeometryIssues(wrapped, { large: true }), []);
 });

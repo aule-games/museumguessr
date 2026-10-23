@@ -147,7 +147,7 @@ async function shoot(page, state, opts = {}) {
     issues.push(...await page.evaluate(phoneGeometryIssues, geometryState));
     issues.push(...flowGeometryIssues(await page.evaluate(measureFlow)));
     const v12 = await page.evaluate(measureV12);
-    issues.push(...v12GeometryIssues(v12, { fold, keyboard: !!opts.keyboard }));
+    issues.push(...v12GeometryIssues(v12, { fold, keyboard: !!opts.keyboard, large: /text200/.test(state) }));
     const name = `${width}x${height}-${state}.png`;
     // An open dialog or the photo viewer is shot at the viewport: a full-page shot would show
     // the page below the fold undimmed, which no player sees.

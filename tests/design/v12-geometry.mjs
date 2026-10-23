@@ -64,6 +64,17 @@ export function measureV12() {
       share: one('[data-test="share"]'),
       another: one('[data-test="play-another"]'),
     } : null,
+    // the round's top bar: the total pill's lines, and each part's box
+    topbar: document.querySelector('[data-screen] .topbar') ? (() => {
+      const bar = document.querySelector('[data-screen] .topbar');
+      const total = bar.querySelector('.topbar__total');
+      const range = document.createRange();
+      if (total) range.selectNodeContents(total);
+      return {
+        totalLines: total ? new Set([...range.getClientRects()].filter((r) => r.width > 0).map((r) => Math.round(r.top))).size : 0,
+        parts: [bar.querySelector('.topbar__cluster'), bar.querySelector(':scope > .difficulty__pips'), total, bar.querySelector('.topbar__menu')].map(box).filter(Boolean),
+      };
+    })() : null,
     // lines each row's points take: a number must never break across lines
     points: [...document.querySelectorAll('.score__points')].filter((n) => box(n)).map((n) => {
       const range = document.createRange();
@@ -116,7 +127,8 @@ const END_FOLD = ['375x667', '390x844', '390x664'];
  * The rules. `opts.fold`: this state shows the screen as it first opens (no
  * expanded row, name field or chooser), so the fold rules apply.
  * `opts.keyboard`: an on-screen keyboard is simulated; the year controls
- * must stay inside the visual viewport.
+ * must stay inside the visual viewport. `opts.large`: doubled text, where
+ * the top bar may wrap.
  */
 export function v12GeometryIssues(m, opts = {}) {
   const issues = [];
@@ -150,6 +162,13 @@ export function v12GeometryIssues(m, opts = {}) {
   }
 
   check((m.points ?? []).every((p) => p.lines <= 1), '[DS31] Each row\'s points stay on one line');
+
+  // at normal text size; doubled text may wrap the cluster (V12-161)
+  if (m.topbar && !opts.large) {
+    const parts = m.topbar.parts;
+    const oneRow = parts.every((a) => parts.every((b) => a.top < b.bottom - 1 && b.top < a.bottom - 1));
+    check(m.topbar.totalLines <= 1 && oneRow, '[V12-60] The top bar keeps the counter or cue, the pips, the total and the menu on one line');
+  }
 
   for (const d of m.dialogs ?? []) {
     const clear = d.parts.every((a, i) => d.parts.slice(i + 1).every((b) => !(a.left < b.right - 1 && a.right > b.left + 1 && a.top < b.bottom - 1 && a.bottom > b.top + 1)));
