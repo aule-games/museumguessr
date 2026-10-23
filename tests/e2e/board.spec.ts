@@ -441,7 +441,7 @@ test.describe('[W6] the weekly board on the end screen', () => {
     expect([...keys][0]).toBe(`Bearer ${await a.evaluate(() => localStorage.getItem('museumguessr:v1:board-key'))}`);
   });
 
-  test('a Sunday 23:59 UTC finish whose POST failed is retried on Monday\'s load and refused as last week [V12-108] [V12-113]', async ({ page, board }) => {
+  test('a Sunday 23:59 UTC finish whose POST failed is retried on Monday\'s load and refused as last week [V12-108] [V12-113] [V12-131]', async ({ page, board }) => {
     board.post = () => ({ status: 502, body: '<html>Bad gateway</html>' });
     await openEnd(page);
     await expect(status(page)).toHaveText('The board is unavailable right now');
@@ -498,6 +498,23 @@ test.describe('[W6] the weekly board on the end screen', () => {
     expect(await page.evaluate(() => localStorage.getItem('museumguessr:v1:board-key'))).toBe('AAAAAAAAAAAAAAAAAAAAAA');
     for (const r of board.reads()) expect(r.headers['x-museumguessr-test']).toBe('1');
     expect(new URL(page.url()).search).toBe('');
+  });
+});
+
+test.describe('[ENG17] the browser suites\' network guard', () => {
+  test('an /api/ request no test mocked, and any request to Turnstile\'s host, is caught so the test would fail [V12-128]', async ({ page, board, recorder }) => {
+    await page.goto('./');
+    await page.evaluate(() => fetch('/api/v1/nothing-mocks-this').catch(() => null));
+    await page.evaluate(() => {
+      const s = document.createElement('script');
+      s.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+      document.head.append(s);
+    });
+    await expect.poll(() => recorder.unmocked.length).toBe(2);
+    expect(recorder.unmocked).toEqual(['GET /api/v1/nothing-mocks-this', 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit']);
+    expect(board.sent.map((r) => r.path)).toEqual(['/api/v1/nothing-mocks-this']);
+    // caught as intended; clear it so this test itself passes
+    recorder.unmocked.length = 0;
   });
 });
 

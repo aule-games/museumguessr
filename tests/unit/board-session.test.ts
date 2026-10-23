@@ -75,7 +75,7 @@ describe('automatic board entry', () => {
     expect(last().status).toBe('Your best this week: 25,000 (#3 of 40 this week) · this game 18,240');
   });
 
-  it('retryable answers stay pending with Retry-After or bounded backoff; automatic attempts stop after five and Retry still sends [V12-114]', async () => {
+  it('retryable answers stay pending with Retry-After or bounded backoff; automatic attempts stop after five and Retry still sends [V12-114] [V12-131]', async () => {
     const a = api({ 'GET /board': [okBoard()], 'POST /scores': [error('rate_limited', 429, { retry_after: 20 }), html(429, '<html>Error 1015 You are being rate limited</html>'), error('try_later', 503), json(503, { reason: 'server', retryable: true }), html(503, 'error code: 1027'), json(201, scored())] });
     const d = deps(kv(), a.fetch);
     const { s, last } = session(d);
@@ -137,7 +137,7 @@ describe('automatic board entry', () => {
     expect(two.last().status).toBe('Added: #12 of 40 this week');
   });
 
-  it('a game whose week the server has closed is not sent; a Sunday finish retried on Monday is refused as last week [V12-108]', async () => {
+  it('a game whose week the server has closed is not sent; a Sunday finish retried on Monday is refused as last week [V12-108] [V12-131]', async () => {
     // finished Sunday 2026-W43, first opened on Monday: the read says W44, nothing is sent
     const monday = api({ 'GET /board': [json(200, { ...board({ week: '2026-W44', resets_at: '2026-11-02T00:00:00.000Z' }), personal: personal() })], 'POST /scores': [error('week_closed', 409)] });
     const d1 = deps(kv(), monday.fetch);
@@ -205,6 +205,23 @@ describe('automatic board entry', () => {
     expect(dark.count('POST', '/scores')).toBe(1);
     expect(two.last().status).toBe('Added: Not ranked (test game)');
     expect(readStanding(d2.kv)).toBeNull();
+  });
+
+  it('a pending submission retried after a new release meets update_page: it stops, and the card asks to update the page with Reload [V12-138]', async () => {
+    const store = kv();
+    const down = api({ 'GET /board': [okBoard()], 'POST /scores': [html(503, 'error code: 1027')] });
+    await session(deps(store, down.fetch)).s.start();
+    expect(readBoard(store).games.g1!.status).toBe('pending');
+    // the Worker now runs newer answer revisions than this old tab's payload
+    const newer = api({ 'GET /board': [okBoard()], 'POST /scores': [error('update_page', 409)] });
+    const d = deps(store, newer.fetch);
+    const { s, last } = session(d);
+    await s.start();
+    await s.retry();
+    expect(readBoard(store).games.g1).toMatchObject({ status: 'refused', outcome: 'update_page', payload: null });
+    expect(last()).toMatchObject({ status: 'Update the page before playing another game', action: 'reload' });
+    await d.advance(3_600_000);
+    expect(newer.count('POST', '/scores')).toBe(1);
   });
 
   it('board_submitted goes once per game and outcome with auto true and no key, name or row id [V12-134]', async () => {

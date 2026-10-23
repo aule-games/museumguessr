@@ -58,6 +58,7 @@ Order (top to bottom; desktop puts the sample in the right column):
 | Caption | sample title, made → now in, photo credit | `start.sampleCaption`, `reveal.credit` | wraps |
 | Actions | see states | `start.*`, `challenge.*` | Start fills the width |
 | Collection line | returning visitors: how many objects this device has seen (V1-15) | `end.collection`, `end.collectionAll` | wraps |
+| Board line | with the board built in and a confirmed rank this week: the device's last confirmed best and rank with the relative reset, and a `board.heading` link to the board; no request (V12-123) | `board.standing`, `board.heading` | wraps |
 | Meta | the one-line expectation | `start.meta`, `challenge.meta`, `challenge.metaFriend` | wraps |
 | Privacy | the privacy line + About & privacy link | `start.privacy`, `start.privacyLink` | wraps |
 
@@ -479,6 +480,19 @@ local reset time, `board.keep` and `board.remove`; states are `board.removing`,
 `board.removeDone`, `board.removeFailed`. Only current-week removal prevents
 another entry this week. Keep focus in the dialog, then return it to the opener
 or nearest surviving score entry. [V12-120] [V12-121]
+
+"Your board scores" lists one row per retained week, newest first:
+`board.scoreRow` (or `board.scoreRowNoRank`) with `board.thisWeek` or
+`board.weekOf`, a Remove on every row, Remove all, and `board.noScores` when
+the device has none; it opens from the round menu and from the board
+overlay. Removing an older week asks `board.removeWeek`; this week's score
+and Remove all ask `board.removeConfirm`. The overlay shows `board.loading`
+while it reads. With the board built in, How to play, the welcome tour and
+About add `board.disclosure`; About adds `board.privacy` and lists the board's
+two events, which a build without the board leaves out. A test-assisted game
+is sent only to the dark smoke context; there its card reads its outcome with
+`board.notRankedTest` in place of a standing ("Added: Not ranked (test
+game)").
 
 Request persistent storage only when the player deliberately opens the board
 or score history, never on display, automatic entry or successful entry.

@@ -1745,7 +1745,36 @@
         "G1"
       ],
       "replaces": "Manual Add or Replace buttons; fresh-only or fixed-week decks.",
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/board-payload.test.ts",
+          "title": "random and challenge games rank; a replay, a challenge of ten objects seen before and a test-assisted game do not"
+        },
+        {
+          "file": "tests/unit/board-payload.test.ts",
+          "title": "holds exactly the contract fields in canonical order: no name, total, seconds, deadline or completion time"
+        },
+        {
+          "file": "tests/unit/board-payload.test.ts",
+          "title": "a timed-out question goes as a null answer with its flag, a skipped round keeps its flag, early years become the stop and pins wrap into range"
+        },
+        {
+          "file": "tests/unit/board-session.test.ts",
+          "title": "an eligible finished game is stored as a pending submission before its first POST, then confirmed with no click"
+        },
+        {
+          "file": "tests/unit/board-session.test.ts",
+          "title": "a test game is sent only to the dark smoke context and still reads as not ranked; in public mode it is not sent"
+        },
+        {
+          "file": "tests/e2e/board.spec.ts",
+          "title": "a finished game goes on the board with no click: round ten asks the week, the end card shows its status"
+        },
+        {
+          "file": "tests/e2e/board.spec.ts",
+          "title": "a test game reads \"Not ranked (test game)\" after ?test=0 and is never sent; a replay and an all-seen challenge are not ranked"
+        }
+      ]
     },
     {
       "id": "V12-81",
@@ -1756,7 +1785,20 @@
         "N3"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/board-client.test.ts",
+          "title": "is 128 random bits in base64url, created once under the named lock even when two cards ask at once"
+        },
+        {
+          "file": "tests/unit/board-session.test.ts",
+          "title": "the key is read again before every POST, and the receipt keeps the fingerprint of the key that made it"
+        },
+        {
+          "file": "tests/e2e/board.spec.ts",
+          "title": "two tabs opening their first board card at once end with one device key"
+        }
+      ]
     },
     {
       "id": "V12-82",
@@ -1778,6 +1820,10 @@
         {
           "file": "worker/tests/board-d1.smoke.ts",
           "title": "a first eligible game is added: 201, a current receipt with its exact rank, and the public board lists it under the generated name"
+        },
+        {
+          "file": "tests/unit/board-client.test.ts",
+          "title": "the device key goes only in the bearer header: never in the address or a body, and the smoke header only for a test game"
         }
       ]
     },
@@ -2504,6 +2550,22 @@
         {
           "file": "worker/tests/board-d1.smoke.ts",
           "title": "only the server week ranks: an old or missing board_week is week_closed, and a known retry keeps its week and score after Monday"
+        },
+        {
+          "file": "tests/unit/board-session.test.ts",
+          "title": "a game whose week the server has closed is not sent; a Sunday finish retried on Monday is refused as last week"
+        },
+        {
+          "file": "tests/unit/board-session.test.ts",
+          "title": "one anonymous read when round ten opens, deduplicated in flight, without a key; a failure gives a null week"
+        },
+        {
+          "file": "tests/e2e/board.spec.ts",
+          "title": "a finished game goes on the board with no click: round ten asks the week, the end card shows its status"
+        },
+        {
+          "file": "tests/e2e/board.spec.ts",
+          "title": "a Sunday 23:59 UTC finish whose POST failed is retried on Monday's load and refused as last week"
         }
       ]
     },
@@ -2602,6 +2664,18 @@
         {
           "file": "worker/tests/board-d1.smoke.ts",
           "title": "a D1 limit error mid-submission answers unavailable and leaves nothing half-written, so the page keeps its pending game"
+        },
+        {
+          "file": "tests/unit/board-client.test.ts",
+          "title": "the page branches on the reason, never the status: a WAF 429 page is edge_limited with Retry-After, a 1027 quota page and any other non-JSON answer are unavailable"
+        },
+        {
+          "file": "tests/unit/board-client.test.ts",
+          "title": "an unreachable API, an unreadable success and a malformed board are all unavailable, never trusted"
+        },
+        {
+          "file": "tests/e2e/board.spec.ts",
+          "title": "the edge's 429 page keeps the score pending to retry; the 1027 quota page reads as unavailable with Retry; a retry sends a fresh token"
         }
       ]
     },
@@ -2638,7 +2712,20 @@
         "G1"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/board-session.test.ts",
+          "title": "an eligible finished game is stored as a pending submission before its first POST, then confirmed with no click"
+        },
+        {
+          "file": "tests/unit/board-session.test.ts",
+          "title": "other games' pending submissions are retried when a card shows, independent of the game on screen"
+        },
+        {
+          "file": "tests/e2e/board.spec.ts",
+          "title": "a Sunday 23:59 UTC finish whose POST failed is retried on Monday's load and refused as last week"
+        }
+      ]
     },
     {
       "id": "V12-114",
@@ -2648,7 +2735,16 @@
         "ENG23"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/board-session.test.ts",
+          "title": "retryable answers stay pending with Retry-After or bounded backoff; automatic attempts stop after five and Retry still sends"
+        },
+        {
+          "file": "tests/e2e/board.spec.ts",
+          "title": "the edge's 429 page keeps the score pending to retry; the 1027 quota page reads as unavailable with Retry; a retry sends a fresh token"
+        }
+      ]
     },
     {
       "id": "V12-115",
@@ -2659,7 +2755,20 @@
         "ENG14"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/board-session.test.ts",
+          "title": "verification that does not load says so with Retry; an interactive widget asks the player to tap; every retry gets a fresh token"
+        },
+        {
+          "file": "tests/e2e/board.spec.ts",
+          "title": "an interactive check opens the slot and says \"Tap to finish adding\", and the add completes once the player taps"
+        },
+        {
+          "file": "tests/e2e/board.spec.ts",
+          "title": "verification that fails shows \"Verification couldn't load\" with Retry, and Retry asks again"
+        }
+      ]
     },
     {
       "id": "V12-116",
@@ -2670,7 +2779,12 @@
         "R4"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/e2e/board.spec.ts",
+          "title": "Share stays the first action after the score and the only filled primary; Play another 10 comes before the board card"
+        }
+      ]
     },
     {
       "id": "V12-117",
@@ -2681,7 +2795,24 @@
         "G2"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/board-card.test.ts",
+          "title": "every row of the board-state table has its exact string"
+        },
+        {
+          "file": "tests/unit/board-session.test.ts",
+          "title": "a not-best game is refused with the current best, keeps no payload and shows both totals"
+        },
+        {
+          "file": "tests/unit/board-session.test.ts",
+          "title": "without storage nothing is added and no key is made; the board read is anonymous"
+        },
+        {
+          "file": "tests/e2e/board.spec.ts",
+          "title": "a game that does not beat this week's best is refused and keeps nothing to send; the card names both totals"
+        }
+      ]
     },
     {
       "id": "V12-118",
@@ -2692,7 +2823,12 @@
         "E12"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/board-card.test.ts",
+          "title": "omits \"of N\" below ten devices, says when a tie falls outside the fifty listed rows, and bounds estimates to the top half"
+        }
+      ]
     },
     {
       "id": "V12-119",
@@ -2702,7 +2838,16 @@
         "D10"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/board-card.test.ts",
+          "title": "after an add the card shows the receipt rank even while the public copy is cached, and a test game in dark mode says it is not ranked"
+        },
+        {
+          "file": "tests/e2e/board.spec.ts",
+          "title": "the board lists ranks and totals in tabular figures with headers; this device's row is \"You\" with aria-current, and a cached list says so"
+        }
+      ]
     },
     {
       "id": "V12-120",
@@ -2712,7 +2857,24 @@
         "G3"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/board-session.test.ts",
+          "title": "switching \"Add my games to the board\" off stops the next automatic add; the board off hides the card and sends nothing"
+        },
+        {
+          "file": "tests/unit/readme.test.ts",
+          "title": "README and the in-game privacy text disclose automatic entry under a stable generated name, the score and date, the device-only key and the weekly marker"
+        },
+        {
+          "file": "tests/e2e/board.spec.ts",
+          "title": "switching \"Add my games to the board\" off stops the next automatic add"
+        },
+        {
+          "file": "tests/e2e/board.spec.ts",
+          "title": "the welcome tour, How to play and About say finished games go on the board automatically under a generated name"
+        }
+      ]
     },
     {
       "id": "V12-121",
@@ -2723,7 +2885,16 @@
         "D6"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/e2e/board.spec.ts",
+          "title": "switching \"Add my games to the board\" off stops the next automatic add"
+        },
+        {
+          "file": "tests/e2e/board.spec.ts",
+          "title": "Remove and Remove all confirm with the relative reset time, show Removing… then Removed, and return focus"
+        }
+      ]
     },
     {
       "id": "V12-122",
@@ -2733,7 +2904,12 @@
         "G4"
       ],
       "replaces": "Request persistence after the first successful automatic add.",
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/e2e/board.spec.ts",
+          "title": "persistent storage is asked for only when the player opens the board, never on display or a successful add; opening it counts a view"
+        }
+      ]
     },
     {
       "id": "V12-123",
@@ -2744,7 +2920,16 @@
         "N15"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/board-card.test.ts",
+          "title": "shows the last confirmed best and rank with the relative reset, from the device only, until the week resets"
+        },
+        {
+          "file": "tests/e2e/board.spec.ts",
+          "title": "the start screen shows the last confirmed standing from the device with no request, and nothing without a receipt"
+        }
+      ]
     },
     {
       "id": "V12-124",
@@ -2754,7 +2939,12 @@
         "W6"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/e2e/board.spec.ts",
+          "title": "the board lists ranks and totals in tabular figures with headers; this device's row is \"You\" with aria-current, and a cached list says so"
+        }
+      ]
     },
     {
       "id": "V12-125",
@@ -2765,7 +2955,20 @@
         "H1"
       ],
       "replaces": "VITE_API_HOST as the board host; the board UI was on whenever a host was set.",
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/board-session.test.ts",
+          "title": "switching \"Add my games to the board\" off stops the next automatic add; the board off hides the card and sends nothing"
+        },
+        {
+          "file": "tests/unit/security-headers.test.ts",
+          "title": "a build without the board UI names Turnstile nowhere; with it, the CSP allows its script and frame only, and the build check enforces both"
+        },
+        {
+          "file": "tests/e2e/board.spec.ts",
+          "title": "without the board in the build there is no card and no Turnstile in the CSP; this build allows Turnstile"
+        }
+      ]
     },
     {
       "id": "V12-126",
@@ -2780,6 +2983,18 @@
         {
           "file": "tests/unit/board-cli.test.ts",
           "title": "migrates the local D1, writes the local board mode (dark by default) and serves dist/ on 127.0.0.1 with the always-pass test secret, without credentials"
+        },
+        {
+          "file": "tests/unit/dev-board.test.ts",
+          "title": "builds missing assets, migrates and seeds a dark local Worker, waits for health, proxies Vite and stops both processes on exit"
+        },
+        {
+          "file": "tests/unit/dev-board.test.ts",
+          "title": "--reset clears the local database and prints the address that forgets the browser key; nothing from the command line reaches the SQL"
+        },
+        {
+          "file": "tests/unit/dev-board.test.ts",
+          "title": "a local Worker that never answers stops the loop with a refusal and leaves no process behind"
         }
       ]
     },
@@ -2796,6 +3011,18 @@
         {
           "file": "tests/unit/board-cli.test.ts",
           "title": "migrates the local D1, writes the local board mode (dark by default) and serves dist/ on 127.0.0.1 with the always-pass test secret, without credentials"
+        },
+        {
+          "file": "tests/unit/dev-board.test.ts",
+          "title": "--reset clears the local database and prints the address that forgets the browser key; nothing from the command line reaches the SQL"
+        },
+        {
+          "file": "tests/unit/security-headers.test.ts",
+          "title": "a deploy build that still carries the board end fixture fails the build check"
+        },
+        {
+          "file": "tests/e2e/board.spec.ts",
+          "title": "the local end fixture finishes a test-assisted game under the public fixture key and runs the dark smoke path to not_best"
         }
       ]
     },
@@ -2808,7 +3035,12 @@
         "ENG17"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/e2e/board.spec.ts",
+          "title": "an /api/ request no test mocked, and any request to Turnstile's host, is caught so the test would fail"
+        }
+      ]
     },
     {
       "id": "V12-129",
@@ -2869,6 +3101,18 @@
         {
           "file": "worker/tests/board-d1.smoke.ts",
           "title": "a D1 limit error mid-submission answers unavailable and leaves nothing half-written, so the page keeps its pending game"
+        },
+        {
+          "file": "tests/unit/board-session.test.ts",
+          "title": "retryable answers stay pending with Retry-After or bounded backoff; automatic attempts stop after five and Retry still sends"
+        },
+        {
+          "file": "tests/unit/board-session.test.ts",
+          "title": "a game whose week the server has closed is not sent; a Sunday finish retried on Monday is refused as last week"
+        },
+        {
+          "file": "tests/e2e/board.spec.ts",
+          "title": "a Sunday 23:59 UTC finish whose POST failed is retried on Monday's load and refused as last week"
         }
       ]
     },
@@ -2905,7 +3149,12 @@
         "R7"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/analytics-queries.test.ts",
+          "title": "the board review puts board views per finished game beside first shares per finished game, with full-game and challenge completion, each over its own denominator"
+        }
+      ]
     },
     {
       "id": "V12-134",
@@ -2915,7 +3164,16 @@
         "G5"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/board-session.test.ts",
+          "title": "board_submitted goes once per game and outcome with auto true and no key, name or row id"
+        },
+        {
+          "file": "tests/e2e/board.spec.ts",
+          "title": "persistent storage is asked for only when the player opens the board, never on display or a successful add; opening it counts a view"
+        }
+      ]
     },
     {
       "id": "V12-135",
@@ -2943,6 +3201,14 @@
         {
           "file": "worker/tests/board-d1.smoke.ts",
           "title": "the database never holds a raw pin, an IP address, a user agent or a key"
+        },
+        {
+          "file": "tests/unit/readme.test.ts",
+          "title": "README and the in-game privacy text disclose automatic entry under a stable generated name, the score and date, the device-only key and the weekly marker"
+        },
+        {
+          "file": "tests/e2e/board.spec.ts",
+          "title": "the welcome tour, How to play and About say finished games go on the board automatically under a generated name"
         }
       ]
     },
@@ -3003,6 +3269,10 @@
         {
           "file": "worker/tests/board-d1.smoke.ts",
           "title": "refuses replay decks and, in public mode, test games; another contract or scoring version gets update_page, so an old tab or a rollback never ranks under other rules"
+        },
+        {
+          "file": "tests/unit/board-session.test.ts",
+          "title": "a pending submission retried after a new release meets update_page: it stops, and the card asks to update the page with Reload"
         }
       ]
     },
@@ -3014,7 +3284,16 @@
         "ENG2"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/board-session.test.ts",
+          "title": "normal end-card traffic is one bearer board read and one POST; reopening the card repeats neither"
+        },
+        {
+          "file": "tests/e2e/board.spec.ts",
+          "title": "a finished game goes on the board with no click: round ten asks the week, the end card shows its status"
+        }
+      ]
     },
     {
       "id": "V12-140",
