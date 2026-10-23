@@ -5,7 +5,7 @@
 // overlay), and focus returns to where it was. No third-party code.
 
 import { t, type CopyKey } from '../copy.ts';
-import tokens from '../design/tokens.json';
+import * as tokens from '../design/tokens.json';
 import { clockMirror } from './clock.ts';
 import { h, reducedMotion } from './dom.ts';
 import { pushOverlay } from './overlay.ts';

@@ -8,14 +8,13 @@ import { MAPLIBRE_URL } from '../config.ts';
 import { t } from '../copy.ts';
 import { greatCircle, distanceKm, unwrapAround, type LatLng } from '../scoring/geo.ts';
 import { h, reducedMotion } from '../ui/dom.ts';
-import tokens from '../design/tokens.json';
+import * as tokens from '../design/tokens.json';
 import combinedSvg from '../assets/pins/combined.svg?raw';
 import guessKeptSvg from '../assets/pins/guess-kept.svg?raw';
 import guessMadeSvg from '../assets/pins/guess-made.svg?raw';
 import keptSvg from '../assets/pins/kept.svg?raw';
 import madeSvg from '../assets/pins/made.svg?raw';
 import { dropLabel, revealCountries, snapTarget, type DropLabel, type Place } from './places.ts';
-import { fallbackStyle, mainStyle } from './styles.ts';
 import { fallbackRank, overlaps, revealPadding, type Box } from './layout.ts';
 
 type MapLibre = typeof ML;
@@ -101,11 +100,15 @@ function loadLib(): Promise<MapLibre> {
   return libPromise;
 }
 
-let dataPromise: Promise<{ places: Place[]; countries: GeoJSON.FeatureCollection }> | null = null;
+type Styles = Pick<typeof import('./styles.ts'), 'mainStyle' | 'fallbackStyle'>;
+
+let dataPromise: Promise<{ places: Place[]; countries: GeoJSON.FeatureCollection; styles: Styles }> | null = null;
+/** The map's places, outlines and styles; they load with the map library, not the main bundle (V1-02). */
 export function loadMapData() {
-  dataPromise ??= Promise.all([import('./data/places.json'), import('./data/countries.json')]).then(([p, c]) => ({
+  dataPromise ??= Promise.all([import('./data/places.json'), import('./data/countries.json'), import('./styles.ts')]).then(([p, c, st]) => ({
     places: (p.default as unknown as { places: Place[] }).places,
     countries: c.default as unknown as GeoJSON.FeatureCollection,
+    styles: { mainStyle: st.mainStyle, fallbackStyle: st.fallbackStyle },
   }));
   return dataPromise;
 }
@@ -169,6 +172,7 @@ export class GameMap {
   private lib: MapLibre | null = null;
   private places: Place[] = [];
   private countries: GeoJSON.FeatureCollection | null = null;
+  private styles: Styles | null = null;
   private markers: ML.Marker[] = [];
   private answerLabelResize: ResizeObserver | null = null;
   private answerMarkerMove: MutationObserver | null = null;
@@ -234,6 +238,7 @@ export class GameMap {
         loadMapData().then((d) => {
           this.places = d.places;
           this.countries = d.countries;
+          this.styles = d.styles;
         }),
       ]);
     } catch (e) {
@@ -247,7 +252,7 @@ export class GameMap {
     try {
       map = new lib.Map({
         container: this.canvasHost,
-        style: mainStyle(),
+        style: (this.styles as Styles).mainStyle(),
         bounds: WORLD,
         renderWorldCopies: true,
         attributionControl: { compact: false, customAttribution: 'Natural Earth' },
@@ -331,11 +336,11 @@ export class GameMap {
 
   /** Switch once per page load to the bundled map; waits for a drag to finish (ENG32). */
   private switchToFallback() {
-    if (this.isFallback || !this.map || !this.countries) return;
+    if (this.isFallback || !this.map || !this.countries || !this.styles) return;
     const map = this.map;
     const go = () => {
       this.isFallback = true;
-      map.setStyle(fallbackStyle(this.countries as GeoJSON.FeatureCollection));
+      map.setStyle((this.styles as Styles).fallbackStyle(this.countries as GeoJSON.FeatureCollection));
       this.setState('fallback');
       this.updateFallbackLabels();
     };

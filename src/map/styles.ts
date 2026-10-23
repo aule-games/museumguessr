@@ -4,7 +4,7 @@
 // outlines and needs no network and no glyphs (city labels are DOM markers).
 
 import type { StyleSpecification } from 'maplibre-gl';
-import tokens from '../design/tokens.json';
+import * as tokens from '../design/tokens.json';
 
 export const TILEJSON_URL = 'https://tiles.openfreemap.org/planet';
 export const GLYPHS_URL = 'https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf';
