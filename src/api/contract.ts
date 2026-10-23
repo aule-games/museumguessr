@@ -9,6 +9,8 @@ export const MAX_BODY_BYTES = 4096;
 export const RETAINED_WEEKS = 8;
 /** Client-declared smoke context, not authorization; interpreted only in dark mode. */
 export const SMOKE_READ_HEADER = 'X-MuseumGuessr-Test';
+/** The Turnstile action the widget declares and siteverify must report. */
+export const TURNSTILE_ACTION = 'board_submit';
 
 export type BoardMode = 'off' | 'dark' | 'on';
 export type Week = `${number}-W${string}`;

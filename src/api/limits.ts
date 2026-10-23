@@ -19,6 +19,16 @@ export const LIMITS = {
   cityCapRatio: 0.08,
   /** Top-50 totals at or above this feed the saturation tripwire in board:list. */
   saturationTotal: 29500,
+  /** Seconds the Worker keeps the board mode in memory (ENG3). */
+  modeCacheSeconds: 30,
+  /** Longest life of the cached public top 50; never past Monday 00:00 UTC (ENG2). */
+  publicCacheSeconds: 60,
+  /** Rows the owner's board read may scan, standing included (ENG18). */
+  personalReadRows: 100,
+  /** Rows of each table one purge run deletes (N2). */
+  purgeChunkRows: 500,
+  /** Hours around the Monday 00:00 UTC reset in which the purge does not run (N2). */
+  purgeQuietHours: 2,
 } as const;
 
 /** Requests one IP may send in a day without ever tripping the WAF burst rule. */

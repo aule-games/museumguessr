@@ -4,6 +4,7 @@ import { ITEMS_VERSION } from '../../src/content/items';
 import { SCORING_VERSION } from '../../src/scoring/config';
 import { SECURITY_HEADERS } from '../../src/security/headers';
 import worker, { type Env, ROUTES } from '../src/index';
+import { sqliteD1 } from './helpers/sqlite-d1';
 
 const NOT_FOUND_PAGE = '<!doctype html><h1>Page not found</h1>';
 
@@ -25,7 +26,7 @@ function assets(files: Record<string, string> = { '/': '<!doctype html><title>Mu
 
 const call = (path: string, init: RequestInit = {}, env: Partial<Env> = {}) => {
   const { binding, calls } = assets();
-  const full = { ASSETS: binding, WORKER_VERSION: 'abc1234', ...env } as Env;
+  const full = { ASSETS: binding, WORKER_VERSION: 'abc1234', DB: sqliteD1(), ...env } as Env;
   return { response: worker.fetch(new Request(`https://museumguessr.com${path}`, init), full), calls };
 };
 
@@ -47,11 +48,11 @@ describe('the Worker routes', () => {
     expect(calls).toEqual([]);
     const local = await call('/api/v1/health', {}, { WORKER_VERSION: undefined }).response;
     expect((await local.json()).worker_version).toBe('dev');
-    expect(ROUTES.map((r) => `${r.method} ${r.path}`)).toEqual(['GET /api/v1/health']);
+    expect(ROUTES.map((r) => `${r.method} ${r.path}`)).toEqual(['GET /api/v1/health', 'GET /api/v1/board', 'POST /api/v1/scores', 'GET /api/v1/scores/<row_id>', 'DELETE /api/v1/scores/<row_id>']);
   });
 
   it('every other /api/ path answers the not_found envelope with status 404 [V12-10]', async () => {
-    for (const [path, init] of [['/api/v1/board', {}], ['/api/v2/health', {}], ['/api/', {}], ['/api/v1/health', { method: 'POST', body: '{}' }]] as const) {
+    for (const [path, init] of [['/api/v1/boards', {}], ['/api/v2/health', {}], ['/api/', {}], ['/api/v1/scores/', {}], ['/api/v1/scores/abc/def', {}], ['/api/v1/health', { method: 'POST', body: '{}' }], ['/api/v1/board', { method: 'POST', body: '{}' }]] as const) {
       const { response, calls } = call(path, init);
       const res = await response;
       expect(res.status, path).toBe(ERRORS.not_found.status);

@@ -22,6 +22,9 @@ export function json(body: unknown, status = 200, headers: Record<string, string
   );
 }
 
+/** A personal answer (a device part, a receipt, smoke context): never stored by any cache. */
+export const privateJson = (body: unknown, status = 200): Response => json(body, status, { 'Cache-Control': 'private, no-store' });
+
 /** The error envelope `{ reason, retryable, retry_after?, request_id?, best? }` with the contract's status. */
 export function apiError(reason: Reason, extra: Omit<ApiError, 'reason' | 'retryable'> = {}): Response {
   const { status, retryable } = ERRORS[reason];

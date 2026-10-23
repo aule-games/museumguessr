@@ -5,7 +5,7 @@
 import { DISTANCE } from './config.ts';
 import type { LatLng } from './geo.ts';
 import { madeFullMarksKm, scoreDistance, scoreYear } from './score.ts';
-import type { CoreItem } from '../content/items.ts';
+import type { CoreItem } from '../content/core.ts';
 
 /** The answer key for one item: what a round is scored against. */
 export interface AnswerKey {
