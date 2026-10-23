@@ -50,6 +50,8 @@ export function measureV12() {
     cues,
     reveal: scroll ? {
       atTop: scroll.scrollTop === 0 && scrollY === 0,
+      scores: one('[data-test="scores"]'),
+      notes: [one('[data-test="timed-out-away"]'), one('[data-test="time-up-tip"]')].filter(Boolean),
       body: one('.reveal__scroll'),
       footer: one('.actionbar--reveal'),
       total: one('.scores__total'),
@@ -125,6 +127,12 @@ export function v12GeometryIssues(m, opts = {}) {
   for (const cue of m.cues) {
     check(!!cue.color && contrast(cue.color, cue.background) >= 4.5 && (cue.color.a ?? 1) >= 1,
       '[V12-161] The warning cue keeps at least 4.5:1 contrast');
+  }
+
+  if (m.reveal?.scores) {
+    const col = m.reveal.scores;
+    check(m.reveal.notes.every((n) => n.left >= col.left - 1 && n.right <= col.right + 1),
+      '[V12-62] The time-up notices (away, tip) keep the score table\'s side margins');
   }
 
   if (opts.fold && m.reveal && m.reveal.atTop && !m.dialog && REVEAL_FOLD.includes(size)) {

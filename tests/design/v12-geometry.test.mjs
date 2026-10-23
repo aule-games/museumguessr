@@ -100,3 +100,12 @@ test('[V12-59] A dialog header whose Close or cue leaves the dialog, or overlaps
   m.dialogs[0].parts[1] = box(180, 288, 104, 20);
   assert.equal(v12GeometryIssues(m).length, 1);
 });
+
+test('[V12-62] A time-up notice wider than the score table, or past its side margin, is reported', () => {
+  const m = base(390, 844);
+  m.screen = 'reveal';
+  m.reveal = { atTop: true, scores: box(16, 150, 358, 440), notes: [box(16, 120, 300, 20), box(16, 600, 358, 20)], body: null, footer: null, total: null, hard: null };
+  assert.deepEqual(v12GeometryIssues(m), []);
+  m.reveal.notes[1] = box(0, 600, 330, 20);
+  assert.deepEqual(v12GeometryIssues(m), ["[V12-62] The time-up notices (away, tip) keep the score table's side margins"]);
+});
