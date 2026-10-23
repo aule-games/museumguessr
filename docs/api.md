@@ -265,7 +265,7 @@ this origin, are never in URLs and never enter analytics. [V12-124] [V12-135]
 
 ## Local examples
 
-These examples target the step-3 local dark Worker, not production. The fixed
+These examples target the step-3 local dark Worker (`npm run worker:dev`), not production. The fixed
 key below is a public test fixture, never a real player's credential. The
 fixture command supplies a canonical score request with the local test token;
 GET examples need no Turnstile token. Production rejects dummy credentials.

@@ -238,8 +238,8 @@ export async function getReceipt(request: Request, ctx: Ctx, modes: Modes): Prom
   if (auth.kind !== 'key') throw new Refused('invalid');
   const rowId = rowIdOf(new URL(request.url).pathname);
   await chargeIp(ctx.env.IP_LIMIT, clientIp(request));
-  const mode = await modes.read(ctx);
-  const smoke = mode === 'dark' && wantsSmoke(request);
+  // The mode matters only for the smoke header; an ordinary receipt read never needs it.
+  const smoke = wantsSmoke(request) && (await modes.read(ctx)) === 'dark';
   const hash = await playerHash(auth.key);
   const db = store(ctx);
   const week = currentWeek(ctx.now());
