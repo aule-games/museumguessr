@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { CATALOGUE } from '../../src/analytics/events';
+import { CATALOGUE } from '../../src/analytics/catalogue';
 import { confirm, deckIds, enterYear, expect, placePin, playRound, start, test } from './fixtures';
 
 const items = JSON.parse(readFileSync(join(import.meta.dirname, '../../data/items.json'), 'utf8')).items as {

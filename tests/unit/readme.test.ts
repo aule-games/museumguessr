@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { CATALOGUE } from '../../src/analytics/events';
+import { CATALOGUE } from '../../src/analytics/catalogue';
 import { COPY } from '../../src/copy';
 import { halfDistanceKm } from '../../src/game/text';
 import { DISTANCE, TIERS, YEARS } from '../../src/scoring/config';

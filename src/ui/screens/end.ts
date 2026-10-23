@@ -9,7 +9,7 @@ import { FEEDBACK } from '../../analytics/events.ts';
 import { formatNumber, t, type CopyKey } from '../../copy.ts';
 import { imageUrl } from '../../content/items.ts';
 import { hardNailedCount } from '../../game/hard.ts';
-import { hardSummary } from '../../game/text.ts';
+import { collectionLine, hardSummary, resultLine } from '../../game/text.ts';
 import { tierFor } from '../../scoring/score.ts';
 import type { RoundResult, TimeUp } from '../../state/schema.ts';
 import type { Item } from '../../types/item.ts';
@@ -43,16 +43,6 @@ export interface EndProps {
   waiting: { name: string | null; onPlay(): void; onDismiss(): void } | null;
   onAnother(): void;
   onReplay(): void;
-}
-
-/** "You win by 760", "Ali wins by 760" or "A tie: you both scored 18,240". */
-export function resultLine(you: number, name: string, them: number): string {
-  if (you === them) return t('challenge.tie', { total: formatNumber(you) });
-  return you > them ? t('challenge.youWin', { diff: formatNumber(you - them) }) : t('challenge.theyWin', { name, diff: formatNumber(them - you) });
-}
-
-export function collectionLine(c: { seen: number; total: number }): string {
-  return c.seen >= c.total ? t('end.collectionAll') : t('end.collection', { seen: formatNumber(c.seen), total: formatNumber(c.total) });
 }
 
 export function endScreen(p: EndProps): HTMLElement {

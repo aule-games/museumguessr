@@ -1,40 +1,12 @@
-// Error screen (E8, DX13), "Continued in another tab" (ENG30), the header
-// menu and its overlays (DS27), and the test-mode badge (DX3, DX29).
+// The header menu and its overlays (DS27): How to play, Credits, About &
+// privacy with the event list, and the Start-over dialog. A lazy chunk
+// (V1-02, src/ui/lazy.ts); the error and other-tab screens are in error.ts.
 
-import type { Inspection } from '../../analytics/core.ts';
-import { CATALOGUE } from '../../analytics/events.ts';
-import { BUILD_ID } from '../../config.ts';
+import { CATALOGUE } from '../../analytics/catalogue.ts';
 import { t } from '../../copy.ts';
-import type { ErrorReport } from '../../errors/boundary.ts';
 import type { Item } from '../../types/item.ts';
 import { ext, h } from '../dom.ts';
 import { closeDialog, openDialog } from '../overlay.ts';
-
-export function errorScreen(report: ErrorReport, saved: boolean, onNew: () => void): HTMLElement {
-  return h(
-    'main',
-    { class: 'screen error', 'data-screen': 'error', role: 'alert' },
-    h('h1', {}, t('error.title')),
-    saved && h('p', {}, t('error.saved')),
-    h(
-      'div',
-      { class: 'error__actions' },
-      h('button', { type: 'button', class: 'btn btn--primary', 'data-test': 'reload', onclick: () => location.reload() }, t('error.reload')),
-      h('button', { type: 'button', class: 'btn btn--secondary', 'data-test': 'error-new', onclick: onNew }, t('error.new')),
-    ),
-    h('p', { class: 'error__ref', 'data-test': 'error-ref' }, t('error.ref', { name: report.name, build: BUILD_ID })),
-  );
-}
-
-export function frozenScreen(onTake: () => void): HTMLElement {
-  return h(
-    'main',
-    { class: 'screen frozen', 'data-screen': 'frozen' },
-    h('h1', {}, t('tab.title')),
-    h('p', {}, t('tab.body')),
-    h('button', { type: 'button', class: 'btn btn--primary', 'data-test': 'take-over', onclick: onTake }, t('tab.take')),
-  );
-}
 
 export function howToPlay(opener: HTMLElement | null) {
   openDialog(t('how.title'), [
@@ -99,59 +71,4 @@ export function openMenu(opener: HTMLElement, a: MenuActions) {
     opener,
     'dialog--menu',
   );
-}
-
-/** The test badge's controls; the same functions are window.__mgTest (M4). Each marks the game test-assisted (ENG5). */
-export interface TestControls {
-  finish(): void;
-  tenSeconds(): void;
-  expire(): void;
-  pauseClock(): void;
-}
-
-/** "Test mode · analytics off" badge; expands to the test controls and the payloads that would have been sent (DX29, M4). */
-export function testBadge(inspect: () => Inspection, controls: TestControls): HTMLElement {
-  const list = h('div', { class: 'badge__panel', hidden: true, 'data-test': 'badge-panel' });
-  const btn = h('button', { type: 'button', class: 'badge', 'aria-expanded': 'false', 'data-test': 'test-badge' }, t('test.badge'));
-  const close = () => {
-    btn.setAttribute('aria-expanded', 'false');
-    list.hidden = true;
-  };
-  btn.addEventListener('click', () => {
-    const open = btn.getAttribute('aria-expanded') !== 'true';
-    btn.setAttribute('aria-expanded', String(open));
-    list.hidden = !open;
-    if (!open) return;
-    const info = inspect();
-    const control = (label: string, test: string, run: () => void) =>
-      h(
-        'button',
-        {
-          type: 'button',
-          class: 'btn btn--secondary',
-          'data-test': test,
-          onclick: () => {
-            close();
-            run();
-          },
-        },
-        label,
-      );
-    list.replaceChildren(
-      control(t('test.finish'), 'test-finish', controls.finish),
-      h(
-        'div',
-        { class: 'badge__clock', role: 'group' },
-        control(t('test.tenSeconds'), 'test-ten-seconds', controls.tenSeconds),
-        control(t('test.expire'), 'test-expire', controls.expire),
-        control(t('test.pauseClock'), 'test-pause-clock', controls.pauseClock),
-      ),
-      h('p', {}, t('test.payloads')),
-      h('p', { class: 'badge__counts' }, t('test.counts', info.counts)),
-      info.payloads.length
-        ? h('ol', {}, ...info.payloads.map((p) => h('li', {}, h('code', {}, p.name), ' ', h('code', {}, JSON.stringify(p.props)))))
-        : h('p', {}, t('test.none')),
-    );
-  });
-  return h('div', { class: 'badge-wrap' }, btn, list);
 }

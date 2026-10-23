@@ -14,6 +14,7 @@ import { createLock } from './game/lock.ts';
 import { cleanedUrl, readSession } from './game/session.ts';
 import { KEYS } from './state/schema.ts';
 import { local, session } from './storage/guarded.ts';
+import { takeHandledFailure } from './ui/lazy.ts';
 import { initOverlayHistory } from './ui/overlay.ts';
 
 async function boot() {
@@ -78,17 +79,21 @@ async function boot() {
   });
 
   // A redeploy can remove old chunks: reload once if the build changed (ENG33).
+  // A lazy screen or overlay handles its own failed chunk (src/ui/lazy.ts).
   window.addEventListener('vite:preloadError', (e) => {
     e.preventDefault();
+    const failed = () => {
+      if (!takeHandledFailure()) app.fail(new Error('chunk load failed'));
+    };
     void fetch(`${BASE_URL}build.txt`, { cache: 'no-store' })
       .then((r) => r.text())
       .then((id) => {
         if (id.trim() !== BUILD_ID && !session.get(KEYS.chunkReload)) {
           session.set(KEYS.chunkReload, '1');
           location.reload();
-        } else app.fail(new Error('chunk load failed'));
+        } else failed();
       })
-      .catch(() => app.fail(new Error('chunk load failed')));
+      .catch(failed);
   });
 
   window.addEventListener('storage', (e) => {

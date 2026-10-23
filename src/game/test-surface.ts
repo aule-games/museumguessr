@@ -4,7 +4,7 @@
 
 import { roundClock, type Action } from '../state/reducer.ts';
 import type { GameState } from '../state/schema.ts';
-import type { TestControls } from '../ui/screens/misc.ts';
+import type { TestControls } from '../ui/badge.ts';
 import { DEFAULT_TIMER, remainingMs, type TimerConfig } from './timer.ts';
 
 export interface TestHooks {

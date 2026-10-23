@@ -1,6 +1,7 @@
 // Pure text builders for the reveal and end screens: result lines and the
-// how-it's-scored explanations (DS12), and the share text (DS15). Tested
-// against the scoring config.
+// how-it's-scored explanations (DS12), the share text (DS15), and the
+// challenge result and collection lines the start screen shares with the end
+// screen. Tested against the scoring config.
 
 import { formatNumber, t } from '../copy.ts';
 import { DISTANCE, MAX_POINTS, SLIDER } from '../scoring/config.ts';
@@ -97,4 +98,14 @@ export function shareHook(p: { total: number; replay: boolean; kind: 'challenge'
  */
 export function shareText(p: { total: number; url: string; replay: boolean; kind: 'challenge' | 'reply'; hard?: number }): string {
   return `${shareHook(p)} ${p.url}`;
+}
+
+/** "You win by 760", "Ali wins by 760" or "A tie: you both scored 18,240". */
+export function resultLine(you: number, name: string, them: number): string {
+  if (you === them) return t('challenge.tie', { total: formatNumber(you) });
+  return you > them ? t('challenge.youWin', { diff: formatNumber(you - them) }) : t('challenge.theyWin', { name, diff: formatNumber(them - you) });
+}
+
+export function collectionLine(c: { seen: number; total: number }): string {
+  return c.seen >= c.total ? t('end.collectionAll') : t('end.collection', { seen: formatNumber(c.seen), total: formatNumber(c.total) });
 }

@@ -1,7 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
 import { CHANNELS, channelFrom, revalidateSrc } from '../../src/analytics/channels';
 import { applyTestParam, createAnalytics, QUEUE_LIMIT, TEST_FLAG_TTL_MS, testFlagOn, type AnalyticsEnv, type Provider } from '../../src/analytics/core';
-import { CATALOGUE, EVENTS } from '../../src/analytics/events';
+import { CATALOGUE } from '../../src/analytics/catalogue';
+import { EVENTS } from '../../src/analytics/events';
 import { beforeSend, sanitizeUrl } from '../../src/analytics/sanitize';
 import { guarded } from '../../src/storage/guarded';
 import { KEYS } from '../../src/state/schema';

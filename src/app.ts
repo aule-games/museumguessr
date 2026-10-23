@@ -17,7 +17,7 @@ import { DraftQueue, type PendingDraft } from './game/drafts.ts';
 import type { WriterLock } from './game/lock.ts';
 import { hardNailedCount } from './game/hard.ts';
 import { isListed, nameList } from './game/names.ts';
-import { shareHook, shareText } from './game/text.ts';
+import { collectionLine, resultLine, shareHook, shareText } from './game/text.ts';
 import { SeenLists } from './game/seen.ts';
 import type { TabSession } from './game/session.ts';
 import { testSurface, type TestSurface } from './game/test-surface.ts';
@@ -30,14 +30,16 @@ import { KEYS, isNewerRecord, parseSave, parseSnapshot, serialize, type GameStat
 import type { KV } from './storage/guarded.ts';
 import { announce, currentClockFace, renderClockFace, timerCopy } from './ui/clock.ts';
 import { clear, focus, reducedMotion } from './ui/dom.ts';
-import { endScreen, resultLine, collectionLine } from './ui/screens/end.ts';
-import { confirmNewGame, errorScreen, frozenScreen, openMenu, aboutPrivacy, testBadge } from './ui/screens/misc.ts';
-import { revealScreen } from './ui/screens/reveal.ts';
+import { testBadge } from './ui/badge.ts';
+import { CHUNKS, loaded, preload, withModule, type Lazy } from './ui/lazy.ts';
+import { overlayGeneration } from './ui/overlay.ts';
+import type { EndProps } from './ui/screens/end.ts';
+import { errorScreen, frozenScreen } from './ui/screens/error.ts';
+import type { RevealProps } from './ui/screens/reveal.ts';
 import { PhotoRegion, roundScreen, type RoundView } from './ui/screens/round.ts';
 import { startScreen, type StartMode } from './ui/screens/start.ts';
 import type { ShareSetup } from './ui/share.ts';
 import { presentTimeUp } from './ui/timeup.ts';
-import { startTour } from './ui/tour.ts';
 
 export type View = 'start' | 'play' | 'review' | 'error' | 'frozen';
 
@@ -58,6 +60,12 @@ export interface AppDeps {
 }
 
 const START_IMAGE_WAIT_MS = 4000;
+
+type Menu = NonNullable<typeof CHUNKS.menu.module>;
+
+// The reveal and end screens are lazy chunks; show() loads a screen's chunk before drawing it (V1-02).
+const revealScreen = (p: RevealProps) => loaded(CHUNKS.reveal).revealScreen(p);
+const endScreen = (p: EndProps) => loaded(CHUNKS.end).endScreen(p);
 
 /** A drawn deck, and whether committing it restarts the seen list (it had to reuse seen objects). */
 type PendingDeck = Deck & { restart: boolean };
@@ -286,7 +294,7 @@ export class App {
   /** The reveal on screen visibly opened: record it once (N5); a hidden tab waits until it is visible. */
   private revealOpened() {
     const s = this.state;
-    if (!s || s.finished || s.phase !== 'reveal' || this.view !== 'play') return;
+    if (!s || s.finished || s.phase !== 'reveal' || this.view !== 'play' || !CHUNKS.reveal.module) return;
     // a reveal rendered in a hidden tab counts once the tab is visible again (clockEvent)
     if (document.visibilityState === 'hidden') return;
     this.dispatch({ type: 'revealShown', gameId: s.game_id, round: s.round, now: Date.now(), boardWeek: null });
@@ -577,7 +585,7 @@ export class App {
           this.begin(deck);
         });
       });
-    if (this.state && !this.state.finished) confirmNewGame(opener, go);
+    if (this.state && !this.state.finished) this.overlay(opener, (m) => m.confirmNewGame(opener, go));
     else go();
   }
 
@@ -632,9 +640,22 @@ export class App {
     this.view = view;
     // Rounds, reveals and the end screen show the item records, a lazy chunk (V1-02).
     if ((view === 'play' || view === 'review') && !itemsLoaded()) {
+      void this.screenChunk(view)?.load();
       this.records(() => {
         if (this.view === view) this.show(view);
       });
+      return;
+    }
+    // The reveal and end screens are lazy chunks too; the screen on display stays until its chunk has loaded.
+    const chunk = this.screenChunk(view);
+    if (chunk && !chunk.module) {
+      void chunk.load().then((m) =>
+        this.guard(() => {
+          if (this.view !== view) return;
+          if (!m) throw new Error('chunk load failed');
+          this.show(view);
+        }),
+      );
       return;
     }
     const root = this.d.root;
@@ -670,30 +691,75 @@ export class App {
     if (view === 'play') requestAnimationFrame(() => this.guard(() => this.maybeTour()));
     if (view === 'play' && this.state?.phase === 'reveal') this.revealOpened();
     this.runner.check();
+    this.preload(view);
+  }
+
+  /** The lazy chunk a view draws with: the end screen for a finished game or a review, the reveal for a round's reveal. */
+  private screenChunk(view: View): Lazy<unknown> | null {
+    const s = this.state;
+    if (view === 'review' || (view === 'play' && s?.finished)) return CHUNKS.end;
+    if (view === 'play' && s?.phase === 'reveal') return CHUNKS.reveal;
+    return null;
+  }
+
+  /** Fetch at idle time the chunks this screen may open next, so they open at once (V1-02). */
+  private preload(view: View) {
+    if (this.tourDue()) preload(CHUNKS.tour);
+    if (view === 'play' || view === 'review') preload(CHUNKS.reveal, CHUNKS.menu, CHUNKS.end);
+  }
+
+  /** Open an overlay from the menu chunk; if time runs out or its opener leaves the screen while the chunk loads, it stays closed (ENG7). */
+  private overlay(opener: HTMLElement | null, open: (m: Menu) => void) {
+    const gen = overlayGeneration();
+    withModule(CHUNKS.menu, (m) =>
+      this.guard(() => {
+        if (gen === overlayGeneration() && (!opener || opener.isConnected)) open(m);
+      }),
+    );
+  }
+
+  /** The first-visit tour is still to come: once per browser, not for a player who has finished a game (DS34). */
+  private tourDue(): boolean {
+    return this.d.local.get(KEYS.tour) == null && !this.snapshot;
   }
 
   /** The first-visit tour (DS34): once per browser, on round 1's first question; not for a player who has finished a game. */
   private maybeTour() {
     const s = this.state;
     if (this.view !== 'play' || this.tourOpen || !s || s.finished || s.phase !== 'answering' || s.round !== 0 || s.step !== STEPS[0]) return;
-    if (this.d.local.get(KEYS.tour) != null || this.snapshot) return;
+    if (!this.tourDue()) return;
     this.openTour(false);
   }
 
   openTour(replay: boolean) {
     if (this.tourOpen) return;
     this.tourOpen = true;
-    // only the automatic first-visit tour pauses the clock (D4)
+    // only the automatic first-visit tour pauses the clock (D4), also while its chunk loads
     this.tourReplay = replay;
-    startTour({
-      onEnd: (outcome, step) => {
-        this.tourOpen = false;
-        this.d.local.set(KEYS.tour, outcome);
-        this.d.analytics.track(EVENTS.tourEnded, { src: this.d.tab.src, outcome, step, replay });
-        this.runner.check();
-      },
-    });
-    this.runner.check();
+    const gen = overlayGeneration();
+    const skip = () => {
+      this.tourOpen = false;
+      this.runner.check();
+    };
+    withModule(
+      CHUNKS.tour,
+      (m) =>
+        this.guard(() => {
+          // time ran out or the round moved on while the chunk loaded; without its chunk the game goes on
+          if (gen !== overlayGeneration() || this.view !== 'play' || this.state?.phase !== 'answering') return skip();
+          m.startTour({
+            onEnd: (outcome, step) => {
+              this.tourOpen = false;
+              this.d.local.set(KEYS.tour, outcome);
+              this.d.analytics.track(EVENTS.tourEnded, { src: this.d.tab.src, outcome, step, replay });
+              this.runner.check();
+            },
+          });
+          this.runner.check();
+        }),
+      () => this.guard(skip),
+    );
+    if (!CHUNKS.tour.module) this.runner.check();
   }
 
   private renderStart(): HTMLElement {
@@ -769,7 +835,7 @@ export class App {
       onReview: () => this.guard(() => this.show('review')),
       onChallenge: (opener) => this.guard(() => this.playChallenge(opener)),
       onReplay: () => this.replayDeck(this.snapshot?.snapshot.item_ids ?? []),
-      onAbout: (opener) => aboutPrivacy(opener),
+      onAbout: (opener) => this.overlay(opener, (m) => m.aboutPrivacy(opener)),
     });
   }
 
@@ -842,13 +908,15 @@ export class App {
     // During a game, Credits lists only the photos already revealed, never a future round (V1-24).
     const credited = s.finished ? items : items.filter((_, i) => s.results[i] != null);
     const onMenu = (opener: HTMLElement) =>
-      openMenu(opener, {
-        items: credited,
-        sample: SAMPLE,
-        inGame: !s.finished,
-        onNewGame: () => this.newGame(),
-        onTour: !s.finished && s.phase === 'answering' ? () => this.openTour(true) : undefined,
-      });
+      this.overlay(opener, (m) =>
+        m.openMenu(opener, {
+          items: credited,
+          sample: SAMPLE,
+          inGame: !s.finished,
+          onNewGame: () => this.newGame(),
+          onTour: !s.finished && s.phase === 'answering' ? () => this.openTour(true) : undefined,
+        }),
+      );
 
     if (s.finished) {
       const asked = s.sent.includes(ledgerKey(s.game_id, EVENTS.feedback, 'most_fun'));
