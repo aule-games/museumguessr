@@ -120,3 +120,11 @@ test('[V12-60] A top bar whose total wraps or whose parts leave one row is repor
   assert.deepEqual(v12GeometryIssues(wrapped), [rule]);
   assert.deepEqual(v12GeometryIssues(wrapped, { large: true }), []);
 });
+
+test('[V12-161] An end total or round score whose number breaks across lines is reported', () => {
+  const m = base(390, 844);
+  m.totals = [{ text: '19,066', lines: 1 }];
+  assert.deepEqual(v12GeometryIssues(m), []);
+  m.totals[0].lines = 2;
+  assert.deepEqual(v12GeometryIssues(m), ['[V12-161] A total never breaks inside its number, at any text size']);
+});

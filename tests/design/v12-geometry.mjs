@@ -64,6 +64,14 @@ export function measureV12() {
       share: one('[data-test="share"]'),
       another: one('[data-test="play-another"]'),
     } : null,
+    // the end total's and the round score's number: lines its own text takes
+    totals: [document.querySelector('[data-test="end-total"]'), document.querySelector('[data-test="round-score"]')].filter((n) => n && box(n)).map((n) => {
+      const text = [...n.childNodes].find((c) => c.nodeType === 3 && /\d/.test(c.textContent));
+      if (!text) return { text: '', lines: 0 };
+      const range = document.createRange();
+      range.selectNodeContents(text);
+      return { text: text.textContent.trim(), lines: new Set([...range.getClientRects()].filter((r) => r.width > 0).map((r) => Math.round(r.top))).size };
+    }),
     // the round's top bar: the total pill's lines, and each part's box
     topbar: document.querySelector('[data-screen] .topbar') ? (() => {
       const bar = document.querySelector('[data-screen] .topbar');
@@ -162,6 +170,7 @@ export function v12GeometryIssues(m, opts = {}) {
   }
 
   check((m.points ?? []).every((p) => p.lines <= 1), '[DS31] Each row\'s points stay on one line');
+  check((m.totals ?? []).every((p) => p.lines <= 1), '[V12-161] A total never breaks inside its number, at any text size');
 
   // at normal text size; doubled text may wrap the cluster (V12-161)
   if (m.topbar && !opts.large) {
