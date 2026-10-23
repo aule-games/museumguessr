@@ -5,7 +5,7 @@
 // storage is requested only when the player opens the board or the score
 // list. Every server value is set as a text node.
 
-import type { PublicRow, Week } from '../api/contract.ts';
+import type { PublicRow, Standing, Week } from '../api/contract.ts';
 import { weekStart } from '../api/week.ts';
 import { EVENTS } from '../analytics/events.ts';
 import { TURNSTILE_SITEKEY } from '../config.ts';
@@ -210,14 +210,18 @@ async function drawBoard(env: BoardEnv, snap: Snapshot, status: HTMLElement, are
   const listed = b.rows.filter((r) => !(cached && r.row_id === ownId));
   const body = h('tbody', {}, ...listed.map((r) => row({ name: r.name, total: r.total, rank: `#${formatNumber(r.rank)}` }, r.row_id === ownId)));
   const table = h('table', { class: 'board-table', 'data-test': 'board-table' }, h('caption', { class: 'visually-hidden' }, t('board.heading')), head, body);
-  // this device's row when it is not among the listed rows: below the top 50, or not in the cached copy yet
+  // this device's row when it is not among the listed rows (below the top 50, or not in the cached
+  // copy yet): the short rank in the column, the full standing on its own line under it
   const name = snap.personal?.name ?? '';
-  if (cached && mine) {
-    const standing = standingText(mine.standing ?? (mine.receipt_rank ? { kind: 'exact', rank: mine.receipt_rank, tied: false } : null), b.count) ?? '';
-    table.append(h('tbody', { class: 'board-table__own' }, row({ name, total: mine.total, rank: standing }, true)));
-  } else if (best && !b.rows.some((r) => r.row_id === best.row_id)) {
-    table.append(h('tbody', { class: 'board-table__own' }, row({ name, total: best.total, rank: standingText(best.standing, b.count, true) ?? '' }, true)));
-  }
+  const own = (total: number, standing: Standing | null, unlisted: boolean) =>
+    h(
+      'tbody',
+      { class: 'board-table__own', 'data-test': 'board-own' },
+      row({ name, total, rank: standing?.kind === 'exact' ? `#${formatNumber(standing.rank)}` : '' }, true),
+      h('tr', { class: 'board-table__standing' }, h('td', { colspan: 3 }, standingText(standing, b.count, unlisted) ?? '')),
+    );
+  if (cached && mine) table.append(own(mine.total, mine.standing ?? (mine.receipt_rank ? { kind: 'exact', rank: mine.receipt_rank, tied: false } : null), false));
+  else if (best && !b.rows.some((r) => r.row_id === best.row_id)) table.append(own(best.total, best.standing, true));
   area.append(table);
 }
 

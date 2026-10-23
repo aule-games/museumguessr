@@ -2056,6 +2056,8 @@ p {
 
 .board-table__rank,
 .board-table__total {
+  /* the number columns shrink to their content; the name takes the rest */
+  width: 1%;
   font-family: var(--font-numeric);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
@@ -2092,8 +2094,14 @@ p {
   letter-spacing: var(--tracking-caps);
 }
 
-.board-table__own td {
+.board-table__own tr:first-child td {
   border-top: var(--space-1) solid var(--color-line);
+}
+
+.board-table__standing td {
+  font-size: var(--text-xs);
+  font-variant-numeric: tabular-nums;
+  color: var(--color-ink-muted);
 }
 
 .board-scores {

@@ -385,7 +385,8 @@ test.describe('[W6] the weekly board on the end screen', () => {
     await expect(page.locator('[data-test=board-overlay-status]')).toHaveText('Updated a minute ago');
     const you = table.locator('[data-test=board-you]');
     await expect(you).toHaveAttribute('aria-current', 'true');
-    await expect(you).toContainText('#12 of 40 this week');
+    await expect(you).toContainText('#12');
+    await expect(table.locator('[data-test=board-own]')).toContainText('#12 of 40 this week');
     await expect(you).toContainText('You');
     await expect(you).toContainText('18,240');
     expect(await table.locator('td.board-table__total').first().evaluate((el) => getComputedStyle(el).fontVariantNumeric)).toContain('tabular-nums');
@@ -402,7 +403,7 @@ test.describe('[W6] the weekly board on the end screen', () => {
     await page.reload();
     await page.locator('[data-test=start-board]').click();
     const you = page.locator('.board-table__own [data-test=board-you]');
-    await expect(you).toContainText('#47 (tied) · the board lists the first 50');
+    await expect(page.locator('[data-test=board-own]')).toContainText('#47 (tied) · the board lists the first 50');
     await expect(you).toHaveAttribute('aria-current', 'true');
     await expect(page.locator('[data-test=board-row]')).toHaveCount(2);
     // names in the body face; no medals, only ranks
@@ -429,7 +430,7 @@ test.describe('[W6] the weekly board on the end screen', () => {
     await expect(status(page)).toHaveText('Added: #12 this week');
     await page.locator('[data-test=board-view]').click();
     await expect(page.locator('[data-test=board-overlay-status]')).toHaveText("Fewer than 10 on this week's board · Updated a minute ago");
-    await expect(page.locator('[data-test=board-you]')).toContainText('#12 this week');
+    await expect(page.locator('[data-test=board-own]')).toContainText('#12 this week');
   });
 
   test('a test game reads "Not ranked (test game)" after ?test=0 and is never sent; a replay and an all-seen challenge are not ranked [V12-80]', async ({ page, board }) => {
