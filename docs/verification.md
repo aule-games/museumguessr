@@ -10,14 +10,14 @@ Last run: 2026-10-23.
 | --- | --- |
 | type check | passed (3 s) |
 | generated files are current | passed (0 s) |
-| item check | passed (0 s) |
-| unit tests | passed (16 s) |
+| item check | passed (1 s) |
+| unit tests | passed (15 s) |
 | design checks | passed (1 s) |
 | lint | passed (3 s) |
 | build | passed (1 s) |
 | build checks | passed (0 s) |
-| Worker routing suite (wrangler dev) | passed (7 s) |
-| browser tests (5 viewports) | passed (183 s) |
+| Worker routing suite (wrangler dev) | passed (9 s) |
+| browser tests (5 viewports) | passed (201 s) |
 | release scan (publish candidate) | passed (8 s) |
 | release scan (built output) | passed (3 s) |
 
@@ -823,12 +823,12 @@ Last run: 2026-10-23.
 | V12-06 | canonical score fields exclude credentials and time and public rows exclude private identities | `tests/unit/api-contract.test.ts` | passed |
 | V12-07 | requirement evidence › release identifiers are deduplicated across nested unit and browser titles | `tests/unit/requirements.test.ts` | passed |
 | V12-08 | release approvals stay separate from local implementation and unrun checks | `tests/unit/v12-docs.test.ts` | passed |
+| V12-10 | the asset 404 page › its text is the notFound copy, with the meta CSP, a link home and the built stylesheet | `tests/unit/security-headers.test.ts` | passed |
+| V12-10 | the Worker configuration (wrangler.jsonc) › one Worker serves the built site as assets and runs code first only for /api/*, with the asset 404 page for unknown paths | `tests/unit/wrangler-config.test.ts` | passed |
 | V12-10 | the Worker routes › health reports the scoring version, the pool hash the page uses, the build SHA, the contract version and the board off | `worker/tests/worker.test.ts` | passed |
 | V12-10 | the Worker routes › every other /api/ path answers the not_found envelope with status 404 | `worker/tests/worker.test.ts` | passed |
 | V12-10 | the Worker routes › a non-API path, as navigation or fetch, is answered by the assets binding, so an unknown path gets the 404 page and status 404 | `worker/tests/worker.test.ts` | passed |
 | V12-10 | the Worker routes › a failing API route answers the server envelope with a request id and logs only request_id, route and error_name | `worker/tests/worker.test.ts` | passed |
-| V12-10 | the asset 404 page › its text is the notFound copy, with the meta CSP, a link home and the built stylesheet | `tests/unit/security-headers.test.ts` | passed |
-| V12-10 | the Worker configuration (wrangler.jsonc) › one Worker serves the built site as assets and runs code first only for /api/*, with the asset 404 page for unknown paths | `tests/unit/wrangler-config.test.ts` | passed |
 | V12-10 | wrangler dev serving dist/ › health over the Workers runtime reports this build: scoring version, pool hash, contract, board off and the build id | `worker/tests/wrangler-dev.smoke.ts` | passed |
 | V12-10 | wrangler dev serving dist/ › /wp-login.php and an unknown path, as navigation and as fetch, get the 404 page with status 404 and the security headers | `worker/tests/wrangler-dev.smoke.ts` | passed |
 | V12-10 | wrangler dev serving dist/ › every other API path answers the not_found envelope with status 404 and the security headers | `worker/tests/wrangler-dev.smoke.ts` | passed |
@@ -836,8 +836,8 @@ Last run: 2026-10-23.
 | V12-11 | npm run live:check against recorded responses › www and http answer 301 to the https apex keeping the path and query, and the zone sends one-year HSTS without preload | `tests/unit/live-check.test.ts` | passed |
 | V12-11 | the Worker configuration (wrangler.jsonc) › the Worker answers only at the custom domain museumguessr.com | `tests/unit/wrangler-config.test.ts` | passed |
 | V12-12 | the Worker configuration (wrangler.jsonc) › workers.dev and preview URLs are disabled | `tests/unit/wrangler-config.test.ts` | passed |
-| V12-13 | the Worker routes › every Worker response carries nosniff, a Referrer-Policy, a Permissions-Policy and the header CSP with frame-ancestors | `worker/tests/worker.test.ts` | passed |
 | V12-13 | security headers from one source › one source writes the header and the meta CSP, which differ only by the header-only frame-ancestors | `tests/unit/security-headers.test.ts` | passed |
+| V12-13 | the Worker routes › every Worker response carries nosniff, a Referrer-Policy, a Permissions-Policy and the header CSP with frame-ancestors | `worker/tests/worker.test.ts` | passed |
 | V12-13 | wrangler dev serving dist/ › the page and its assets carry the _headers values, and the header CSP equals the meta CSP plus frame-ancestors | `worker/tests/wrangler-dev.smoke.ts` | passed |
 | V12-14 | CI is verify-only › no workflow deploys or takes a commit by hand: CI runs npm run verify on push | `tests/unit/workflow.test.ts` | passed |
 | V12-15 | npm run deploy › refuses a dirty tree, a HEAD that is not origin/main, a red or missing verify check and a build id that differs from HEAD | `tests/unit/deploy.test.ts` | passed |
@@ -1031,8 +1031,8 @@ Last run: 2026-10-23.
 | V12-144 | items:check › rejects a date before 40000 BCE | `tests/unit/items-cli.test.ts` | passed |
 | V12-144 | items:check › rejects a date after 2025 CE | `tests/unit/items-cli.test.ts` | passed |
 | V12-144 | the pool rules in items:check › allows at most three pool objects that begin before 4000 BCE | `tests/unit/pool-rules.test.ts` | passed |
-| V12-170 | the Worker routes › every Worker response carries nosniff, a Referrer-Policy, a Permissions-Policy and the header CSP with frame-ancestors | `worker/tests/worker.test.ts` | passed |
 | V12-170 | security headers from one source › every path gets nosniff, a Referrer-Policy, a Permissions-Policy and the CSP, and the build check verifies the header file | `tests/unit/security-headers.test.ts` | passed |
+| V12-170 | the Worker routes › every Worker response carries nosniff, a Referrer-Policy, a Permissions-Policy and the header CSP with frame-ancestors | `worker/tests/worker.test.ts` | passed |
 | V12-170 | wrangler dev serving dist/ › /wp-login.php and an unknown path, as navigation and as fetch, get the 404 page with status 404 and the security headers | `worker/tests/wrangler-dev.smoke.ts` | passed |
 | V12-170 | wrangler dev serving dist/ › the page and its assets carry the _headers values, and the header CSP equals the meta CSP plus frame-ancestors | `worker/tests/wrangler-dev.smoke.ts` | passed |
 | V12-171 | docs/ops.md matches the operations scripts › the emergency switches need no paid product: the WAF threshold, board off and Under Attack mode | `tests/unit/ops-docs.test.ts` | passed |

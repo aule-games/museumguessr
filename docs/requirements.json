@@ -1,6 +1,6 @@
 {
   "release": "v1.2",
-  "built_through_step": 0,
+  "built_through_step": 2,
   "steps": {
     "0": "specifications and verification foundation",
     "1": "hosting and security",
