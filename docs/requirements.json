@@ -1,6 +1,6 @@
 {
   "release": "v1.2",
-  "built_through_step": 2,
+  "built_through_step": 3,
   "steps": {
     "0": "specifications and verification foundation",
     "1": "hosting and security",
@@ -654,7 +654,7 @@
         },
         {
           "file": "worker/tests/wrangler-dev.smoke.ts",
-          "title": "health over the Workers runtime reports this build: scoring version, pool hash, contract, board off and the build id"
+          "title": "health over the Workers runtime reports this build: scoring version, pool hash, contract, the board mode from local D1 and the build id"
         },
         {
           "file": "worker/tests/wrangler-dev.smoke.ts",
