@@ -40,7 +40,7 @@ export function boardSuite(label: string, make: (c: Clock) => PlatformParts, opt
 
   describe(`the board API (${label})`, () => {
     describe('POST /api/v1/scores', () => {
-      it('a first eligible game is added: 201, a current receipt with its exact rank, and the public board lists it under the generated name [V12-80] [V12-82]', async () => {
+      it('a first eligible game is added: 201, a current receipt with its exact rank, and the public board lists it under the generated name [V12-82] [V12-109]', async () => {
         const h = await setup();
         const res = await h.post(KEYS[0], h.payload(20000));
         expect(res.status).toBe(201);
@@ -54,7 +54,7 @@ export function boardSuite(label: string, make: (c: Clock) => PlatformParts, opt
         expect(JSON.stringify(await h.q('SELECT * FROM scores'))).not.toContain(KEYS[0]);
       });
 
-      it('nothing is written to D1 for any answer before step 7: invalid, too large, rate limited, disabled, duplicate, removed, replay, update_page, try_later, week_closed and not_best [V12-83] [V12-90]', async () => {
+      it('nothing is written to D1 for any answer before step 7: invalid, too large, rate limited, disabled, duplicate, removed, replay, update_page, try_later, week_closed and not_best, each in the contract envelope [V12-83] [V12-90] [V12-111]', async () => {
         const h = await setup();
         const first = await h.post(KEYS[0], h.payload(20000));
         expect(first.status).toBe(201);
@@ -261,6 +261,16 @@ export function boardSuite(label: string, make: (c: Clock) => PlatformParts, opt
         await recount(h3, h3.week());
       });
 
+      it('refuses replay decks and, in public mode, test games; another contract or scoring version gets update_page, so an old tab or a rollback never ranks under other rules [V12-87] [V12-138]', async () => {
+        const h = await setup();
+        expectReason(await h.post(KEYS[0], h.payload(20000, { deck_kind: 'replay' })), 'replay');
+        expectReason(await h.post(KEYS[0], h.payload(20000, { test_assisted: true })), 'replay');
+        for (const over of [{ client_version: 2 }, { client_version: 3 }, { scoring_version: 2 }, { scoring_version: 4 }]) expectReason(await h.post(KEYS[0], h.payload(20000, over)), 'update_page');
+        expectReason(await h.post(KEYS[0], h.payload(20000, { client_version: 0 })), 'invalid');
+        const ok = await h.post(KEYS[0], h.payload(20000, { deck_kind: 'challenge', fresh: false }));
+        expect(ok.status).toBe(201);
+      });
+
       it('a removed device-week refuses new submissions as removed before any other check, and an older week\'s removal does not block this week [V12-86] [V12-97]', async () => {
         const h = await setup();
         const a = await h.post(KEYS[0], h.payload(20000));
@@ -372,7 +382,7 @@ export function boardSuite(label: string, make: (c: Clock) => PlatformParts, opt
         expect(Object.keys(res.body).sort()).toEqual(['count', 'cutoff_total', 'personal', 'resets_at', 'rows', 'updated_at', 'week']);
       });
 
-      it('the device part\'s standing comes from the current projection, never from the cached public copy [V12-119] [V12-100]', async () => {
+      it('the device part\'s standing comes from the current projection, never from the cached public copy [V12-100] [V12-101]', async () => {
         const h = await setup();
         await h.post(KEYS[0], h.payload(20000));
         expect((await h.board()).body.count).toBe(1);
@@ -383,7 +393,7 @@ export function boardSuite(label: string, make: (c: Clock) => PlatformParts, opt
         expect((await h.board(KEYS[0])).body.personal.best.standing).toEqual({ kind: 'exact', rank: 2, tied: false });
       });
 
-      it('the mode is read before any cache or ranking access: off and ordinary dark reads are disabled, missing settings mean off, unreadable settings mean unavailable [V12-99] [V12-103]', async () => {
+      it('the mode is read before any cache or ranking access: off and ordinary dark reads are disabled, missing settings mean off, unreadable settings mean unavailable and log only request id, route and error name [V12-99] [V12-103] [V12-112]', async () => {
         const h = await setup(null);
         expect((await h.board()).body).toEqual({ disabled: true });
         expect((await h.call('GET', '/api/v1/health')).body.board_mode).toBe('off');

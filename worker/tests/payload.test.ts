@@ -53,7 +53,7 @@ describe('the score request shape', () => {
     expect(parse({ turnstile_token: '' })).toBeNull();
   });
 
-  it('a timed-out question must carry a null answer, an answered question cannot be null, and only canonical years pass, -4001 included [V12-89] [V12-68]', () => {
+  it('a timed-out question must carry a null answer, an answered question cannot be null, and only canonical years pass, -4001 included [V12-89]', () => {
     const p = h.payload(30000);
     const out = { made: true, when: false, kept: false };
     expect(parse({ ...p, timed_out: [out, ...p.timed_out.slice(1)] })).toBeNull();

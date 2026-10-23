@@ -80,7 +80,7 @@ describe('rows read and written on real D1 (N1)', () => {
     }, 60_000);
   }
 
-  it('standing on large weeks: exact for the listed and for ties with the 50th, otherwise a top-half percentile or the points to the top 50, never a guessed rank [V12-101] [V12-118]', async () => {
+  it('standing on large weeks: exact for the listed and for ties with the 50th, otherwise a top-half percentile or the points to the top 50, never a guessed rank [V12-101]', async () => {
     await d1.empty();
     const h = harness((c) => ({ db: d1.db, cache: memoryCache(c) }));
     await h.setMode('on');

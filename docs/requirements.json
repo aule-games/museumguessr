@@ -1766,7 +1766,20 @@
         "W6"
       ],
       "replaces": "A per-row removal secret (secret_sha256) and a typed nickname in the payload.",
-      "tests": []
+      "tests": [
+        {
+          "file": "worker/tests/board.test.ts",
+          "title": "a first eligible game is added: 201, a current receipt with its exact rank, and the public board lists it under the generated name"
+        },
+        {
+          "file": "worker/tests/payload.test.ts",
+          "title": "only a 128-bit base64url bearer key is a credential; the IP limit keys IPv4 addresses and IPv6 /64 prefixes"
+        },
+        {
+          "file": "worker/tests/board-d1.smoke.ts",
+          "title": "a first eligible game is added: 201, a current receipt with its exact rank, and the public board lists it under the generated name"
+        }
+      ]
     },
     {
       "id": "V12-83",
@@ -1777,7 +1790,24 @@
         "ENG1"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "worker/tests/board.test.ts",
+          "title": "nothing is written to D1 for any answer before step 7: invalid, too large, rate limited, disabled, duplicate, removed, replay, update_page, try_later, week_closed and not_best, each in the contract envelope"
+        },
+        {
+          "file": "worker/tests/payload.test.ts",
+          "title": "accepts exactly the canonical fields plus the turnstile token and refuses unknown, missing or credential fields"
+        },
+        {
+          "file": "worker/tests/payload.test.ts",
+          "title": "reads at most 4096 streamed bytes, whatever Content-Length claims"
+        },
+        {
+          "file": "worker/tests/board-d1.smoke.ts",
+          "title": "nothing is written to D1 for any answer before step 7: invalid, too large, rate limited, disabled, duplicate, removed, replay, update_page, try_later, week_closed and not_best, each in the contract envelope"
+        }
+      ]
     },
     {
       "id": "V12-84",
@@ -1787,7 +1817,24 @@
         "ENG15"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "worker/tests/board.test.ts",
+          "title": "the IP window allows 30 requests a minute, counts known retries and bearer reads, keys IPv6 by /64 and refuses before any D1 read"
+        },
+        {
+          "file": "worker/tests/payload.test.ts",
+          "title": "only a 128-bit base64url bearer key is a credential; the IP limit keys IPv4 addresses and IPv6 /64 prefixes"
+        },
+        {
+          "file": "worker/tests/board-d1.smoke.ts",
+          "title": "the IP window allows 30 requests a minute, counts known retries and bearer reads, keys IPv6 by /64 and refuses before any D1 read"
+        },
+        {
+          "file": "worker/tests/board-d1.smoke.ts",
+          "title": "the rate-limit binding refuses the 31st request a minute from one address"
+        }
+      ]
     },
     {
       "id": "V12-85",
@@ -1798,7 +1845,16 @@
         "ENG22"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "worker/tests/board.test.ts",
+          "title": "a known game returns its own receipt without verification or a per-key charge; a changed payload or another device gets duplicate"
+        },
+        {
+          "file": "worker/tests/board-d1.smoke.ts",
+          "title": "a known game returns its own receipt without verification or a per-key charge; a changed payload or another device gets duplicate"
+        }
+      ]
     },
     {
       "id": "V12-86",
@@ -1809,7 +1865,16 @@
         "ENG1"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "worker/tests/board.test.ts",
+          "title": "a removed device-week refuses new submissions as removed before any other check, and an older week's removal does not block this week"
+        },
+        {
+          "file": "worker/tests/board-d1.smoke.ts",
+          "title": "a removed device-week refuses new submissions as removed before any other check, and an older week's removal does not block this week"
+        }
+      ]
     },
     {
       "id": "V12-87",
@@ -1820,7 +1885,16 @@
         "ENG19"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "worker/tests/board.test.ts",
+          "title": "refuses replay decks and, in public mode, test games; another contract or scoring version gets update_page, so an old tab or a rollback never ranks under other rules"
+        },
+        {
+          "file": "worker/tests/board-d1.smoke.ts",
+          "title": "refuses replay decks and, in public mode, test games; another contract or scoring version gets update_page, so an old tab or a rollback never ranks under other rules"
+        }
+      ]
     },
     {
       "id": "V12-88",
@@ -1831,7 +1905,12 @@
         "V1-answers-rev"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "worker/tests/payload.test.ts",
+          "title": "lower revisions or retired ids need update_page, higher revisions or unknown ids try_later, equal ones rescore"
+        }
+      ]
     },
     {
       "id": "V12-89",
@@ -1842,7 +1921,16 @@
         "ENG10"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "worker/tests/payload.test.ts",
+          "title": "a timed-out question must carry a null answer, an answered question cannot be null, and only canonical years pass, -4001 included"
+        },
+        {
+          "file": "worker/tests/payload.test.ts",
+          "title": "the server scores with the shared scorer: perfect answers 1,000 each, timed-out questions and skipped rounds 0"
+        }
+      ]
     },
     {
       "id": "V12-90",
@@ -1853,7 +1941,16 @@
         "ENG1"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "worker/tests/board.test.ts",
+          "title": "nothing is written to D1 for any answer before step 7: invalid, too large, rate limited, disabled, duplicate, removed, replay, update_page, try_later, week_closed and not_best, each in the contract envelope"
+        },
+        {
+          "file": "worker/tests/board-d1.smoke.ts",
+          "title": "nothing is written to D1 for any answer before step 7: invalid, too large, rate limited, disabled, duplicate, removed, replay, update_page, try_later, week_closed and not_best, each in the contract envelope"
+        }
+      ]
     },
     {
       "id": "V12-91",
@@ -1864,7 +1961,20 @@
         "ENG15"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/wrangler-config.test.ts",
+          "title": "the board binds one D1 database with its migrations, three rate limits equal to the limits module and an hourly purge, and keeps secrets out of the file"
+        },
+        {
+          "file": "worker/tests/board.test.ts",
+          "title": "three new submissions per key and five new device-week rows per IP each minute, then siteverify; 30 devices behind one IP all get in through retries"
+        },
+        {
+          "file": "worker/tests/board-d1.smoke.ts",
+          "title": "three new submissions per key and five new device-week rows per IP each minute, then siteverify; 30 devices behind one IP all get in through retries"
+        }
+      ]
     },
     {
       "id": "V12-92",
@@ -1874,7 +1984,24 @@
         "ENG14"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "worker/tests/board.test.ts",
+          "title": "siteverify must report success, this environment's hostname and the board action, gets the client IP, and test keys pass only where allowed"
+        },
+        {
+          "file": "worker/tests/board-d1.smoke.ts",
+          "title": "siteverify must report success, this environment's hostname and the board action, gets the client IP, and test keys pass only where allowed"
+        },
+        {
+          "file": "worker/tests/wrangler-dev.smoke.ts",
+          "title": "with the always-pass test secret a test-assisted game goes through siteverify into smoke rows; a lower one is not_best; the owner sees it with the header"
+        },
+        {
+          "file": "worker/tests/wrangler-dev.smoke.ts",
+          "title": "with the always-fail test secret siteverify refuses: turnstile_failed, retryable, nothing stored"
+        }
+      ]
     },
     {
       "id": "V12-93",
@@ -1884,7 +2011,24 @@
         "ENG1"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "worker/tests/board.test.ts",
+          "title": "two submissions from one key in either order end with the higher best, consistent receipts and buckets that equal a recount"
+        },
+        {
+          "file": "worker/tests/board.test.ts",
+          "title": "a delete racing a replacement leaves the week removed, with every receipt removed, and a duplicate during a replacement returns the same receipt"
+        },
+        {
+          "file": "worker/tests/board-d1.smoke.ts",
+          "title": "two submissions from one key in either order end with the higher best, consistent receipts and buckets that equal a recount"
+        },
+        {
+          "file": "worker/tests/board-d1.smoke.ts",
+          "title": "a delete racing a replacement leaves the week removed, with every receipt removed, and a duplicate during a replacement returns the same receipt"
+        }
+      ]
     },
     {
       "id": "V12-94",
@@ -1895,7 +2039,16 @@
         "ENG1"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "worker/tests/board.test.ts",
+          "title": "replacing a best keeps its row id and hidden state, takes the new game and hash, resets the tie order and creation time, and marks the old receipt replaced"
+        },
+        {
+          "file": "worker/tests/board-d1.smoke.ts",
+          "title": "replacing a best keeps its row id and hidden state, takes the new game and hash, resets the tie order and creation time, and marks the old receipt replaced"
+        }
+      ]
     },
     {
       "id": "V12-95",
@@ -1907,7 +2060,32 @@
         "spec reconciliation: weekly bests, eight-week purge"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "worker/tests/board.test.ts",
+          "title": "replacing a best keeps its row id and hidden state, takes the new game and hash, resets the tie order and creation time, and marks the old receipt replaced"
+        },
+        {
+          "file": "worker/tests/board.test.ts",
+          "title": "only the server week ranks: an old or missing board_week is week_closed, and a known retry keeps its week and score after Monday"
+        },
+        {
+          "file": "worker/tests/board.test.ts",
+          "title": "the bearer read adds the device part uncached and private: name, this week's best with its standing, at most eight weekly bests newest first, no game ids"
+        },
+        {
+          "file": "worker/tests/board-d1.smoke.ts",
+          "title": "replacing a best keeps its row id and hidden state, takes the new game and hash, resets the tie order and creation time, and marks the old receipt replaced"
+        },
+        {
+          "file": "worker/tests/board-d1.smoke.ts",
+          "title": "only the server week ranks: an old or missing board_week is week_closed, and a known retry keeps its week and score after Monday"
+        },
+        {
+          "file": "worker/tests/board-d1.smoke.ts",
+          "title": "the bearer read adds the device part uncached and private: name, this week's best with its standing, at most eight weekly bests newest first, no game ids"
+        }
+      ]
     },
     {
       "id": "V12-96",
@@ -1917,7 +2095,32 @@
         "ENG22"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "worker/tests/board.test.ts",
+          "title": "a known game returns its own receipt without verification or a per-key charge; a changed payload or another device gets duplicate"
+        },
+        {
+          "file": "worker/tests/board.test.ts",
+          "title": "the bearer read adds the device part uncached and private: name, this week's best with its standing, at most eight weekly bests newest first, no game ids"
+        },
+        {
+          "file": "worker/tests/board.test.ts",
+          "title": "the receipt GET answers only the owner: another device gets duplicate, hidden and removed rows not_found, unknown rows not_found"
+        },
+        {
+          "file": "worker/tests/board-d1.smoke.ts",
+          "title": "a known game returns its own receipt without verification or a per-key charge; a changed payload or another device gets duplicate"
+        },
+        {
+          "file": "worker/tests/board-d1.smoke.ts",
+          "title": "the bearer read adds the device part uncached and private: name, this week's best with its standing, at most eight weekly bests newest first, no game ids"
+        },
+        {
+          "file": "worker/tests/board-d1.smoke.ts",
+          "title": "the receipt GET answers only the owner: another device gets duplicate, hidden and removed rows not_found, unknown rows not_found"
+        }
+      ]
     },
     {
       "id": "V12-97",
@@ -1929,7 +2132,48 @@
         "v1 ranks, weeks and removal"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "worker/tests/board.test.ts",
+          "title": "a delete racing a replacement leaves the week removed, with every receipt removed, and a duplicate during a replacement returns the same receipt"
+        },
+        {
+          "file": "worker/tests/board.test.ts",
+          "title": "a removed device-week refuses new submissions as removed before any other check, and an older week's removal does not block this week"
+        },
+        {
+          "file": "worker/tests/board.test.ts",
+          "title": "delete drops this location's cached board at once, and on → dark → off with a warm cache never serves the public list"
+        },
+        {
+          "file": "worker/tests/board.test.ts",
+          "title": "the receipt GET answers only the owner: another device gets duplicate, hidden and removed rows not_found, unknown rows not_found"
+        },
+        {
+          "file": "worker/tests/board.test.ts",
+          "title": "delete clears the stored name, points and item ids, keeps only the tombstone and receipt metadata, and works with the board off"
+        },
+        {
+          "file": "worker/tests/board-d1.smoke.ts",
+          "title": "a delete racing a replacement leaves the week removed, with every receipt removed, and a duplicate during a replacement returns the same receipt"
+        },
+        {
+          "file": "worker/tests/board-d1.smoke.ts",
+          "title": "a removed device-week refuses new submissions as removed before any other check, and an older week's removal does not block this week"
+        },
+        {
+          "file": "worker/tests/board-d1.smoke.ts",
+          "title": "delete drops this location's cached board at once, and on → dark → off with a warm cache never serves the public list"
+        },
+        {
+          "file": "worker/tests/board-d1.smoke.ts",
+          "title": "the receipt GET answers only the owner: another device gets duplicate, hidden and removed rows not_found, unknown rows not_found"
+        },
+        {
+          "file": "worker/tests/board-d1.smoke.ts",
+          "title": "delete clears the stored name, points and item ids, keeps only the tombstone and receipt metadata, and works with the board off"
+        }
+      ]
     },
     {
       "id": "V12-98",
@@ -1940,7 +2184,16 @@
         "D10"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "worker/tests/board.test.ts",
+          "title": "equal totals share a rank, earlier submissions list first, only 50 rows are public and the cutoff is the 50th total"
+        },
+        {
+          "file": "worker/tests/board-d1.smoke.ts",
+          "title": "equal totals share a rank, earlier submissions list first, only 50 rows are public and the cutoff is the 50th total"
+        }
+      ]
     },
     {
       "id": "V12-99",
@@ -1951,7 +2204,36 @@
         "v1 ranks, weeks and removal"
       ],
       "replaces": "The v1 board GET cached at the edge for 30 s.",
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/board-cli.test.ts",
+          "title": "a bulk hide counts first, needs --yes, logs a reason without personal data, hides the rows and rebuilds the projection with the Worker's own SQL"
+        },
+        {
+          "file": "worker/tests/board.test.ts",
+          "title": "the mode is read before any cache or ranking access: off and ordinary dark reads are disabled, missing settings mean off, unreadable settings mean unavailable and log only request id, route and error name"
+        },
+        {
+          "file": "worker/tests/board.test.ts",
+          "title": "delete drops this location's cached board at once, and on → dark → off with a warm cache never serves the public list"
+        },
+        {
+          "file": "worker/tests/board.test.ts",
+          "title": "a cache miss reads only the week's projection row, and the copy lives at most 60 seconds and never past Monday 00:00 UTC"
+        },
+        {
+          "file": "worker/tests/board-d1.smoke.ts",
+          "title": "the mode is read before any cache or ranking access: off and ordinary dark reads are disabled, missing settings mean off, unreadable settings mean unavailable and log only request id, route and error name"
+        },
+        {
+          "file": "worker/tests/board-d1.smoke.ts",
+          "title": "delete drops this location's cached board at once, and on → dark → off with a warm cache never serves the public list"
+        },
+        {
+          "file": "worker/tests/board-d1.smoke.ts",
+          "title": "a cache miss reads only the week's projection row, and the copy lives at most 60 seconds and never past Monday 00:00 UTC"
+        }
+      ]
     },
     {
       "id": "V12-100",
@@ -1961,7 +2243,40 @@
         "ENG2"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "worker/tests/board.test.ts",
+          "title": "the bearer read adds the device part uncached and private: name, this week's best with its standing, at most eight weekly bests newest first, no game ids"
+        },
+        {
+          "file": "worker/tests/board.test.ts",
+          "title": "the device part's standing comes from the current projection, never from the cached public copy"
+        },
+        {
+          "file": "worker/tests/board.test.ts",
+          "title": "a cache miss reads only the week's projection row, and the copy lives at most 60 seconds and never past Monday 00:00 UTC"
+        },
+        {
+          "file": "worker/tests/board-d1.smoke.ts",
+          "title": "the bearer read adds the device part uncached and private: name, this week's best with its standing, at most eight weekly bests newest first, no game ids"
+        },
+        {
+          "file": "worker/tests/board-d1.smoke.ts",
+          "title": "the device part's standing comes from the current projection, never from the cached public copy"
+        },
+        {
+          "file": "worker/tests/board-d1.smoke.ts",
+          "title": "a cache miss reads only the week's projection row, and the copy lives at most 60 seconds and never past Monday 00:00 UTC"
+        },
+        {
+          "file": "worker/tests/board-d1.smoke.ts",
+          "title": "on a 10,000-row concentrated week the personal read scans at most 100 rows, a cache miss 1, a not-best POST about 2 and writes nothing"
+        },
+        {
+          "file": "worker/tests/board-d1.smoke.ts",
+          "title": "on a 10,000-row all-equal week the personal read scans at most 100 rows, a cache miss 1, a not-best POST about 2 and writes nothing"
+        }
+      ]
     },
     {
       "id": "V12-101",
@@ -1971,7 +2286,28 @@
         "ENG18"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "worker/tests/board.test.ts",
+          "title": "the device part's standing comes from the current projection, never from the cached public copy"
+        },
+        {
+          "file": "worker/tests/board-d1.smoke.ts",
+          "title": "the device part's standing comes from the current projection, never from the cached public copy"
+        },
+        {
+          "file": "worker/tests/board-d1.smoke.ts",
+          "title": "on a 10,000-row concentrated week the personal read scans at most 100 rows, a cache miss 1, a not-best POST about 2 and writes nothing"
+        },
+        {
+          "file": "worker/tests/board-d1.smoke.ts",
+          "title": "on a 10,000-row all-equal week the personal read scans at most 100 rows, a cache miss 1, a not-best POST about 2 and writes nothing"
+        },
+        {
+          "file": "worker/tests/board-d1.smoke.ts",
+          "title": "standing on large weeks: exact for the listed and for ties with the 50th, otherwise a top-half percentile or the points to the top 50, never a guessed rank"
+        }
+      ]
     },
     {
       "id": "V12-102",
@@ -1982,7 +2318,20 @@
         "ENG18"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "worker/tests/buckets.test.ts",
+          "title": "the TypeScript and SQL bucket functions agree for every total from 0 to 30000: 500 wide below 25000, 100 up to 28000, 25 above"
+        },
+        {
+          "file": "worker/tests/buckets.test.ts",
+          "title": "the triggers keep visible-score buckets and the week count equal to a full recount through inserts, replacements, hides, unhides and deletes"
+        },
+        {
+          "file": "worker/tests/wrangler-dev.smoke.ts",
+          "title": "wrangler d1 migrations apply --local creates the bucket triggers"
+        }
+      ]
     },
     {
       "id": "V12-103",
@@ -1992,7 +2341,24 @@
         "ENG3"
       ],
       "replaces": "The BOARD_ENABLED Worker variable (v1).",
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/board-cli.test.ts",
+          "title": "writes the D1 settings row from a fixed statement file, remote only with --yes and the credentials, local without either"
+        },
+        {
+          "file": "tests/unit/wrangler-config.test.ts",
+          "title": "the board binds one D1 database with its migrations, three rate limits equal to the limits module and an hourly purge, and keeps secrets out of the file"
+        },
+        {
+          "file": "worker/tests/board.test.ts",
+          "title": "the mode is read before any cache or ranking access: off and ordinary dark reads are disabled, missing settings mean off, unreadable settings mean unavailable and log only request id, route and error name"
+        },
+        {
+          "file": "worker/tests/board-d1.smoke.ts",
+          "title": "the mode is read before any cache or ranking access: off and ordinary dark reads are disabled, missing settings mean off, unreadable settings mean unavailable and log only request id, route and error name"
+        }
+      ]
     },
     {
       "id": "V12-104",
@@ -2002,7 +2368,16 @@
         "ENG3"
       ],
       "replaces": "A deployment variable stores the emergency mode.",
-      "tests": []
+      "tests": [
+        {
+          "file": "worker/tests/board.test.ts",
+          "title": "BOARD_FORCE_OFF wins over the stored mode and needs no D1 read, even when D1 is out of quota; \"0\" leaves the board alone"
+        },
+        {
+          "file": "worker/tests/board-d1.smoke.ts",
+          "title": "BOARD_FORCE_OFF wins over the stored mode and needs no D1 read, even when D1 is out of quota; \"0\" leaves the board alone"
+        }
+      ]
     },
     {
       "id": "V12-105",
@@ -2014,7 +2389,40 @@
         "spec reconciliation: dark read context"
       ],
       "replaces": "Smoke rows stored hidden in the public scores table (H2).",
-      "tests": []
+      "tests": [
+        {
+          "file": "worker/tests/board.test.ts",
+          "title": "test-assisted games run the full path into smoke rows, never into buckets, counts or the public board; ordinary games are disabled"
+        },
+        {
+          "file": "worker/tests/board.test.ts",
+          "title": "the test header gives week context and the owner's smoke bests, private, with null ranks; it changes nothing in on or off mode"
+        },
+        {
+          "file": "worker/tests/board.test.ts",
+          "title": "a dark test submission, then on: a real game from the same device the same week ranks normally"
+        },
+        {
+          "file": "worker/tests/board-d1.smoke.ts",
+          "title": "test-assisted games run the full path into smoke rows, never into buckets, counts or the public board; ordinary games are disabled"
+        },
+        {
+          "file": "worker/tests/board-d1.smoke.ts",
+          "title": "the test header gives week context and the owner's smoke bests, private, with null ranks; it changes nothing in on or off mode"
+        },
+        {
+          "file": "worker/tests/board-d1.smoke.ts",
+          "title": "a dark test submission, then on: a real game from the same device the same week ranks normally"
+        },
+        {
+          "file": "worker/tests/wrangler-dev.smoke.ts",
+          "title": "an ordinary read is disabled in dark mode; the test header gives the server week, private and uncached"
+        },
+        {
+          "file": "worker/tests/wrangler-dev.smoke.ts",
+          "title": "with the always-pass test secret a test-assisted game goes through siteverify into smoke rows; a lower one is not_best; the owner sees it with the header"
+        }
+      ]
     },
     {
       "id": "V12-106",
@@ -2025,7 +2433,24 @@
         "ENG20"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/board-cli.test.ts",
+          "title": "board:on refuses until contentApproved, then purges every smoke row first, prints the count and switches on"
+        },
+        {
+          "file": "tests/unit/board-cli.test.ts",
+          "title": "the content gate needs both batches promoted, or F with an approved F-only fallback"
+        },
+        {
+          "file": "worker/tests/board.test.ts",
+          "title": "a dark test submission, then on: a real game from the same device the same week ranks normally"
+        },
+        {
+          "file": "worker/tests/board-d1.smoke.ts",
+          "title": "a dark test submission, then on: a real game from the same device the same week ranks normally"
+        }
+      ]
     },
     {
       "id": "V12-107",
@@ -2035,7 +2460,28 @@
         "N2"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/wrangler-config.test.ts",
+          "title": "the board binds one D1 database with its migrations, three rate limits equal to the limits module and an hourly purge, and keeps secrets out of the file"
+        },
+        {
+          "file": "worker/tests/board.test.ts",
+          "title": "the cron purge deletes rows older than eight weeks in bounded chunks, skips the hours around the reset and keeps the eight retained weeks"
+        },
+        {
+          "file": "worker/tests/buckets.test.ts",
+          "title": "a purged week (no board_weeks row) skips per-row bucket upkeep"
+        },
+        {
+          "file": "worker/tests/board-d1.smoke.ts",
+          "title": "the cron purge deletes rows older than eight weeks in bounded chunks, skips the hours around the reset and keeps the eight retained weeks"
+        },
+        {
+          "file": "worker/tests/board-d1.smoke.ts",
+          "title": "the purge deletes a 10,000-row old week in bounded chunks over several runs, writing at most a chunk per table per run"
+        }
+      ]
     },
     {
       "id": "V12-108",
@@ -2046,7 +2492,20 @@
         "spec reconciliation: pre-completion week fetch"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "worker/tests/board.test.ts",
+          "title": "only the server week ranks: an old or missing board_week is week_closed, and a known retry keeps its week and score after Monday"
+        },
+        {
+          "file": "worker/tests/payload.test.ts",
+          "title": "checks ids, ten distinct items, revisions, versions, weeks at runtime and bounded coordinates"
+        },
+        {
+          "file": "worker/tests/board-d1.smoke.ts",
+          "title": "only the server week ranks: an old or missing board_week is week_closed, and a known retry keeps its week and score after Monday"
+        }
+      ]
     },
     {
       "id": "V12-109",
@@ -2059,7 +2518,40 @@
         "D13"
       ],
       "replaces": "Typed nicknames on the board, the \"Another name\" re-roll and name_rejected.",
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/board-names.test.ts",
+          "title": "three append-only word lists give at least a million names with no suffix, each word a single plain word"
+        },
+        {
+          "file": "tests/unit/board-names.test.ts",
+          "title": "no word and no run of adjacent words is on the public name list (data/name-list.json)"
+        },
+        {
+          "file": "tests/unit/board-names.test.ts",
+          "title": "a device key always gives the same name, as these golden fixtures fix"
+        },
+        {
+          "file": "tests/unit/board-names.test.ts",
+          "title": "10,000 devices get nearly all different names: collisions stay near the birthday expectation"
+        },
+        {
+          "file": "tests/unit/board-names.test.ts",
+          "title": "a blocklisted name or word pair re-derives only the names that contain it"
+        },
+        {
+          "file": "tests/unit/names-cli.test.ts",
+          "title": "adds a whole name or a word pair once, lower-cased, and says that only names containing it change"
+        },
+        {
+          "file": "worker/tests/board.test.ts",
+          "title": "a first eligible game is added: 201, a current receipt with its exact rank, and the public board lists it under the generated name"
+        },
+        {
+          "file": "worker/tests/board-d1.smoke.ts",
+          "title": "a first eligible game is added: 201, a current receipt with its exact rank, and the public board lists it under the generated name"
+        }
+      ]
     },
     {
       "id": "V12-110",
@@ -2070,7 +2562,24 @@
         "N7"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/board-cli.test.ts",
+          "title": "writes the D1 settings row from a fixed statement file, remote only with --yes and the credentials, local without either"
+        },
+        {
+          "file": "tests/unit/board-cli.test.ts",
+          "title": "refuses hostile or malformed arguments before any wrangler call, so no argument text reaches SQL unchecked"
+        },
+        {
+          "file": "tests/unit/board-cli.test.ts",
+          "title": "a bulk hide counts first, needs --yes, logs a reason without personal data, hides the rows and rebuilds the projection with the Worker's own SQL"
+        },
+        {
+          "file": "tests/unit/names-cli.test.ts",
+          "title": "refuses anything that is not a run of name words in name order, so hostile text never reaches the file"
+        }
+      ]
     },
     {
       "id": "V12-111",
@@ -2081,7 +2590,20 @@
         "ENG23"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "worker/tests/board.test.ts",
+          "title": "nothing is written to D1 for any answer before step 7: invalid, too large, rate limited, disabled, duplicate, removed, replay, update_page, try_later, week_closed and not_best, each in the contract envelope"
+        },
+        {
+          "file": "worker/tests/board-d1.smoke.ts",
+          "title": "nothing is written to D1 for any answer before step 7: invalid, too large, rate limited, disabled, duplicate, removed, replay, update_page, try_later, week_closed and not_best, each in the contract envelope"
+        },
+        {
+          "file": "worker/tests/board-d1.smoke.ts",
+          "title": "a D1 limit error mid-submission answers unavailable and leaves nothing half-written, so the page keeps its pending game"
+        }
+      ]
     },
     {
       "id": "V12-112",
@@ -2092,7 +2614,20 @@
         "v1 Worker edge cases"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/board-cli.test.ts",
+          "title": "streams only the Worker's redacted error lines: request id, route and error name, never a URL, header, body or IP"
+        },
+        {
+          "file": "worker/tests/board.test.ts",
+          "title": "the mode is read before any cache or ranking access: off and ordinary dark reads are disabled, missing settings mean off, unreadable settings mean unavailable and log only request id, route and error name"
+        },
+        {
+          "file": "worker/tests/board-d1.smoke.ts",
+          "title": "the mode is read before any cache or ranking access: off and ordinary dark reads are disabled, missing settings mean off, unreadable settings mean unavailable and log only request id, route and error name"
+        }
+      ]
     },
     {
       "id": "V12-113",
@@ -2241,7 +2776,12 @@
         "N14"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/board-cli.test.ts",
+          "title": "migrates the local D1, writes the local board mode (dark by default) and serves dist/ on 127.0.0.1 with the always-pass test secret, without credentials"
+        }
+      ]
     },
     {
       "id": "V12-127",
@@ -2252,7 +2792,12 @@
         "ENG5"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/board-cli.test.ts",
+          "title": "migrates the local D1, writes the local board mode (dark by default) and serves dist/ on 127.0.0.1 with the always-pass test secret, without credentials"
+        }
+      ]
     },
     {
       "id": "V12-128",
@@ -2274,7 +2819,12 @@
         "ENG23"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "worker/tests/isolation.test.ts",
+          "title": "the Worker and every shared module it imports compile without the DOM library and contain no runtime code evaluation or browser globals"
+        }
+      ]
     },
     {
       "id": "V12-130",
@@ -2284,7 +2834,20 @@
         "N1"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "worker/tests/board-d1.smoke.ts",
+          "title": "on a 10,000-row concentrated week the personal read scans at most 100 rows, a cache miss 1, a not-best POST about 2 and writes nothing"
+        },
+        {
+          "file": "worker/tests/board-d1.smoke.ts",
+          "title": "on a 10,000-row all-equal week the personal read scans at most 100 rows, a cache miss 1, a not-best POST about 2 and writes nothing"
+        },
+        {
+          "file": "worker/tests/board-d1.smoke.ts",
+          "title": "the purge deletes a 10,000-row old week in bounded chunks over several runs, writing at most a chunk per table per run"
+        }
+      ]
     },
     {
       "id": "V12-131",
@@ -2294,7 +2857,20 @@
         "N19"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "worker/tests/board.test.ts",
+          "title": "the Monday 00:00 UTC rollover: the cached board, pending retries, receipt ranks and the purge all move to the new week together"
+        },
+        {
+          "file": "worker/tests/board-d1.smoke.ts",
+          "title": "the Monday 00:00 UTC rollover: the cached board, pending retries, receipt ranks and the purge all move to the new week together"
+        },
+        {
+          "file": "worker/tests/board-d1.smoke.ts",
+          "title": "a D1 limit error mid-submission answers unavailable and leaves nothing half-written, so the page keeps its pending game"
+        }
+      ]
     },
     {
       "id": "V12-132",
@@ -2351,7 +2927,24 @@
         "v1 data stored"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "worker/tests/board.test.ts",
+          "title": "delete clears the stored name, points and item ids, keeps only the tombstone and receipt metadata, and works with the board off"
+        },
+        {
+          "file": "worker/tests/board.test.ts",
+          "title": "the database never holds a raw pin, an IP address, a user agent or a key"
+        },
+        {
+          "file": "worker/tests/board-d1.smoke.ts",
+          "title": "delete clears the stored name, points and item ids, keeps only the tombstone and receipt metadata, and works with the board off"
+        },
+        {
+          "file": "worker/tests/board-d1.smoke.ts",
+          "title": "the database never holds a raw pin, an IP address, a user agent or a key"
+        }
+      ]
     },
     {
       "id": "V12-136",
@@ -2362,7 +2955,12 @@
         "R8"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/board-cli.test.ts",
+          "title": "lists this week's top 50 and hidden rows and reports how many top-50 totals reach 29,500, prompting a ranking review above ten"
+        }
+      ]
     },
     {
       "id": "V12-137",
@@ -2373,7 +2971,20 @@
         "ENG23"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/answer-revs.test.ts",
+          "title": "the recorded baseline matches the pool, and an item without answers_rev is at revision 1"
+        },
+        {
+          "file": "tests/unit/answer-revs.test.ts",
+          "title": "changing kept, made or when needs a higher answers_rev than the baseline; text edits and new items do not"
+        },
+        {
+          "file": "worker/tests/payload.test.ts",
+          "title": "a retired id never ranks (update_page), and its recorded key stays available for 14 days for diagnostics only"
+        }
+      ]
     },
     {
       "id": "V12-138",
@@ -2384,7 +2995,16 @@
         "N10"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "worker/tests/board.test.ts",
+          "title": "refuses replay decks and, in public mode, test games; another contract or scoring version gets update_page, so an old tab or a rollback never ranks under other rules"
+        },
+        {
+          "file": "worker/tests/board-d1.smoke.ts",
+          "title": "refuses replay decks and, in public mode, test games; another contract or scoring version gets update_page, so an old tab or a rollback never ranks under other rules"
+        }
+      ]
     },
     {
       "id": "V12-139",

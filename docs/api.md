@@ -37,6 +37,15 @@ rows return `not_found` on receipt GET; an already-known POST can still return
 its own removed receipt. Another owner gets `duplicate`, never receipt data.
 Deletion remains available when ranking is off. [V12-95] [V12-96] [V12-97]
 
+The device part is computed from the week's current projection row, never from
+the cached public copy, so a fresh add never shows a stale standing. A best that
+moderation hid stays in the owner's `weeks` (so Remove still works) with a null
+rank and standing. A week's rank is the receipt rank for the current week; for a
+closed week the hourly job writes the final rank of the 50 listed rows once,
+and rows below them keep a null rank. The player hash is sha256 of the key's
+base64url text, and the generated name is derived from it (`src/board/names.ts`).
+Row ids are 12 random base64url characters. [V12-95] [V12-101] [V12-109]
+
 ## Score payload and hashing
 
 Exactly ten distinct item ids, ten positive integer answer revisions and ten
@@ -95,19 +104,29 @@ Mode and force-off checks run before cache or ranking access. [V12-83] [V12-84]
    a submission-limit charge. Otherwise return `duplicate`.
 3. Refuse a tombstoned device-week as `removed`.
 4. Check eligibility, contract/scoring compatibility, server week and answer
-   revisions. A lower revision or retired id requires `update_page`; a higher
+   revisions. A replay deck, and in public mode a test-assisted game, is
+   refused as `replay` (not ranked); a contract or scoring version other than
+   the current one is `update_page`. A lower revision or retired id requires `update_page`; a higher
    revision or unknown id means `try_later`. Accept the current contract; a
    previous contract is accepted only with an explicit adapter and matching
    scoring version. No previous version exists at contract version 1.
 5. Rescore with shared scoring and bundled answer keys. Keep retired keys for
    fourteen days for compatibility diagnostics, not new ranked submissions.
-6. If the score cannot improve the weekly best, return `not_best` with `best`.
+6. If the score cannot improve the weekly best, return `not_best` with `best`
+   (its row id and total; standing is null, the device's receipts and board
+   read carry the rank).
 7. Check three submissions per key per minute and five new device-week rows per
    IP per minute, then siteverify. Check success, expected hostname and action
    `board_submit`, passing remoteip. Each verification retry needs a fresh token.
+   The expected hostname is the per-environment `TURNSTILE_HOSTNAME`
+   (museumguessr.com when deployed). Cloudflare's test keys answer without an
+   action and with `result_with_testing_key`; they pass only where
+   `TURNSTILE_TEST_KEYS` is `1` (local wrangler dev), so production refuses
+   them. A rate-limited request gets `retry_after` 60.
 8. In one transactional `env.DB.batch`, insert or improve only when total is
    greater and no tombstone exists. Receipt changes are conditioned on the
-   winning game id. A zero-row race returns `removed` or the fresh `not_best`.
+   winning game id. A zero-row race returns `removed` or the fresh `not_best`;
+   when the same game won in a parallel request, its own receipt (200).
 
 Nothing writes D1 before step 7 has passed. Replacement keeps row id and hidden
 status, resets sequence and creation time, updates the old receipt, and relies
@@ -204,9 +223,11 @@ that the handling location stops serving a removed or hidden row at once.
 
 POST computes exact rank once and stores receipt_rank. Current GET standing is
 bounded to at most 100 scanned rows: exact when bounded, otherwise a top-half
-percentile or distance to the top fifty, never a fabricated exact rank. Buckets
-are 500 points below 25000, 100 from 25000 through 28000, and 25 above 28000;
-TypeScript and SQL share a tested boundary convention for all 30001 totals.
+percentile or distance to the top fifty, never a fabricated exact rank. A bucket
+is named by its lowest total: 500 points wide below 25000, 100 wide from 25000
+up to 28000, and 25 wide from 28000 to 30000; TypeScript and SQL share this
+boundary convention, tested for all 30001 totals. The percentile uses the worst
+rank the bucket counts allow; the distance is the 50th total minus the best.
 Hidden rows never enter buckets. Weekly purge runs in chunks away from reset,
 skipping old-week per-row bucket upkeep. [V12-101] [V12-102] [V12-107]
 
