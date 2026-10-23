@@ -35,7 +35,10 @@ keep it free of private names.
 | `npm run verify` | run everything above in CI order, plus the Worker under `wrangler dev`, and rewrite `docs/verification.md` | installs `worker/` dependencies when missing; release-scan rows print SKIPPED without a denylist |
 | `npm run release:check` | the release scan of the GitHub repository (`-- --dist dist` scans a build) | `.denylist`, `exiftool`, authenticated `gh` |
 | `npm run deploy` / `rollback` / `live:check` / `cf:bootstrap` / `setup:check -- --deploy` | hosting on Cloudflare ([docs/ops.md](docs/ops.md)); founder's machine only, each outward step needs `--yes` | the founder's yes, credentials in the shell |
-| `npm run items:check` / `items:new` / `items:add-image` / `items:promote` / `items:swap` / `items:retire` / `items:sheet` | work on content ([docs/content.md](docs/content.md)) | network for `add-image` and the reserve photos |
+| `npm run worker:dev` | run the Worker locally: local D1 migrations, dark board, Turnstile test secret ([docs/ops.md](docs/ops.md#board-operations)) | a build in `dist/`, `npm ci --prefix worker` |
+| `npm run board:list` / `board:off` / `board:dark` / `board:on` / `board:hide` / `board:unhide` / `board:purge-smoke` / `board:tail` | operate the weekly board; add `--local` for the local database ([docs/ops.md](docs/ops.md#board-operations)) | remote: the founder's credentials and `--yes` |
+| `npm run names:block` | retire a generated board name or word pair ([docs/ops.md](docs/ops.md#board-names)) | — |
+| `npm run items:check` / `items:new` / `items:add-image` / `items:promote` / `items:swap` / `items:retire` / `items:sheet` / `items:record` | work on content ([docs/content.md](docs/content.md)) | network for `add-image` and the reserve photos |
 | `npm run tokens` | regenerate `src/styles/tokens.css` from `src/design/tokens.json` | — |
 | `npm run types` | regenerate the item type from the schema | — |
 | `npm run design:build` / `design:check` | regenerate or check the direction studies | — |
@@ -45,7 +48,7 @@ keep it free of private names.
 | Path | Holds |
 | --- | --- |
 | `src/main.ts`, `src/app.ts` | boot order and the screen controller |
-| `worker/`, `wrangler.jsonc` | the museumguessr.com Worker (`/api/v1`), its tests and its own `package.json` with the pinned wrangler |
+| `worker/`, `wrangler.jsonc` | the museumguessr.com Worker (`/api/v1`), its D1 migrations (`worker/migrations/`), its tests and its own `package.json` with the pinned wrangler |
 | `deploy/profile.json` | every public value of the deployed build |
 | `src/api/`, `src/security/` | the API contract and limits; the security headers (meta CSP and `_headers`) |
 | `src/ui/screens/` | start, round, reveal, end and the other screens ([docs/screen-spec.md](docs/screen-spec.md)) |
