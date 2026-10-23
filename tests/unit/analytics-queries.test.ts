@@ -10,7 +10,7 @@ const sql = (f: string) => readFileSync(join(DIR, 'queries', f), 'utf8');
 
 describe('[DX20] [PH6] checked-in analytics queries', () => {
   it('has the smoke, KPI, cross-check, spike, errors-by-build, cap, difficulty and return queries [V1-28]', () => {
-    expect(queries.sort()).toEqual(['cap.sql', 'completion.sql', 'crosscheck.sql', 'difficulty.sql', 'errors-by-build.sql', 'kpi.sql', 'return.sql', 'smoke.sql', 'spike.sql', 'timer.sql', 'week2.sql']);
+    expect(queries.sort()).toEqual(['board.sql', 'cap.sql', 'completion.sql', 'crosscheck.sql', 'difficulty.sql', 'errors-by-build.sql', 'kpi.sql', 'return.sql', 'smoke.sql', 'spike.sql', 'timer.sql', 'week2.sql']);
   });
 
   it.each(queries.filter((f) => f !== 'cap.sql'))('%s keeps only this game’s events (project_id filter)', (f) => {
@@ -77,6 +77,19 @@ describe('[DX20] [PH6] checked-in analytics queries', () => {
     expect(text).toMatch(/toInt\(properties\.timed_out\) < 3/);
     expect(text).toMatch(/answered_rounds >= 3/);
     expect(text).toMatch(/src != 'smoke'/);
+  });
+
+  it('the board review puts board views per finished game beside first shares per finished game, with full-game and challenge completion, each over its own denominator [V12-133]', () => {
+    const text = sql('board.sql');
+    for (const col of ['board_views_per_finished_game', 'first_shares_per_finished_game', 'full_game_completion_percent', 'challenge_completion_percent', 'games_finished', 'games_started', 'challenge_opens']) expect(text).toContain(`AS ${col}`);
+    expect(text).toMatch(/board_views \/ nullIf\(games_finished, 0\)/);
+    expect(text).toMatch(/first_shares \/ nullIf\(games_finished, 0\)/);
+    expect(text).toMatch(/first_in_game\) = 'true'/);
+    expect(text).toMatch(/own_deck\) = 'false'/);
+    expect(text).toMatch(/src != 'smoke'/);
+    // automatic entries are operations, never an engagement numerator
+    expect(text).not.toMatch(/event = 'board_submitted'/);
+    expect(text).not.toMatch(/distinct_id/);
   });
 
   it('the week-2 query divides the next week\'s returns by the week\'s week_active devices, never joining ids [V12-132]', () => {

@@ -204,6 +204,7 @@ cap the founder chooses between a billing limit, an upgrade, or dropping
 | [`timer.sql`](../analytics/queries/timer.sql) | per round: median and 90th-percentile `active_ms`, readiness delay and the time-out share (round 1 on its own row) |
 | [`completion.sql`](../analytics/queries/completion.sql) | per `src`: reveal reach, answered completion and the time-out share, kept apart, with photo skips |
 | [`week2.sql`](../analytics/queries/week2.sql) | `week_active` devices per week and the week-2 return |
+| [`board.sql`](../analytics/queries/board.sql) | per week: board views per finished game beside first shares per finished game, full-game completion and challenge completion, each with its denominator (the four-week board review) |
 
 How to run them: [ops.md](ops.md#running-a-query).
 
