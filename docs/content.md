@@ -307,7 +307,7 @@ photos. [V12-152] [V12-153]
 
 ### Heritage image rules by country
 
-Research findings of 2026-10-22, not legal advice. Every country where a new
+Research findings of 2026-10-22 (Sweden to Lebanon: 2026-10-23), not legal advice. Every country where a new
 object is held or made needs a row here before that object ships; a country
 without a row is pending, not clear. Free-photo licensing alone does not settle
 cultural-heritage restrictions. [V12-142]
@@ -334,3 +334,8 @@ cultural-heritage restrictions. [V12-142]
 | Spain | Royal Decree 620/1987 art. 24 lets state museums set conditions for authorising reproductions; it does not reach reuse of an existing photo. | [RD 620/1987](https://www.boe.es/buscar/pdf/1987/BOE-A-1987-11621-consolidado.pdf) | No flag |
 | Austria | The Monument Protection Act has no image or reproduction provision. | [Denkmalschutzgesetz](https://www.ris.bka.gv.at/GeltendeFassung.wxe?Abfrage=Bundesnormen&Gesetzesnummer=10009184) | No flag |
 | United States | No heritage image law; exact photos of public-domain works lack originality (*Bridgeman v. Corel*, 1999). | [Opinion](https://www.courtlistener.com/opinion/2413183/bridgeman-art-library-ltd-v-corel-corp/) | No flag |
+| Sweden | Not among the EU states whose heritage law requires permission or a fee to reuse reproductions of public-domain heritage (the 2024 survey names Bulgaria, France, Greece, Italy, Portugal and Slovenia). | [COMMUNIA policy paper #20](https://communia-association.org/policy-paper/policy-paper-20-on-the-right-to-use-public-domain-heritage/) | No flag |
+| Ireland | Not among those EU states either. | [COMMUNIA policy paper #20](https://communia-association.org/policy-paper/policy-paper-20-on-the-right-to-use-public-domain-heritage/) | No flag |
+| Colombia | The cultural heritage law (Law 397 of 1997 as amended by Law 1185 of 2008) and the archaeological heritage decree 833 of 2002 contain no rule on images or reproductions of objects. | [Decree 833 of 2002](https://cancilleria.gov.co/sites/default/files/Normograma/docs/decreto_0833_2002.htm) | No flag |
+| Pakistan | Antiquities Act 1975 (text as adapted for Punjab) s. 30 bars making a cinematograph film of a protected antiquity for any commercial purpose without a licence; no rule on photos of objects found (provincial acts, such as Sindh's, not checked). | [Antiquities Act 1975](https://advocatetanmoy.com/the-antiquities-act-1975/) | No flag |
+| Lebanon | Order 166/LR of 1933, art. 48, lets the antiquities service draw or photograph privately owned antiquities and bars selling or publishing those reproductions without the owner's consent; no rule on other photos found (the 2008 cultural property law not checked). | [Order 166/LR (English text)](https://en.libnanews.com/regulation-on-antiquities-order-no-166-lr-of-november-7-1933-relating-to-antiques-regulations/) | No flag |
