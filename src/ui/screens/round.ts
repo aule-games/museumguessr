@@ -2,43 +2,22 @@
 // photo, prompt row, map or year control, Back (after the first question) and Confirm.
 
 import { STEPS, type Step } from '../../analytics/events.ts';
-import { HINT, QUESTION, formatNumber, t } from '../../copy.ts';
+import { HINT, QUESTION, t } from '../../copy.ts';
 import { imageUrl } from '../../content/items.ts';
-import tokens from '../../design/tokens.json';
+import * as tokens from '../../design/tokens.json';
 import { formatAnswerYear } from '../../game/text.ts';
 import type { Draft } from '../../game/timer.ts';
 import type { GameMap } from '../../map/map.ts';
 import type { LatLng } from '../../scoring/geo.ts';
 import type { Item } from '../../types/item.ts';
-import { difficultyLabel } from '../difficulty.ts';
-import { counterSlot, topBarClock } from '../clock.ts';
 import { h, s } from '../dom.ts';
 import { openLightbox } from '../lightbox.ts';
+import { topBar } from '../topbar.ts';
 import { yearControl } from '../year.ts';
 
-export const MAX_IMAGE_RETRIES = 3;
+export { topBar };
 
-export function topBar(round: number, total: number, onMenu: (opener: HTMLElement) => void, item?: { difficulty: number }): HTMLElement {
-  const label = item ? difficultyLabel(item) : null;
-  const pips = label?.querySelector<HTMLElement>('.difficulty__pips') ?? null;
-  pips?.remove();
-  return h(
-    'header',
-    { class: 'topbar' },
-    // the counter's slot holds "Round 4/10 · Hard" and the last-ten-seconds cue that replaces it;
-    // the pips stay beside it (D3)
-    counterSlot(h('span', { class: 'topbar__counter' }, h('span', { class: 'topbar__round' }, t('round.counter', { round: round + 1 })), label)),
-    pips,
-    h('span', { class: 'topbar__total', 'data-test': 'total' }, t('round.total', { total: formatNumber(total) })),
-    h(
-      'button',
-      { type: 'button', class: 'topbar__menu', 'aria-label': t('menu.open'), 'aria-haspopup': 'dialog', 'data-test': 'menu', onclick: (e: MouseEvent) => onMenu(e.currentTarget as HTMLElement) },
-      h('span', { class: 'topbar__menu-icon', 'aria-hidden': 'true' }),
-    ),
-    // the draining line on the bar's bottom edge and the timer's hidden text (R2, D7)
-    topBarClock(),
-  );
-}
+export const MAX_IMAGE_RETRIES = 3;
 
 /** The photo region persists across the three steps of a round (one load per round). */
 export class PhotoRegion {

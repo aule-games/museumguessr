@@ -6,7 +6,7 @@
 
 import { FEEDBACK, type Step } from '../../analytics/events.ts';
 import { formatNumber, t, type CopyKey } from '../../copy.ts';
-import tokens from '../../design/tokens.json';
+import * as tokens from '../../design/tokens.json';
 import { hardNailed } from '../../game/hard.ts';
 import { formatAnswerYear, howText, rowResult } from '../../game/text.ts';
 import type { GameMap } from '../../map/map.ts';
@@ -18,7 +18,7 @@ import type { Item } from '../../types/item.ts';
 import { clockGlyph } from '../clock.ts';
 import { objectDifficulty } from '../difficulty.ts';
 import { ext, h, reducedMotion, s, scoreText } from '../dom.ts';
-import { topBar } from './round.ts';
+import { topBar } from '../topbar.ts';
 
 export interface RevealProps {
   item: Item;
