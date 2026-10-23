@@ -72,6 +72,15 @@ export function measureV12() {
     dialogs: [...document.querySelectorAll('dialog[open]')].map((d) => ({
       box: box(d),
       parts: [d.querySelector('.dialog__title'), d.querySelector('.dialog__head [data-test="clock-cue"]'), d.querySelector('.dialog__close')].map(box).filter(Boolean),
+      // content cut off at the dialog's left or right edge
+      clipped: (() => {
+        const outer = d.getBoundingClientRect();
+        return [...d.querySelectorAll('p, h2, table, th, td, li, button, label')].filter((n) => {
+          if (n.closest('.visually-hidden')) return false;
+          const r = box(n);
+          return r && (r.right > outer.right + 1 || r.left < outer.left - 1);
+        }).length;
+      })(),
     })),
     paused: one('[data-test="clock-paused-map"]') ? {
       note: one('[data-test="clock-paused-map"]'),
@@ -137,6 +146,7 @@ export function v12GeometryIssues(m, opts = {}) {
   for (const d of m.dialogs ?? []) {
     const clear = d.parts.every((a, i) => d.parts.slice(i + 1).every((b) => !(a.left < b.right - 1 && a.right > b.left + 1 && a.top < b.bottom - 1 && a.bottom > b.top + 1)));
     check(!!d.box && d.parts.every((p) => within(p, d.box)) && clear, '[V12-59] A dialog header keeps its title, cue and Close inside the dialog without overlap');
+    check(!d.clipped, '[V12-161] Dialog content stays inside the dialog instead of being cut off at its side');
   }
 
   if (m.paused) {

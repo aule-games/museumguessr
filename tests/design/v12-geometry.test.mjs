@@ -89,10 +89,11 @@ test('[DS31] A row whose points break across lines is reported', () => {
   assert.deepEqual(v12GeometryIssues(m), ["[DS31] Each row's points stay on one line"]);
 });
 
-test('[V12-59] A dialog header whose Close or cue leaves the dialog, or overlaps the title, is reported', () => {
+test('[V12-59] A dialog header whose Close or cue leaves the dialog, or overlaps the title, and dialog content cut off at its side, are reported', () => {
   const m = base(390, 844);
-  m.dialogs = [{ box: box(20, 264, 350, 312), parts: [box(36, 280, 164, 36), box(210, 288, 104, 20), box(326, 278, 40, 40)] }];
+  m.dialogs = [{ box: box(20, 264, 350, 312), parts: [box(36, 280, 164, 36), box(210, 288, 104, 20), box(326, 278, 40, 40)], clipped: 0 }];
   assert.deepEqual(v12GeometryIssues(m), []);
+  assert.deepEqual(v12GeometryIssues({ ...m, dialogs: [{ ...m.dialogs[0], clipped: 3 }] }), ['[V12-161] Dialog content stays inside the dialog instead of being cut off at its side']);
   m.dialogs[0].parts[2] = box(350, 278, 44, 44);
   assert.deepEqual(v12GeometryIssues(m), ['[V12-59] A dialog header keeps its title, cue and Close inside the dialog without overlap']);
   m.dialogs[0].parts[2] = box(326, 278, 40, 40);
