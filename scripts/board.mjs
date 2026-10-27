@@ -20,7 +20,7 @@
 // key, a request body or an IP.
 
 import { spawn as nodeSpawn } from 'node:child_process';
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -177,8 +177,12 @@ export async function boardCommand({ root = ROOT, args, runner = createRunner({ 
     writeFileSync(file, sql);
     return run(file, label);
   };
-  const run = (file, label) => {
-    const r = runner.run(wrangler, ['d1', 'execute', 'DB', ...target, '--file', file, '--json', ...(remote ? ['--yes'] : []), '--config', WRANGLER_CONFIG], { credentials: remote });
+  const run = (file, label) => exec(['--file', file], label);
+  // Reads pass their SQL with --command: on the remote database `--file` runs
+  // as an import and answers with a summary of the run, never the rows.
+  const query = (sql, label) => exec(['--command', sql.split('\n').filter((l) => !l.trimStart().startsWith('--')).join('\n').trim()], label);
+  const exec = (args, label) => {
+    const r = runner.run(wrangler, ['d1', 'execute', 'DB', ...target, ...args, '--json', ...(remote ? ['--yes'] : []), '--config', WRANGLER_CONFIG], { credentials: remote });
     if (r.status !== 0) refuse({ kind: 'remote', what: `wrangler d1 execute (${label}) failed on ${where}`, why: `it answered ${r.status}${r.stderr ? `: ${r.stderr.trim().split('\n').at(-1).slice(0, 160)}` : ''}`, fix: remote ? 'npm run setup:check -- --deploy, then repeat the command' : 'npm run worker:dev applies the local migrations first', anchor: A });
     try {
       const parsed = JSON.parse(r.stdout);
@@ -188,6 +192,7 @@ export async function boardCommand({ root = ROOT, args, runner = createRunner({ 
     }
   };
   const fixed = (name) => run(join(root, 'scripts/sql', `${name}.sql`), name);
+  const fixedQuery = (name) => query(readFileSync(join(root, 'scripts/sql', `${name}.sql`), 'utf8'), name);
   const rows = (sets, i) => sets?.[i]?.results ?? [];
   const needYes = (what) => {
     if (remote && !opts.yes) refuse({ kind: 'approval', what: `${what} changes ${where}`, why: 'board changes on the live database need an explicit yes', fix: `npm run board:${command} -- ${[...rest, '--yes'].join(' ')}`, anchor: A });
@@ -201,7 +206,7 @@ export async function boardCommand({ root = ROOT, args, runner = createRunner({ 
       }
       needYes(`board:${command}`);
       if (command === 'on') {
-        const count = rows(fixed('smoke-count'), 0)[0]?.n ?? 0;
+        const count = rows(fixedQuery('smoke-count'), 0)[0]?.n ?? 0;
         fixed('purge-smoke');
         out(`removed ${count} dark-mode test row(s) before ranking goes public`);
       }
@@ -212,7 +217,7 @@ export async function boardCommand({ root = ROOT, args, runner = createRunner({ 
 
     if (command === 'purge-smoke') {
       needYes('board:purge-smoke');
-      const count = rows(fixed('smoke-count'), 0)[0]?.n ?? 0;
+      const count = rows(fixedQuery('smoke-count'), 0)[0]?.n ?? 0;
       fixed('purge-smoke');
       out(`removed ${count} dark-mode test row(s) from ${where}`);
       return 0;
@@ -221,13 +226,13 @@ export async function boardCommand({ root = ROOT, args, runner = createRunner({ 
     if (command === 'list') {
       const week = literal('week', opts.week ?? weekId(now));
       if (opts.smoke) {
-        const sets = execute(render(LIST_SMOKE, { week }), 'list-smoke');
+        const sets = query(render(LIST_SMOKE, { week }), 'list-smoke');
         const list = rows(sets, 0);
         out(`dark-mode test rows, week ${week.slice(1, -1)}: ${list.length} shown, ${rows(sets, 1)[0]?.n ?? 0} in all weeks`);
         for (const r of list) out(`  ${String(r.total).padStart(6)}  ${r.date}  ${r.row_id}`);
         return 0;
       }
-      const sets = execute(render(LIST, { week }), 'list');
+      const sets = query(render(LIST, { week }), 'list');
       const mode = rows(sets, 0)[0]?.board_mode ?? 'off (no settings row)';
       const top = rows(sets, 1);
       const hidden = rows(sets, 2);
@@ -247,7 +252,7 @@ export async function boardCommand({ root = ROOT, args, runner = createRunner({ 
     if (command === 'hide') {
       for (const need of ['week', 'min-total', 'since']) if (!opts[need]) usage(`board:hide needs --${need}`, 'bulk hiding is bounded by week, minimum total and start time', 'npm run board:hide -- --week 2026-W43 --min-total 29000 --since 2026-10-21');
       const slots = { week: literal('week', opts.week), min: literal('int', opts['min-total']), since: literal('since', opts.since), reason, now: now_ };
-      const would = rows(execute(render(HIDE_COUNT, slots), 'hide-count'), 0)[0]?.n ?? 0;
+      const would = rows(query(render(HIDE_COUNT, slots), 'hide-count'), 0)[0]?.n ?? 0;
       if (remote && !opts.yes) {
         out(`would hide ${would} row(s) in week ${opts.week} at ${opts['min-total']}+ since ${opts.since}`);
         needYes('board:hide');

@@ -28,12 +28,16 @@ function machine(rules: Rule[] = []) {
     (line) => {
       const file = line.match(/--file (\S+)/)?.[1];
       if (file) sql.push(readFileSync(file, 'utf8'));
+      const command = line.match(/--command ([\s\S]*?) --json/)?.[1];
+      if (command) sql.push(command);
       return { stdout: '[]' };
     },
   ];
   const m = stubRunner(REPO, [...rules.map(([re, a]): Rule => [re, (line, input, env) => {
     const file = line.match(/--file (\S+)/)?.[1];
     if (file) sql.push(readFileSync(file, 'utf8'));
+    const command = line.match(/--command ([\s\S]*?) --json/)?.[1];
+    if (command) sql.push(command);
     return typeof a === 'function' ? a(line, input, env) : a;
   }]), capture], CREDS);
   return { ...m, sql };
@@ -73,9 +77,9 @@ describe('npm run board:off / board:dark / board:on', () => {
     expect(refused.out).toContain('✖ board:on needs the content gate (contentApproved)');
     expect(refused.out).toContain('why: data/content-approval.json does not exist yet');
     expect(d1Calls(refused.calls)).toEqual([]);
-    const on = await board(['on', '--yes'], { gate: approved, rules: [[/smoke-count\.sql/, { stdout: JSON.stringify([{ results: [{ n: 7 }], success: true }]) }]] });
+    const on = await board(['on', '--yes'], { gate: approved, rules: [[/--command SELECT COUNT\(\*\) AS n FROM smoke_scores;/, { stdout: JSON.stringify([{ results: [{ n: 7 }], success: true }]) }]] });
     expect(on.code).toBe(0);
-    expect(d1Calls(on.calls).map((c) => c.line.match(/scripts\/sql\/([\w-]+)\.sql/)![1])).toEqual(['smoke-count', 'purge-smoke', 'board-on']);
+    expect(d1Calls(on.calls).map((c) => c.line.match(/scripts\/sql\/([\w-]+)\.sql/)?.[1] ?? (c.line.includes('--command SELECT COUNT(*) AS n FROM smoke_scores;') ? 'smoke-count (read)' : c.line))).toEqual(['smoke-count (read)', 'purge-smoke', 'board-on']);
     expect(on.out).toContain('removed 7 dark-mode test row(s) before ranking goes public');
   });
 
@@ -108,12 +112,14 @@ describe('npm run board:list', () => {
       { results: [{ row_id: 'hiddenrow001', total: 29999, date: '2026-10-20' }] },
       { results: [{ n: 340 }] },
     ];
-    const listed = await board(['list'], { rules: [[/list\.sql/, { stdout: JSON.stringify(result) }]] });
+    const listed = await board(['list'], { rules: [[/--command SELECT board_mode FROM settings/, { stdout: JSON.stringify(result) }]] });
     expect(listed.code).toBe(0);
     expect(listed.out).toContain('board mode: dark');
     expect(listed.out).toContain('week 2026-W43: 340 device(s) on the board, 1 hidden');
     expect(listed.out).toContain('saturation: 12 of the top 50 at 29,500 or more — more than 10: review ranking');
     expect(listed.sql[0]).toContain("WHERE week = '2026-W43' AND hidden = 0 ORDER BY total DESC, seq LIMIT 50");
+    // reads go through --command: on the remote database --file answers with a run summary, not the rows
+    expect(d1Calls(listed.calls).map((c) => c.line.includes(' --command SELECT board_mode FROM settings'))).toEqual([true]);
     expect(saturation(top.map((r, i) => ({ ...r, total: i < 10 ? 29500 : 29499 })))).toBe(10);
     const smoke = await board(['list', '--smoke', '--week', '2026-W42', '--local']);
     expect(smoke.sql[0]).toContain("FROM smoke_scores WHERE week = '2026-W42'");
@@ -150,10 +156,10 @@ describe('npm run board:hide / board:unhide', () => {
   });
 
   it('a bulk hide counts first, needs --yes, logs a reason without personal data, hides the rows and rebuilds the projection with the Worker\'s own SQL [V12-110] [V12-99]', async () => {
-    const dry = await board(['hide', '--week', '2026-W43', '--min-total', '29000', '--since', '2026-10-20'], { rules: [[/hide-count/, { stdout: JSON.stringify([{ results: [{ n: 3 }] }]) }]] });
+    const dry = await board(['hide', '--week', '2026-W43', '--min-total', '29000', '--since', '2026-10-20'], { rules: [[/--command SELECT COUNT\(\*\) AS n FROM scores WHERE/, { stdout: JSON.stringify([{ results: [{ n: 3 }] }]) }]] });
     expect(dry.code).toBe(EXIT.approval);
     expect(dry.out).toContain('would hide 3 row(s) in week 2026-W43 at 29000+ since 2026-10-20');
-    const done = await board(['hide', '--week', '2026-W43', '--min-total', '29000', '--since', '2026-10-20', '--reason', 'abuse', '--yes'], { rules: [[/hide-count/, { stdout: JSON.stringify([{ results: [{ n: 3 }] }]) }]] });
+    const done = await board(['hide', '--week', '2026-W43', '--min-total', '29000', '--since', '2026-10-20', '--reason', 'abuse', '--yes'], { rules: [[/--command SELECT COUNT\(\*\) AS n FROM scores WHERE/, { stdout: JSON.stringify([{ results: [{ n: 3 }] }]) }]] });
     expect(done.code).toBe(0);
     const sql = done.sql[1]!;
     // Run the generated statements on the real schema: three of four rows hide, buckets and projection follow.
