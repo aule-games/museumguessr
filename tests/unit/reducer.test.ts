@@ -230,6 +230,18 @@ describe('[V1-32] test mode: jump to the end', () => {
     expect(answeredCount(state)).toBe(10);
   });
 
+  it('an object older than 4000 BCE gets the early stop, never a year the control cannot hold [V12-68]', async () => {
+    const { testGuess } = await import('../../src/game/testplay');
+    const { isAnswerYear } = await import('../../src/scoring/years');
+    const early = { ...(KEYS[0] as AnswerKey), start: -9500, end: -9000 };
+    for (const skill of [0, 0.5, 1]) {
+      const year = testGuess('when', early, skill, () => 0.5) as number;
+      expect(isAnswerYear(year), `${year}`).toBe(true);
+      expect(year).toBe(-4001);
+    }
+    expect(isAnswerYear(testGuess('when', { ...early, start: -4000, end: -4000 }, 0, () => 0.5))).toBe(true);
+  });
+
   it('a skill of 0 guesses the right place and the middle of the date range', async () => {
     const { testGuess } = await import('../../src/game/testplay');
     const key = KEYS[0] as AnswerKey;

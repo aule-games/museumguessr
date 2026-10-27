@@ -12,7 +12,9 @@ export function testGuess(step: Step, key: AnswerKey, skill: number, rng: () => 
   const spread = skill * skill;
   if (step === 'when') {
     const year = Math.round((key.start + key.end) / 2 + (rng() * 2 - 1) * spread * 1500);
-    const clamped = Math.min(SLIDER.max, Math.max(SLIDER.min, year));
+    // 4000 BCE and earlier is the one early stop (W5): the scale's own years start at 3999 BCE
+    if (year <= SLIDER.min) return SLIDER.earlyStop;
+    const clamped = Math.min(SLIDER.max, year);
     return clamped === 0 ? 1 : clamped;
   }
   const at = step === 'kept' ? key.kept : key.made;
