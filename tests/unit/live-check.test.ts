@@ -2,7 +2,11 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { COPY } from '../../src/copy';
 import { notFoundHtml } from '../../src/not-found';
-import { META_CSP, SECURITY_HEADERS } from '../../src/security/headers';
+import { DEPLOY_BOARD_UI, DEPLOY_HEADERS } from '../../src/security/deploy-headers';
+import { metaCspFor } from '../../src/security/headers';
+
+// the deployed build's policy: the tracked profile decides whether it names Turnstile
+const META_CSP = metaCspFor(DEPLOY_BOARD_UI);
 // @ts-expect-error plain ESM script without types
 import { liveCheck, main } from '../../scripts/live-check.mjs';
 // @ts-expect-error plain ESM helper without types
@@ -16,7 +20,7 @@ const SHA = 'abc1234';
 const PROBE = 'feedc0de';
 const TAIL = `live-check/${PROBE}?q=${PROBE}`;
 const versions = await releaseVersions(ROOT);
-const secured = (extra: Record<string, string> = {}) => ({ ...SECURITY_HEADERS, ...extra });
+const secured = (extra: Record<string, string> = {}) => ({ ...DEPLOY_HEADERS, ...extra });
 const PAGE = `<!doctype html><html><head><meta name="build-id" content="${SHA}"><meta http-equiv="Content-Security-Policy" content="${META_CSP.replace(/'/g, '&#39;')}"></head></html>`;
 
 /** The live site as it should answer after deploying SHA. */

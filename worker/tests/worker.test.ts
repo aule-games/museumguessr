@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { CONTRACT_VERSION, ERRORS } from '../../src/api/contract';
 import { ITEMS_VERSION } from '../../src/content/items';
 import { SCORING_VERSION } from '../../src/scoring/config';
-import { SECURITY_HEADERS } from '../../src/security/headers';
+import { DEPLOY_HEADERS } from '../../src/security/deploy-headers';
 import worker, { type Env, ROUTES } from '../src/index';
 import { sqliteD1 } from './helpers/sqlite-d1';
 
@@ -31,7 +31,7 @@ const call = (path: string, init: RequestInit = {}, env: Partial<Env> = {}) => {
 };
 
 const expectSecurityHeaders = (response: Response) => {
-  for (const [name, value] of Object.entries(SECURITY_HEADERS)) expect(response.headers.get(name), name).toBe(value);
+  for (const [name, value] of Object.entries(DEPLOY_HEADERS)) expect(response.headers.get(name), name).toBe(value);
 };
 
 const NAVIGATE = { headers: { Accept: 'text/html', 'Sec-Fetch-Mode': 'navigate', 'Sec-Fetch-Dest': 'document' } };

@@ -10,6 +10,7 @@
 
 import { randomBytes } from 'node:crypto';
 import { pathToFileURL, fileURLToPath } from 'node:url';
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { cloudflare } from './lib/cloudflare.mjs';
 import { createRunner, gitOut, refuse, runMain, SITE_URL } from './lib/ops.mjs';
@@ -24,12 +25,15 @@ const metaContent = (html, attr, name) => html.match(new RegExp(`<meta ${attr}="
  * failed check, so one report lists them all.
  */
 export async function liveCheck({ root = ROOT, sha, fetchImpl = fetch, env = process.env, probe = randomBytes(4).toString('hex') }) {
-  const [{ SECURITY_HEADERS, cspMismatch }, { COPY }, { LIMITS }, versions] = await Promise.all([
+  const [{ securityHeadersFor, cspMismatch }, { COPY }, { LIMITS }, versions] = await Promise.all([
     load('src/security/headers.ts'),
     load('src/copy.ts'),
     load('src/api/limits.ts'),
     releaseVersions(root),
   ]);
+  // the deployed build's headers: with the board UI on, its CSP allows Turnstile (V12-125)
+  const board = JSON.parse(readFileSync(join(root, 'deploy/profile.json'), 'utf8')).VITE_BOARD_UI === 'true';
+  const SECURITY_HEADERS = securityHeadersFor(board);
   const short = String(sha).slice(0, 7);
   const lines = [];
   let failed = 0;
