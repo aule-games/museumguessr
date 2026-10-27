@@ -19,6 +19,9 @@ export interface Captured {
   url: string;
 }
 
+/** posthog-js flushes its request queue every 3000 ms (flush_interval_ms); wait a little longer. */
+const BATCH_QUIET_MS = 3500;
+
 export class Recorder {
   events: Captured[] = [];
   requests = 0;
@@ -35,12 +38,16 @@ export class Recorder {
     return this.events.filter((e) => e.event === name);
   }
 
-  /** Wait until no PostHog request has arrived for `quietMs`. */
-  async idle(page: Page, quietMs = 1000, maxMs = 15000) {
+  /**
+   * Wait until no PostHog request has arrived for `quietMs`, counted from this call. PostHog
+   * sends queued events in batches every 3 s, so the quiet time is never shorter than that:
+   * an event tracked just before the call has always been sent when this returns.
+   */
+  async idle(page: Page, quietMs = BATCH_QUIET_MS, maxMs = 20000) {
     const start = Date.now();
-    await page.waitForTimeout(200);
+    const quiet = Math.max(quietMs, BATCH_QUIET_MS);
     while (Date.now() - start < maxMs) {
-      if (Date.now() - this.lastAt >= quietMs) return;
+      if (Date.now() - Math.max(this.lastAt, start) >= quiet) return;
       await page.waitForTimeout(100);
     }
   }

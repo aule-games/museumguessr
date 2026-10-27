@@ -89,8 +89,8 @@ test.describe('[W3] the round clock', () => {
     // the page is closed past the deadline: nothing ticks until it loads again
     await clockRunning(page);
     const now = await page.evaluate(() => Date.now());
-    await page.clock.pauseAt(now + 100);
-    await page.clock.setSystemTime(now + 100 + after + 20_000);
+    await page.clock.pauseAt(now + 1_000);
+    await page.clock.setSystemTime(now + 1_000 + after + 20_000);
     await page.reload();
     await page.clock.resume();
     await expect(page.locator('[data-test=continue]')).toHaveText('Continue · Round 1 of 10 (time ran out)');
@@ -124,17 +124,18 @@ test.describe('[W3] the round clock', () => {
   test('focus and pageshow re-check the saved deadline [V12-44]', async ({ page }) => {
     await start(page);
     await clockRunning(page);
+    // a second ahead: under load more than 100 ms can pass before pauseAt, which cannot go back
     const now = await page.evaluate(() => Date.now());
-    await page.clock.pauseAt(now + 100);
-    await page.clock.setSystemTime(now + 100 + ((await left(page)) ?? 0) + 5_000);
+    await page.clock.pauseAt(now + 1_000);
+    await page.clock.setSystemTime(now + 1_000 + ((await left(page)) ?? 0) + 5_000);
     await page.evaluate(() => window.dispatchEvent(new Event('focus')));
     await expect(page.locator('[data-screen=reveal] [data-test=timed-out-away]')).toBeVisible();
     await page.clock.resume();
     await page.locator('[data-test=next]').click();
     await clockRunning(page);
     const then = await page.evaluate(() => Date.now());
-    await page.clock.pauseAt(then + 100);
-    await page.clock.setSystemTime(then + 100 + ((await left(page)) ?? 0) + 5_000);
+    await page.clock.pauseAt(then + 1_000);
+    await page.clock.setSystemTime(then + 1_000 + ((await left(page)) ?? 0) + 5_000);
     await page.evaluate(() => window.dispatchEvent(new Event('pageshow')));
     await expect(page.locator('[data-screen=reveal][data-round="2"] [data-test=timed-out-away]')).toBeVisible();
     await page.clock.resume();
