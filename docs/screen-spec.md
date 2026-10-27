@@ -46,6 +46,13 @@ The content column is at most
 The E2E suite runs every layout check at 390×844, 844×390, 1280×800, 375×667
 and 390×664 (an in-app browser).
 
+When uses a scrolling body and a separate action footer at all text sizes.
+Below 560 px of available visual-viewport height, the exact field precedes
+the readout and the portrait photo yields space to the controls. At 260 px
+or less, photo and prompt yield their space entirely; field, era and actions
+use the full width. The normal layout returns when the viewport grows.
+See [the responsive patterns](../DESIGN.md#release-12-responsive-patterns--2026-10-23). [V12-71]
+
 ## Start
 
 Order (top to bottom; desktop puts the sample in the right column):
@@ -199,8 +206,8 @@ and there is only one score live region. (DS21)
 | Journey | the sourced journey fact | `reveal.source` | wraps |
 | Map | answer pins (filled), guesses (hollow), one made→kept line, dashed guess links, the full-marks area for a region or country origin; a 78% veil in the map's own ground colour fades the base map, with its labels hidden; answer countries have 28% Kept/Made tints and opaque 2 px outlines; every pin has a map-ground keyline and a soft shadow; kept pins are rounded squares with a museum icon, made pins round teardrops with a paintbrush, guesses the same shapes outlined | `reveal.madeRegion`, `reveal.lineLabel` | fitted with measured pin-label/control/attribution clearance; controls hidden in phone portrait, only World at top-left in short landscape, with a reserved left column; credit resizing re-fits until the player moves the map; pinch, double-tap and keyboard zoom remain; long pin labels wrap at 192 px (DS22) |
 | Legend | raised caption rail under the map, normal line height; in the split layout map and legend fit the actual body height above the action bar, including feedback; without any guess pin (both map questions timed out) the guess entry goes | `reveal.legend`, `reveal.legendNoGuess` | wraps; never reserved outside the map's available height |
-| Score rows | Made / When / Kept (question order, DS35): glyph, name and disclosure chevron, the result (`result.km` / `result.years` with the difference in bold, or `reveal.spotOn`), a shared 88 px right-hand points column in large display-face numbers on the white rounded table (green when full marks); the round total row is a lime bar, navy text; on every viewport the name and points share the top line and the result runs full width below it; hover or keyboard focus (hover-capable devices) and tap cover the whole row (name, result and points) with the scoring explanation, white on ink, in the same place and with no heading; tap also opens the row's extras below (When's timeline, Made's place note) | `reveal.row.*`, `result.*`, `reveal.spotOn`, `reveal.kmCount`, `reveal.yearCount`, `reveal.yearOne`, `scoring.*` | each result stays on one line, its font stepping down to 11 px to fit, and only then wraps (never cut off or ellipsed); minimum 68 px rows; explanations scroll with the table, not over the action bar (DS31) |
-| Round total | the table's final row, a lime bar: label + points out of 3,000 in navy (announced) | `reveal.scoreLabel`, `reveal.score` | one line; focus ring remains outside the cell |
+| Score rows | Made / When / Kept (question order, DS35): glyph, name and disclosure chevron, the result (`result.km` / `result.years` with the difference in bold, or `reveal.spotOn`), a content-sized right-hand points column with unbroken large display-face numbers on the white rounded table (green when full marks); the round total row is a lime bar, navy text; on every viewport the name and points share the top line and the result runs full width below it; hover or keyboard focus (hover-capable devices) and tap cover the whole row (name, result and points) with the scoring explanation, white on ink, in the same place and with no heading; tap also opens the row's extras below (When's timeline, Made's place note) | `reveal.row.*`, `result.*`, `reveal.spotOn`, `reveal.kmCount`, `reveal.yearCount`, `reveal.yearOne`, `scoring.*` | each result stays on one line, its font stepping down to 11 px to fit, and only then wraps (never cut off or ellipsed); minimum 68 px rows; explanations scroll with the table, not over the action bar (DS31) |
+| Round total | the table's final row, a lime bar: label + points out of 3,000 in navy (announced) | `reveal.scoreLabel`, `reveal.score` | the label may move to its own line at enlarged text; the number stays whole and the focus ring remains outside the cell |
 | To beat (challenge games) | "To beat: 18,240" directly under the round total bar, never in the top bar (V1-21) | `reveal.toBeat` | one line |
 | Contested | the sourced claim | `reveal.contested` | wraps |
 | Facts | sourced facts | `reveal.source` | list |
@@ -230,7 +237,7 @@ The board card may be below the fold; it is not another filled primary. [V12-116
 
 | Region | Content | Copy keys | Overflow |
 | --- | --- | --- | --- |
-| Summary | total out of 30,000 and tier name, navy on a lime rounded panel like the reveal round total; a challenge game with a score adds "You 18,240 · Ali 19,000" and the result | `end.total`, `challenge.both`, `challenge.youWin`, `challenge.theyWin`, `challenge.tie` | one line on a phone |
+| Summary | total out of 30,000 and tier name, navy on a lime rounded panel like the reveal round total; a challenge game with a score adds "You 18,240 · Ali 19,000" and the result | `end.total`, `challenge.both`, `challenge.youWin`, `challenge.theyWin`, `challenge.tie` | one line at normal phone text size; at enlarged text the denominator can move below, with the score number unbroken |
 | Share block | "Add a name" disclosure (opens the name field: label, helper, inline rule, Share without a name), the one lime primary Share with a share glyph (a challenge game: Send your score back), Copy link as a text link beside it, the polite status line, the manual-copy field with the link when the clipboard fails | `name.*`, `share.button`, `sendBack.button`, `share.copyLink`, `share.copied`, `share.copyManual` | Share fills the row |
 | Play another 10 | full-width secondary | `end.another` | — |
 | Waiting challenge | after "Continue my game": a link to the friend's challenge and Not now | `end.waiting`, `end.waitingFriend`, `end.waitingDismiss` | wraps |
@@ -298,7 +305,9 @@ The existing about-ten-minutes expectation remains. [V12-40] [V12-61]
 Start only once the photo and active answer control are usable. Pause for the
 first-visit automatic tour, the current Made/Kept map not being ready or fallback,
 or our error screen. The causes form a set; all must clear before resuming.
-A failed map shows `timer.pausedMap`. Back, tab hiding, menu help, the replayed
+A failed map shows `timer.pausedMap` in a separate row above the map, clear
+of credits. Error text and Reload use the dark surface/light ink pairing;
+unusable zoom and World controls hide. Back, tab hiding, menu help, the replayed
 tour and photo viewer do not pause. Photo failure after start stops the timer
 and follows the photo-failure path instead of generating a timeout. [V12-41]
 [V12-42] [V12-43] [V12-53]
@@ -344,7 +353,9 @@ linearly while running, changes from accent to warning at ten seconds, and
 freezes at 40% opacity when paused. It is decorative, with no digits and
 aria-hidden. Reduced motion updates in one-second steps without transition.
 Every dialog header and the photo viewer repeat the line and last-ten-second
-cue. [V12-58] [V12-59]
+cue. Dialogs reserve a title/Close row and a separate visible-cue row; the
+line alone adds no row. Close retains its 44 px target at enlarged text.
+[V12-58] [V12-59]
 
 The counter cluster reads Round 4/10 · Hard with three pips. It reserves the
 wider of Round 10/10 · Medium and Hurry up · 10. In the last ten seconds
@@ -393,7 +404,8 @@ Right/Up from it select 3999 BCE. Dragging snaps across the gap. The error and
 accessible label use `year.rangeWithStop`. Before -4000 the reveal timeline
 has a broken axis and a date range; younger-object distance uses
 `year.earlyDistance`. With the keyboard open, year field, era, cue and Confirm
-must stay reachable against the visual viewport. [V12-68] [V12-69] [V12-70]
+must stay reachable against the visual viewport; the photo may shrink below its
+DS19 share while the keyboard is open. [V12-68] [V12-69] [V12-70]
 [V12-71]
 
 Challenge rules derive from scoring version 3 and timer configuration. A missing
@@ -467,8 +479,12 @@ confirmed receipt rank after an add even when the public copy is cached, labelle
 `board.cached`. Refreshes and retries never move focus. The overlay uses table
 headers `board.columnRank`, `board.columnName`, `board.columnTotal`; the current
 device row has `board.you` and aria-current. Rank and totals are tabular figures,
-names in the body face can wrap to two lines, and a personal below-fifty row
-remains visible without medals. [V12-98] [V12-118] [V12-119] [V12-124]
+names in the body face wrap in full without ellipsis (normally two lines).
+A personal below-fifty row remains visible without medals. Below 18 em of available board-body width,
+each row puts rank and score above the complete name; native table headers
+remain. The automatic-entry switch retains its native input, a 44 px target
+and a visible knob position, with native appearance in forced colours.
+[V12-98] [V12-118] [V12-119] [V12-124]
 
 ### Disclosure, storage and score removal
 

@@ -56,6 +56,12 @@ test('[DS19] The photo share check measures the image itself', () => {
   }
 });
 
+test('[DS19] [V12-71] With the keyboard open, entry may take the photo share', () => {
+  const m = measured('when');
+  m.image.height -= 80;
+  assert.ok(!flowGeometryIssues(m, { keyboard: true }).some((s) => s.includes('photo share')));
+});
+
 test('[DS35] A carried guess must be hollow and explicitly named as the player guess', () => {
   const m = measured('kept'); m.mapReady = true;
   m.dimmed = { hollow: true, label: 'Your Made guess', accessible: 'Your Made guess', inert: true };

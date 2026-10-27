@@ -279,6 +279,9 @@ p {
 .topbar {
   position: relative; /* the clock line sits on its bottom edge */
   grid-area: top;
+  gap: var(--space-1);
+  padding-inline: var(--space-3);
+  font-size: var(--text-sm);
   font-variant-numeric: tabular-nums;
 }
 
@@ -286,7 +289,7 @@ p {
    bar, the running score a lime pill with navy text. */
 .topbar__round,
 .topbar__total {
-  font-size: var(--text-md);
+  font-size: inherit;
   font-weight: var(--font-weight-bold);
 }
 
@@ -335,8 +338,10 @@ p {
 }
 
 .topbar__total {
+  flex: none;
   margin-left: auto;
-  padding: var(--space-1) var(--space-3);
+  padding: var(--space-1) var(--space-2);
+  white-space: nowrap;
   border-radius: var(--radius-pill);
   background: var(--color-accent);
   color: var(--color-accent-ink);
@@ -346,7 +351,7 @@ p {
   flex: none;
   width: var(--layout-tap);
   height: var(--layout-tap);
-  margin-right: calc(-1 * var(--space-3));
+  margin-right: 0;
   border: 0;
   border-radius: var(--radius-sm);
   background: none;
@@ -1085,13 +1090,14 @@ p {
 
 .year__inputs {
   display: flex;
+  flex-wrap: wrap;
   gap: var(--space-3);
 }
 
 .year__field {
-  flex: 1 1 0;
-  width: 0;
-  min-width: 0;
+  flex: 1 1 calc(var(--layout-tap) * 2);
+  width: auto;
+  min-width: calc(var(--layout-tap) * 2);
   min-height: var(--layout-tap);
   padding: 0 var(--space-4);
   border: 1.5px solid var(--color-line);
@@ -1117,6 +1123,7 @@ p {
    button keeps the full 44 px target and the inset is drawn with a ring */
 .year__eras {
   display: flex;
+  max-width: 100%;
   border: 1.5px solid var(--color-line);
   border-radius: var(--radius-pill);
   background: var(--color-surface-raised);
@@ -1288,6 +1295,7 @@ p {
 }
 
 .year__tick:last-child {
+  top: calc(1em * var(--leading-tight));
   transform: translateX(-100%);
   text-align: right;
 }
@@ -1394,6 +1402,7 @@ p {
 
 .reveal__total {
   display: flex;
+  flex-wrap: wrap;
   align-items: baseline;
   justify-content: space-between;
   gap: var(--space-3);
@@ -1499,7 +1508,7 @@ p {
   width: 100%;
   min-height: calc(var(--space-8) + var(--space-1)); /* 68 px */
   display: grid;
-  grid-template-columns: minmax(0, 1fr) calc(var(--space-8) + var(--space-5));
+  grid-template-columns: minmax(0, 1fr) max-content;
   grid-template-areas: 'label points' 'result result';
   align-items: center;
   gap: 0 var(--space-2);
@@ -1589,6 +1598,9 @@ p {
   font-weight: 800;
   letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow-wrap: normal;
+  line-height: var(--leading-tight);
 }
 
 /* one line per result: the reveal steps the font down to fit (fitOneLine) */
@@ -1696,10 +1708,13 @@ p {
 .timeline__band {
   fill: var(--color-full-marks-area);
   stroke: var(--color-success);
+  stroke-width: var(--pin-stroke);
 }
 
 .timeline__guess {
-  fill: var(--color-guess);
+  fill: var(--color-ink);
+  stroke: var(--color-bg);
+  stroke-width: var(--pin-stroke);
 }
 
 /* dates before 4000 BCE: a broken axis between the range and the control's scale (D11) */
@@ -1779,6 +1794,7 @@ p {
 
 /* the final score uses the reveal total's raised panel, so a game reads as one system */
 .end__head {
+  container: end-score / inline-size;
   overflow-wrap: anywhere;
   padding: var(--space-5);
   border-radius: var(--radius-lg);
@@ -1793,6 +1809,8 @@ p {
   line-height: 1;
   letter-spacing: -0.035em;
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow-wrap: normal;
 }
 
 .end__total .score-max {
@@ -1810,6 +1828,19 @@ p {
   line-height: var(--leading-tight);
   letter-spacing: -0.02em;
   color: var(--color-accent-ink);
+}
+
+/* Whole totals at enlarged reading sizes: the denominator gets its own
+   line before the number ever has to break. Normal phone type stays 52px. */
+@container end-score (width < 18em) {
+  .end__total {
+    font-size: var(--text-2xl);
+  }
+
+  .end__total .score-max {
+    display: block;
+    margin-top: var(--space-1);
+  }
 }
 
 .end__copied {
@@ -2071,13 +2102,11 @@ p {
   text-align: end;
 }
 
-/* names in the body face, up to two lines */
+/* Names wrap at words; never replace part of a generated name with ellipsis. */
 .board-table__name bdi {
   font-family: var(--font-body);
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  display: block;
+  overflow-wrap: anywhere;
 }
 
 .board-table__row--you {
@@ -2139,14 +2168,69 @@ p {
 }
 
 .switch__input {
-  width: var(--space-5);
-  height: var(--space-5);
-  accent-color: var(--color-accent-ink);
+  appearance: none;
+  position: relative;
+  flex: none;
+  width: var(--space-7);
+  height: var(--layout-tap);
+  margin: 0;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: none;
+  cursor: pointer;
+}
+
+.switch__input::before {
+  content: '';
+  position: absolute;
+  inset: var(--space-2) 0;
+  border: var(--pin-stroke) solid var(--color-line);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-raised);
+}
+
+.switch__input::after {
+  content: '';
+  position: absolute;
+  top: var(--space-3);
+  left: var(--space-1);
+  width: calc(var(--space-4) + var(--space-1));
+  height: calc(var(--space-4) + var(--space-1));
+  border-radius: var(--radius-pill);
+  background: var(--color-ink);
+  transition: transform var(--motion-fast) var(--motion-ease-standard);
+}
+
+.switch__input:checked::before {
+  border-color: var(--color-accent);
+  background: var(--color-accent);
+}
+
+.switch__input:checked::after {
+  background: var(--color-accent-ink);
+  transform: translateX(calc(var(--space-4) + var(--space-1)));
+}
+
+@media (forced-colors: active) {
+  .switch__input {
+    appearance: auto;
+  }
+
+  .switch__input::before,
+  .switch__input::after {
+    display: none;
+  }
 }
 
 .start__board {
+  display: grid;
+  gap: 0;
   font-size: var(--text-sm);
   font-variant-numeric: tabular-nums;
+}
+
+.start__board .link {
+  justify-self: start;
 }
 
 /* ---------- share block (V1-19, V1-20) ---------- */
@@ -2480,7 +2564,8 @@ p {
 .dialog__head {
   position: relative; /* the clock line sits on its bottom edge */
   flex: none;
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--layout-tap);
   align-items: center;
   justify-content: space-between;
   gap: var(--space-2);
@@ -2489,10 +2574,17 @@ p {
 }
 
 .dialog__title {
+  min-width: 0;
   font-size: var(--text-xl);
+  overflow-wrap: anywhere;
 }
 
 .dialog__close {
+  grid-column: 2;
+  grid-row: 1;
+  align-self: start;
+  display: grid;
+  place-items: center;
   flex: none;
   width: var(--layout-tap);
   height: var(--layout-tap);
@@ -2500,14 +2592,17 @@ p {
   border-radius: var(--radius-sm);
   background: none;
   font-size: var(--text-xl);
+  line-height: 1;
   cursor: pointer;
 }
 
 .dialog__body {
+  min-width: 0;
   min-height: 0;
   overscroll-behavior: contain;
   padding: var(--space-4);
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-3);
   overflow-y: auto;
 }
@@ -2928,10 +3023,10 @@ p {
   }
 }
 
-/* Enlarged reading text needs its own scrolling middle region. Keep the
-   normal grid unchanged; the map keeps its usable minimum and Confirm stays
-   outside the scroll region on every viewport. */
-.round.round--reflow {
+/* Enlarged reading text and year entry use the existing middle/footer
+   wrappers. The footer stays outside the scrolling answer region. */
+.round.round--reflow,
+.round.round--when {
   grid-template:
     'top' minmax(var(--layout-topbar), auto)
     'body' minmax(0, 1fr)
@@ -2939,7 +3034,7 @@ p {
     / minmax(0, 1fr);
 }
 
-.round--reflow .round__body {
+:is(.round--reflow, .round--when) .round__body {
   grid-area: body;
   min-width: 0;
   min-height: 0;
@@ -2955,23 +3050,23 @@ p {
 
 /* A fixed minimum with a max-content maximum can still shrink the track.
    Reserve the complete wrapped prompt and its padding before sizing the map. */
-.round--reflow .prompt {
+:is(.round--reflow, .round--when) .prompt {
   min-height: max-content;
   padding-block: var(--space-2);
 }
 
-.round--reflow .round__footer {
+:is(.round--reflow, .round--when) .round__footer {
   grid-area: action;
   display: grid;
   min-width: 0;
 }
 
-.round--reflow .actionbar {
+:is(.round--reflow, .round--when) .actionbar {
   grid-area: auto;
   min-width: 0;
 }
 
-.round--reflow .actionbar .btn {
+:is(.round--reflow, .round--when) .actionbar .btn {
   min-width: 0;
   overflow-wrap: anywhere;
 }
@@ -2979,7 +3074,7 @@ p {
 /* Measure the 2:3 split from the image itself, with its top gutter outside
    the tracks. The map minimum must give the photo the same minimum share. */
 @media (width < 900px) and (orientation: portrait) {
-  .round--reflow .round__body {
+  :is(.round--reflow, .round--when) .round__body {
     padding-top: var(--space-2);
     grid-template-rows:
       minmax(max(var(--layout-photo-min), calc(var(--layout-map-min) * 2 / 3)), 2fr)
@@ -2987,7 +3082,7 @@ p {
       minmax(var(--layout-map-min), 3fr);
   }
 
-  .round--reflow .round__photo {
+  :is(.round--reflow, .round--when) .round__photo {
     margin-top: 0;
   }
 }
@@ -3015,18 +3110,18 @@ p {
 }
 
 @media (width >= 900px), (orientation: landscape) and (height <= 500px) {
-  .round--reflow .round__body {
+  :is(.round--reflow, .round--when) .round__body {
     grid-template:
       'photo prompt' max-content
       'photo answer' minmax(var(--layout-map-min), 1fr)
       / minmax(0, 55fr) minmax(0, 45fr);
   }
 
-  .round--reflow .round__footer {
+  :is(.round--reflow, .round--when) .round__footer {
     grid-template-columns: minmax(0, 55fr) minmax(0, 45fr);
   }
 
-  .round--reflow .actionbar {
+  :is(.round--reflow, .round--when) .actionbar {
     grid-column: 2;
   }
 }
@@ -3035,15 +3130,170 @@ p {
    body. Size the photo to the scrollport, not those overflowing grid tracks,
    and keep the complete object visible while the answer scrolls. (DS19) */
 @media (width < 900px) and (orientation: landscape) and (height <= 500px) {
-  .round--reflow .round__body {
+  :is(.round--reflow, .round--when) .round__body {
     container-type: size;
   }
 
-  .round--reflow .round__photo {
+  :is(.round--reflow, .round--when) .round__photo {
     align-self: start;
     position: sticky;
     top: var(--space-2);
     height: calc(100cqh - var(--space-2) - var(--space-3));
+  }
+}
+
+/* The available height already follows visualViewport through --app-height.
+   Query that box, not the layout viewport behind the on-screen keyboard. */
+.round--when {
+  container: year-round / size;
+}
+
+.year:has(.year__cap[data-selected='true']) .year__readout {
+  font-size: var(--text-xl);
+}
+
+.round--reflow .year__slider {
+  grid-template-columns: minmax(0, 1fr);
+  row-gap: var(--space-3);
+}
+
+.round--reflow .year__cap {
+  justify-self: start;
+}
+
+.round--reflow .year__scale {
+  padding-bottom: calc(4em * var(--leading-tight));
+  font-size: var(--text-xs);
+}
+
+.round--reflow .year__ticks {
+  height: calc(4em * var(--leading-tight));
+}
+
+.round--reflow .year__tick:nth-child(even) {
+  top: calc(2em * var(--leading-tight));
+}
+
+@container year-round (height < 560px) {
+  .answer--year {
+    align-content: start;
+    padding: var(--space-2) var(--space-4);
+  }
+
+  .year {
+    gap: var(--space-2);
+  }
+
+  .year__inputs {
+    order: -1;
+  }
+
+  .year .year__readout {
+    font-size: var(--text-lg);
+  }
+}
+
+@media (width < 900px) and (orientation: portrait) {
+  @container year-round (height < 560px) {
+    :is(.round--reflow, .round--when) .round__body {
+      grid-template-rows: minmax(var(--layout-tap), 1fr) max-content minmax(0, 3fr);
+    }
+  }
+}
+
+/* A landscape keyboard leaves about 200px: spend it on the cue, exact
+   entry and actions. Photo/prompt return as soon as the viewport grows. */
+@container year-round (height <= 260px) {
+  :is(.round--reflow, .round--when) .round__body {
+    grid-template: 'answer' minmax(0, 1fr) / minmax(0, 1fr);
+    padding-top: 0;
+  }
+
+  :is(.round--reflow, .round--when) .round__photo,
+  :is(.round--reflow, .round--when) .prompt {
+    display: none;
+  }
+
+  :is(.round--reflow, .round--when) .round__footer {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  :is(.round--reflow, .round--when) .actionbar {
+    grid-column: 1;
+  }
+}
+
+/* Keep the original copy and 44px targets; the compact reading size buys
+   enough width for the three feedback choices at 375px. */
+@media (width <= 420px) {
+  .actionbar--reveal .pulse,
+  .actionbar--reveal .pulse .chip {
+    font-size: var(--text-xs);
+  }
+}
+
+/* Board tables reflow by available reading width, so this also responds to
+   doubled text on desktop. Native table nodes and headers remain in place. */
+.dialog--board .dialog__body {
+  container: board-body / inline-size;
+}
+
+.dialog__body > *,
+.board__area {
+  min-width: 0;
+}
+
+.board-card__links .link,
+.board__area > .link {
+  min-width: var(--layout-tap);
+  justify-content: center;
+}
+
+@container board-body (width < 18em) {
+  .board-table,
+  .board-table thead,
+  .board-table tbody {
+    display: block;
+  }
+
+  .board-table tr {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) max-content;
+    border-bottom: 1px solid var(--color-line);
+  }
+
+  .board-table :is(th, td) {
+    width: auto;
+    min-width: 0;
+    border-bottom: 0;
+  }
+
+  .board-table__rank {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .board-table__total {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .board-table__name,
+  .board-table th:not([class]),
+  .board-table__standing td {
+    grid-column: 1 / -1;
+  }
+
+  .board-table__name {
+    padding-top: 0;
+  }
+
+  .board-table__own tr:first-child td {
+    border-top: 0;
+  }
+
+  .board-table__own {
+    border-top: var(--space-1) solid var(--color-line);
   }
 }
 
@@ -3074,8 +3324,12 @@ p {
 /* the counter and the cue share one grid cell: the cue replaces the counter
    text without shifting anything; the hidden reserve keeps "Hurry up · 10" wide */
 .topbar__cluster {
+  flex: none;
   display: inline-grid;
   align-items: center;
+
+  /* Covers Round 10/10 · Medium as well as the widest warning cue. */
+  min-inline-size: 12em;
 }
 
 .topbar__cluster > * {
@@ -3092,11 +3346,32 @@ p {
 
 .topbar__counter > .difficulty {
   margin-left: 0;
+  font-size: inherit;
 }
 
 .topbar > .difficulty__pips {
-  margin-left: calc(-1 * var(--space-1));
+  flex: none;
+  margin-left: 0;
   color: var(--color-accent);
+}
+
+.topbar__clock {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.topbar__cluster .clockcue {
+  font-size: inherit;
+}
+
+:is(.round--reflow, .reveal--reflow) .topbar__cluster {
+  min-inline-size: 0;
+  max-width: 100%;
+}
+
+:is(.round--reflow, .reveal--reflow) .topbar__counter {
+  flex-wrap: wrap;
 }
 
 .topbar__cluster[data-cue='on'] > .topbar__counter {
@@ -3184,6 +3459,24 @@ p {
   display: none;
 }
 
+.dialog__head > .clockmirror {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  margin: 0;
+  min-width: 0;
+}
+
+/* The line is absolute; without a cue the mirror needs no extra header row. */
+.dialog__head > .clockmirror:not(:has(.clockcue:not([hidden]))) {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.dialog__head .clockcue {
+  white-space: normal;
+}
+
 .tour__card > .clockmirror {
   margin: 0;
 }
@@ -3196,9 +3489,27 @@ p {
 /* the photo viewer's top bar is the positioned box, so its line spans the bar */
 .pswp__clock {
   display: flex;
+  min-width: 0;
   align-items: center;
   align-self: stretch;
   padding: 0 var(--space-3);
+}
+
+.pswp .pswp__top-bar {
+  height: auto;
+  min-height: var(--layout-tap);
+}
+
+.pswp .pswp__top-bar > .pswp__button {
+  flex: none;
+}
+
+.pswp__clock .clockmirror {
+  min-width: 0;
+}
+
+.pswp__clock .clockcue {
+  white-space: normal;
 }
 
 /* time-up: the answer controls dim; there is no modal (D2) */
@@ -3209,20 +3520,16 @@ p {
 
 .answer__previous {
   margin: 0;
-  padding: 0 var(--space-4) var(--space-2);
+  padding: var(--space-2) 0;
   font-size: var(--text-sm);
   color: var(--color-ink-muted);
 }
 
 .answer__paused {
-  position: absolute;
-  left: var(--space-3);
-  right: var(--space-3);
-  bottom: var(--space-3);
+  position: relative;
   z-index: 2;
   margin: 0;
   padding: var(--space-2) var(--space-3);
-  border-radius: var(--radius-sm);
   background: var(--color-surface-raised);
   color: var(--color-warning);
   font-size: var(--text-sm);
@@ -3230,6 +3537,27 @@ p {
 }
 
 .answer__paused[hidden] {
+  display: none;
+}
+
+/* A real layout row above the failed map, independent of credit height. */
+.answer--map:has(> .answer__paused:not([hidden])) {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+.answer--map:has(> .answer__paused:not([hidden])) > .map {
+  position: relative;
+  min-height: 0;
+}
+
+.map[data-state='failed'] .map__overlay {
+  padding: var(--space-3);
+  background: var(--color-surface);
+  color: var(--color-ink);
+}
+
+.map[data-state='failed'] .map__controls {
   display: none;
 }
 
@@ -3254,7 +3582,7 @@ p {
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  margin: 0;
+  margin-block: 0;
   font-size: var(--text-sm);
   color: var(--color-warning);
 }

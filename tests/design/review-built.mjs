@@ -76,6 +76,8 @@ async function newContext(width, height, { origin = url, text200 = false } = {})
 const within = (promise, ms) => Promise.race([promise, new Promise((resolve) => setTimeout(resolve, ms))]);
 
 const settled = () => {
+  // A map that lost its WebGL context never resizes its canvas again; its overlay covers it.
+  if (/^(context-lost|failed)$/.test(document.querySelector('.map')?.dataset.state ?? '')) return true;
   const host = document.querySelector('.map__canvas')?.getBoundingClientRect();
   const canvas = document.querySelector('.maplibregl-canvas')?.getBoundingClientRect();
   return !host || !canvas || (Math.abs(host.width - canvas.width) < 1 && Math.abs(host.height - canvas.height) < 1);
@@ -145,7 +147,7 @@ async function shoot(page, state, opts = {}) {
       return issues;
     });
     issues.push(...await page.evaluate(phoneGeometryIssues, geometryState));
-    issues.push(...flowGeometryIssues(await page.evaluate(measureFlow)));
+    issues.push(...flowGeometryIssues(await page.evaluate(measureFlow), { keyboard: !!opts.keyboard }));
     const v12 = await page.evaluate(measureV12);
     issues.push(...v12GeometryIssues(v12, { fold, keyboard: !!opts.keyboard, large: /text200/.test(state) }));
     const name = `${width}x${height}-${state}.png`;

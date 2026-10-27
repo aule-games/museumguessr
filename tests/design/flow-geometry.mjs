@@ -40,7 +40,8 @@ export function measureFlow() {
   };
 }
 
-export function flowGeometryIssues(m) {
+/** `keyboard`: an on-screen keyboard is open; entry outranks the photo share (V12-71). */
+export function flowGeometryIssues(m, { keyboard = false } = {}) {
   if (!m) return [];
   const issues = [];
   const check = (ok, rule) => { if (!ok) issues.push(rule); };
@@ -63,7 +64,7 @@ export function flowGeometryIssues(m) {
   check(m.primaryCount === 1 && (m.step === 'made' || (m.back && m.confirm &&
     m.back.right + 8 <= m.confirm.left + 1 && Math.abs(m.back.top - m.confirm.top) <= 1)),
   '[DS36] Back stays left of the single primary action with an 8 pixel gap');
-  if (m.viewport.width < 900 && m.viewport.height > m.viewport.width) {
+  if (!keyboard && m.viewport.width < 900 && m.viewport.height > m.viewport.width) {
     const share = m.image.height / (m.image.height + m.answer.height);
     check(share >= (m.step === 'when' ? 0.29 : 0.39),
       '[DS19] The image itself retains its photo share');

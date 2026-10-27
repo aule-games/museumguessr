@@ -607,3 +607,109 @@ Run `npm run build && npm run design:review:built` where Chromium may launch,
 then inspect `test-results/visual/`. This does not replace the unchanged E2E
 suite. No token values or dependencies changed. Do not treat the visual
 review as passed until the browser matrix is actually inspected.
+
+## Release 1.2 responsive patterns — 2026-10-23
+
+The night-gallery palette, Instrument Sans, Bricolage Grotesque, lime primary
+and real artwork remain the base. No token keys or values change in this pass.
+All new type, spacing, borders, colours and target dimensions reuse the
+existing tokens. Container breakpoints and the counter's character reserve
+are structural geometry, like the existing viewport breakpoints.
+
+### Timer and round header
+
+The top bar uses `text.sm` for counter, difficulty, total and warning, with
+`space.1` gaps and `space.3` side gutters. Its counter slot reserves 12 em at
+that reading size for Round 10/10 · Medium and the warning; the existing hidden
+warning reserve remains. Pips and the total cannot shrink. The total is an
+unbroken tabular number and unit; the menu keeps `layout.tap`. The decorative
+clock mount is out of flex flow, so it consumes no extra gap. Enlarged text
+can wrap the bar and still hides only the pips.
+
+Dialog headers use a flexible title column and a fixed `layout.tap` Close
+column. A visible timer cue gets a separate row across both columns; its
+number-free line still spans the header's bottom edge. A line without a cue
+costs no extra row. Titles wrap instead of pushing Close outside. The photo
+viewer retains zoom → cue → Close; its toolbar can grow vertically as cue text
+wraps. The tour keeps its existing bounded card and timer mirror.
+
+Keep the 3 px draining line, 40% paused opacity and 800 ms inert, dimmed
+time-up hold. The warning itself stays opaque. Timed-out rows retain the
+clock glyph and text; photo skips retain the different glyph. The counted
+tag remains a small secondary label. Away/tip notices inherit the same
+responsive gutters as the score table. The previous-answer line uses the
+year panel's gutter once, and remains in its scrolling region.
+
+### Year entry and the visual viewport
+
+When now uses the existing body/footer wrappers at every text size. This
+keeps Back and Confirm outside the scrolling middle region, with the normal
+2:3 portrait photo/answer share. The round itself is a named size container
+whose height follows the existing `--app-height` visual-viewport value.
+
+Below 560 px of available round height, exact input precedes the readout,
+the readout uses `text.lg`, and answer gutters use `space.2` vertically. In
+portrait, the photo yields space down to `layout.tap` while the answer gets
+three shares to its one. At 260 px or less, photo and prompt give their
+space to full-width input and actions. These are available-height rules, not
+keyboard detection or changes to focus, timer or input behaviour. Everything
+returns when the available height grows.
+
+The numeric field has a two-target-width minimum and can move onto its own
+line before the era group would squeeze it. The early-stop readout uses
+`text.xl`, so its complete wording does not dominate the panel. The selected
+end cap keeps lime/navy (12.39:1 contrast) and the handle substitution as its
+non-colour state. The last scale tick occupies the second label line, avoiding
+the 1500/2025 collision. At enlarged text the cap has its own row and alternating
+ticks occupy two tiers. Slider values, coordinates and snapping are unchanged.
+
+### Score and feedback layout
+
+Score rows give the points column its content width instead of a fixed 88 px.
+Points never break, and use `leading.tight`; the full-width result stays below.
+The total's label and number can occupy separate lines at enlarged text. The
+star and Hard one nailed remain together on the second line inside that total.
+At widths up to 420 px the round-three question and chips use `text.xs`, with
+their original copy, `layout.tap` height and wrapping at enlarged text.
+
+The end total remains `text.3xl` at normal phone sizes. When its content
+container has fewer than 18 em of reading width, use `text.2xl` and put the
+denominator on its own line. The desktop display-size rule remains in force;
+its denominator can still move. Keep each number whole, including at doubled
+text. Share/Send back remains first and the only filled primary; Play another
+10 precedes the compact board.
+
+The broken timeline keeps its date geometry. Its band uses `pin.stroke` and
+its guess uses light ink with a background-colour keyline, making both visible
+on the dark score surface. Visible date labels remain an open follow-up in the
+[audit](docs/audits/2026-10-23-visual-v12.md); the diagram must not be presented
+as independently self-explanatory before that follow-up.
+
+### Failed map and weekly board
+
+The paused-clock message occupies a real row above the failed map. The map
+gets the remaining height, so its credit cannot overlap that message. A failed
+map uses the dark surface with light ink for the error and Reload; its zoom
+and World buttons are hidden until the map works again. The credits remain.
+
+The board card keeps its border, compact first-add/status/name hierarchy,
+static skeleton and verification slot that opens only when needed. Every
+retry has a `layout.tap` minimum width and height. Names wrap in full, without
+line-clamp or ellipsis. In a board body narrower than 18 em, table rows put
+rank and score on the first line, name and You below; the table's real header
+and cell nodes remain. The own row and its separate standing line remain
+after the listed rows. Lime marks only the current row; no medals are added.
+
+The automatic-entry switch retains the native checkbox with `role="switch"`
+and its label. A `space.7` by `layout.tap` input draws a pill track and a knob
+whose position communicates state. Forced colours restore the native control.
+The start standing sentence wraps normally, followed by its own left-aligned
+44 px board link instead of an inline button inflating a text line.
+
+Keep the standalone 404's system-font fallback: its token palette and primary
+action connect it to the game without requiring the game's font assets to
+recover from a bad route.
+
+These patterns are implemented, with offline validation recorded in the audit.
+Post-change browser geometry and visual acceptance remain pending; the supplied
+captures document the state before this pass.
