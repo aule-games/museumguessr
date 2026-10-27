@@ -15,10 +15,11 @@ describe('the tracked public profile (H1)', () => {
       BASE_PATH: '/',
       VITE_SITE_URL: 'https://museumguessr.com/',
       VITE_ANALYTICS_HOSTS: 'museumguessr.com',
-      VITE_BOARD_UI: 'false',
-      VITE_TURNSTILE_SITEKEY: '',
+      VITE_BOARD_UI: 'true',
       VITE_BUILD_PURPOSE: 'deploy',
     });
+    // the real Turnstile site key cf:bootstrap printed (public), never a test key
+    expect(profile.VITE_TURNSTILE_SITEKEY).toMatch(/^0x4[\w-]{18,}$/);
     expect(Object.keys(profile).filter((k) => k !== '$comment').sort()).toEqual([...PROFILE_KEYS].sort());
     expect(profileProblems(profile)).toEqual([]);
     // CI: GitHub's runner environment; deploy: the founder's shell with the token present.

@@ -4,7 +4,7 @@
   "VITE_SITE_URL": "https://museumguessr.com/",
   "VITE_ANALYTICS_HOSTS": "museumguessr.com",
   "VITE_POSTHOG_PROJECT_TOKEN": "phc_BrkEGXvqFsGPFgiX64qgZY53abTNXVbxZDttknJLJNBZ",
-  "VITE_BOARD_UI": "false",
-  "VITE_TURNSTILE_SITEKEY": "",
+  "VITE_BOARD_UI": "true",
+  "VITE_TURNSTILE_SITEKEY": "0x4AAAAAAFojrOZAgNid8mWk",
   "VITE_BUILD_PURPOSE": "deploy"
 }

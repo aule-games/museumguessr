@@ -94,7 +94,7 @@ The runner is `scripts/lib/ops.mjs`. A refusal prints `✖ <what failed>`,
 
 | Switch | Where / who | Default by profile | Effect | Change / test |
 | --- | --- | --- | --- | --- |
-| VITE_BOARD_UI | Tracked public profile / developer | dev off; board-test on; deploy off through step 2 | Panel, Turnstile CSP and key requirement | Profile commit; invalid-combination build fixtures |
+| VITE_BOARD_UI | Tracked public profile / developer | dev off; board-test on; deploy on from step 3 (the real site key from cf:bootstrap) | Panel, Turnstile CSP and key requirement | Profile commit; invalid-combination build fixtures |
 | VITE_BUILD_PURPOSE | Tracked profile / build | dev, board-test or deploy | Test surfaces and artifact identity | Build profile; artifact check |
 | BOARD_MODE | One D1 settings row / operator | missing row off; local loop dark | Public ranking off/dark/on | board commands; persists across deploy and rollback |
 | BOARD_FORCE_OFF | Worker secret / operator | unset | Force off even if D1 cannot be read | Secret operation; D1-failure test |

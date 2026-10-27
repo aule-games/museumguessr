@@ -28,7 +28,7 @@
   // creates it and prints its id, a public value to put here and commit;
   // local wrangler dev uses a local database whatever the id says.
   "d1_databases": [
-    { "binding": "DB", "database_name": "museumguessr", "database_id": "set-by-cf-bootstrap", "migrations_dir": "worker/migrations" }
+    { "binding": "DB", "database_name": "museumguessr", "database_id": "964c3ca2-04c3-4a07-bb8a-0dbafe9b262a", "migrations_dir": "worker/migrations" }
   ],
   // Rate-limit bindings (ENG15; the numbers are in src/api/limits.ts).
   "ratelimits": [

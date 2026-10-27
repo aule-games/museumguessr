@@ -20,7 +20,7 @@ describe('the Worker configuration (wrangler.jsonc)', () => {
   });
 
   it('the board binds one D1 database with its migrations, three rate limits equal to the limits module and an hourly purge, and keeps secrets out of the file [V12-103] [V12-91] [V12-107]', () => {
-    expect(config.d1_databases).toEqual([{ binding: 'DB', database_name: 'museumguessr', database_id: 'set-by-cf-bootstrap', migrations_dir: 'worker/migrations' }]);
+    expect(config.d1_databases).toEqual([{ binding: 'DB', database_name: 'museumguessr', database_id: expect.stringMatching(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/), migrations_dir: 'worker/migrations' }]);
     expect(existsSync(join(ROOT, 'worker/migrations/0001_board.sql'))).toBe(true);
     const { windowSeconds, requestsPerIp, newRowsPerIp, submissionsPerKey } = LIMITS.bindings;
     expect(config.ratelimits.map((r: { name: string; simple: unknown }) => [r.name, r.simple])).toEqual([
