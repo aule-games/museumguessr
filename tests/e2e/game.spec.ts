@@ -310,8 +310,8 @@ test.describe('[DS13] [ENG17] [DS27] overlays and history', () => {
       await page.locator(`[data-test=${item}]`).click();
       await expect(page.getByRole('dialog')).toContainText(check);
       if (item === 'menu-credits') await expect(page.locator('[data-test=credits] li')).toHaveCount(1);
-      // the deploy build has no board, so About leaves out the board's two events (V12-125)
-      if (item === 'menu-about') await expect(page.locator('[data-test=events] li')).toHaveCount(CATALOGUE.filter((e) => !e.name.startsWith('board_')).length);
+      // the deploy build carries the board, so About lists the board's two events too (V12-125)
+      if (item === 'menu-about') await expect(page.locator('[data-test=events] li')).toHaveCount(CATALOGUE.length);
       await page.keyboard.press('Escape');
       await expect(page.getByRole('dialog')).toHaveCount(0);
     }
@@ -391,6 +391,26 @@ test.describe('[DS19] [DS1] layout @layout', () => {
     expect(new Set(boxes).size, `When row positions over 1 s: ${boxes.join(', ')}`).toBe(1);
     await row.click();
     await expect(row).toHaveAttribute('aria-expanded', 'true');
+  });
+
+  test('[DS31] a long made place steps the font down and wraps once the web fonts load, never cut off', async ({ page }) => {
+    // 42 is made in the "Valley of Mexico (Basin of Mexico)": too long for one line on a phone
+    test.skip(!items.some((it) => it.id === '42'), 'needs item 42');
+    const ids = ['42', ...items.map((it) => it.id).filter((id) => id !== '42').slice(0, 9)];
+    await page.goto(`./?d=${ids.join('.')}`);
+    await expect(page.locator('[data-test=play-challenge]')).toBeEnabled({ timeout: 10000 });
+    await page.locator('[data-test=play-challenge]').click();
+    await playRound(page);
+    await page.evaluate(() => document.fonts.ready.then(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)))));
+    await page.waitForTimeout(500);
+    const clipped = await page.evaluate(() => [...document.querySelectorAll<HTMLElement>('.score__row')].filter((row) => {
+      const result = row.querySelector<HTMLElement>('.score__result')!;
+      const range = document.createRange();
+      range.selectNodeContents(result);
+      const bounds = row.getBoundingClientRect();
+      return result.scrollWidth > result.clientWidth + 1 || [...range.getClientRects()].some((line) => line.right > bounds.right + 1);
+    }).map((row) => row.textContent));
+    expect(clipped).toEqual([]);
   });
 
   test('[DS21] the reveal puts scores after the wall label and keeps Next on screen', async ({ page }) => {

@@ -2994,7 +2994,7 @@
         },
         {
           "file": "tests/e2e/board.spec.ts",
-          "title": "without the board in the build there is no card and no Turnstile in the CSP; this build allows Turnstile"
+          "title": "the deploy build carries the board with the real public site key, never a test key, and allows Turnstile only from Cloudflare as this build does"
         }
       ]
     },

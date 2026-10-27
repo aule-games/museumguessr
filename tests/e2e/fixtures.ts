@@ -108,11 +108,17 @@ export const test = base.extend<{ recorder: Recorder; blockImages: boolean; fres
     },
     { auto: true },
   ],
-  recorder: async ({ context }, use) => {
+  recorder: async ({ context }, use, testInfo) => {
     const rec = new Recorder();
+    // The deploy build carries the board; outside the board's own tests the
+    // Worker answers as production does while the board is off (docs/api.md).
+    const boardOff = !/board\.spec\.ts$/.test(testInfo.file);
     // Registered first so it runs last: deny everything that is not the local site.
     await context.route('**/*', async (route) => {
       const url = new URL(route.request().url());
+      if (boardOff && url.hostname === LOCAL_HOST && url.pathname === '/api/v1/board' && route.request().method() === 'GET') {
+        return route.fulfill({ status: 200, contentType: 'application/json', headers: { 'Cache-Control': 'private, no-store' }, body: '{"disabled":true}' });
+      }
       if (url.hostname === LOCAL_HOST && url.pathname.startsWith('/api/')) {
         rec.unmocked.push(`${route.request().method()} ${url.pathname}`);
         return route.abort('blockedbyclient');

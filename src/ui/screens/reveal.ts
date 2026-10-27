@@ -167,9 +167,16 @@ function fitOneLine(el: HTMLElement) {
   };
   new ResizeObserver(() => {
     fit();
-    // Subscribe after the first layout has requested the line's fonts.
+    // Refit once the line's own faces have loaded: fonts swap in, so a first
+    // fit can measure the narrower fallback. fonts.ready alone can resolve
+    // before those faces start loading.
     if (!watchingFonts && el.isConnected && document.fonts) {
       watchingFonts = true;
+      const family = getComputedStyle(el).fontFamily;
+      const sample = el.textContent ?? '';
+      const weights = new Set([el, ...el.querySelectorAll('strong')].map((n) => getComputedStyle(n).fontWeight));
+      const faces = [...weights].map((w) => document.fonts.load(`${w} 16px ${family}`, sample));
+      void Promise.all(faces).then(() => fit(true), () => fit(true));
       void document.fonts.ready.then(() => fit(true));
     }
   }).observe(el);

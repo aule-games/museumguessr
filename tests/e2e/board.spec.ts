@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { BrowserContext, Page, Route } from '@playwright/test';
 import { SCORING_VERSION } from '../../src/scoring/config';
@@ -520,14 +520,20 @@ test.describe('[W6] the weekly board on the end screen', () => {
     await expect(page.locator('[data-test=board-table]')).toBeVisible();
   });
 
-  test('without the board in the build there is no card and no Turnstile in the CSP; this build allows Turnstile [V12-125]', async ({ page }) => {
+  test('the deploy build carries the board with the real public site key, never a test key, and allows Turnstile only from Cloudflare as this build does [V12-125]', async ({ page }) => {
     await page.goto('./');
     const csp = await page.locator('meta[http-equiv=Content-Security-Policy]').getAttribute('content');
     expect(csp).toContain('frame-src https://challenges.cloudflare.com');
     expect(await page.locator('meta[name=board-ui]').getAttribute('content')).toBe('on');
-    const deploy = readFileSync(join(import.meta.dirname, '../../dist/index.html'), 'utf8');
-    expect(deploy).toContain('<meta name="board-ui" content="off"');
-    expect(deploy).not.toContain('challenges.cloudflare.com');
+    const dist = join(import.meta.dirname, '../../dist');
+    const deploy = readFileSync(join(dist, 'index.html'), 'utf8');
+    expect(deploy).toContain('<meta name="board-ui" content="on"');
+    expect(deploy).toContain('frame-src https://challenges.cloudflare.com');
+    const key = (JSON.parse(readFileSync(join(import.meta.dirname, '../../deploy/profile.json'), 'utf8')) as { VITE_TURNSTILE_SITEKEY: string }).VITE_TURNSTILE_SITEKEY;
+    expect(key).toMatch(/^0x4[\w-]{18,}$/);
+    const bundles = readdirSync(join(dist, 'assets')).filter((f) => f.endsWith('.js')).map((f) => readFileSync(join(dist, 'assets', f), 'utf8')).join('\n');
+    expect(bundles).toContain(key);
+    expect(bundles).not.toMatch(/[123]x0{20}A[AB]|[123]x0{20}BB|[123]x0{20}FF/);
   });
 
   test('the local end fixture finishes a test-assisted game under the public fixture key and runs the dark smoke path to not_best [V12-127]', async ({ page, board }) => {
