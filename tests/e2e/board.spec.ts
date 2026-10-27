@@ -549,6 +549,20 @@ test.describe('[W6] the weekly board on the end screen', () => {
     for (const r of board.reads()) expect(r.headers['x-museumguessr-test']).toBe('1');
     expect(new URL(page.url()).search).toBe('');
   });
+
+  test('in test mode, Jump to the end asks the server week first, so a dark board takes the test game as a smoke row [V12-108]', async ({ page, board }) => {
+    board.mode = 'dark';
+    board.post = (body) => {
+      expect(body.test_assisted).toBe(true);
+      return { status: 409, body: JSON.stringify({ reason: 'not_best', retryable: false, best: { row_id: 'seed', total: 29000, standing: null } }) };
+    };
+    await page.goto('./?test=1');
+    await expect(page.locator('[data-test=start]')).toBeEnabled({ timeout: 10000 });
+    await page.locator('[data-test=test-badge]').click();
+    await page.locator('[data-test=test-finish]').click();
+    await expect(page.locator('[data-screen=end]')).toBeVisible({ timeout: 20_000 });
+    await expect(status(page)).toHaveText(/^Your best this week: 29,000 \(Not ranked \(test game\)\) · this game [\d,]+$/);
+  });
 });
 
 test.describe('[ENG17] the browser suites\' network guard', () => {

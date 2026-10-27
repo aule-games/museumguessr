@@ -563,6 +563,7 @@ export class App {
   async finishForTest(skill: number | null = null) {
     if (!this.state || this.state.finished) await this.startGame();
     this.dispatch({ type: 'testAssist' });
+    await this.weekForTest();
     this.guard(() => {
       const skills = new Map<number, number>();
       for (let i = 0; i < 100 && this.state && !this.state.finished; i++) {
@@ -782,6 +783,25 @@ export class App {
       void m.weekContext(this.boardEnv(), s.test_assisted).then((c) => {
         if (c.week) this.serverWeek = c.week;
       }),
+    );
+  }
+
+  /** Before a test jump: the jump skips round ten's render, where the server's week is asked (V12-108). */
+  private weekForTest(): Promise<void> {
+    if (!BOARD_UI || this.serverWeek !== null || this.d.local.get(KEYS.boardAuto) === 'off') return Promise.resolve();
+    return new Promise<void>((done) =>
+      withModule(
+        CHUNKS.board,
+        (m) =>
+          void m
+            .weekContext(this.boardEnv(), true)
+            .then((c) => {
+              if (c.week) this.serverWeek = c.week;
+            })
+            .catch(() => {})
+            .finally(done),
+        done,
+      ),
     );
   }
 
