@@ -179,15 +179,19 @@ test.describe('[A1] [DS6] no answer before the reveal', () => {
   test('round text and alt attributes carry no title; the reveal does', async ({ page }) => {
     await start(page);
     const item = byId((await deckIds(page))[0]);
-    const titleWords = item.title.split(/\W+/).filter((w) => w.length > 4);
-    const roundText = (await page.locator('main').innerText()).toLowerCase();
-    const alts = (await page.locator('img').evaluateAll((els) => els.map((e) => (e as HTMLImageElement).alt + ' ' + (e as HTMLImageElement).src))).join(' ').toLowerCase();
-    for (const w of titleWords) {
-      expect(roundText).not.toContain(w.toLowerCase());
-      expect(alts).not.toContain(w.toLowerCase());
+    // the content guide's rule (docs/content.md "Alt text"): no two-word title phrase; a single
+    // descriptive word such as "stone" may appear. The save holds no title text at all.
+    const titleWords = item.title.toLowerCase().split(/\W+/).filter((w) => w.length > 3);
+    const phrases = titleWords.slice(0, -1).map((w, i) => `${w} ${titleWords[i + 1]}`);
+    const flat = (t: string) => ` ${t.toLowerCase().split(/\W+/).join(' ')} `;
+    const roundText = flat(await page.locator('main').innerText());
+    const alts = flat((await page.locator('img').evaluateAll((els) => els.map((e) => (e as HTMLImageElement).alt + ' ' + (e as HTMLImageElement).src))).join(' '));
+    for (const p of phrases) {
+      expect(roundText).not.toContain(` ${p} `);
+      expect(alts).not.toContain(` ${p} `);
     }
-    const saved = await page.evaluate(() => localStorage.getItem('museumguessr:v1:save') ?? '');
-    for (const w of titleWords) expect(saved.toLowerCase()).not.toContain(w.toLowerCase());
+    const saved = (await page.evaluate(() => localStorage.getItem('museumguessr:v1:save') ?? '')).toLowerCase();
+    for (const w of titleWords.filter((x) => x.length > 4)) expect(saved).not.toContain(w);
     await playRound(page);
     await expect(page.locator('[data-test=reveal-title]')).toHaveText(item.title);
   });
