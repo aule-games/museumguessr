@@ -416,6 +416,8 @@ test.describe('[DS19] [DS1] layout @layout', () => {
   test('[DS21] the reveal puts scores after the wall label and keeps Next on screen', async ({ page }) => {
     await start(page);
     await playRound(page);
+    // a long result line may wrap once its web font loads (DS31): measure after that refit
+    await page.evaluate(() => document.fonts.ready.then(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)))));
     const vw = page.viewportSize()?.width ?? 0;
     const vh = page.viewportSize()?.height ?? 0;
     const bar = await page.locator('[data-screen=reveal] .topbar').boundingBox();
