@@ -8,22 +8,22 @@ Last run: 2026-10-27.
 
 | Step | Result |
 | --- | --- |
-| type check | passed (3 s) |
+| type check | passed (4 s) |
 | generated files are current | passed (0 s) |
-| item check | passed (1 s) |
-| unit tests | passed (15 s) |
+| item check | passed (2 s) |
+| unit tests | passed (17 s) |
 | design checks | passed (1 s) |
 | lint | passed (3 s) |
 | build | passed (2 s) |
 | build checks | passed (0 s) |
-| Worker routing suite (wrangler dev) | passed (18 s) |
-| browser tests (5 viewports) | passed (157 s) |
-| release scan (publish candidate) | passed (12 s) |
-| release scan (built output) | passed (5 s) |
+| Worker routing suite (wrangler dev) | passed (20 s) |
+| browser tests (5 viewports) | passed (185 s) |
+| release scan (publish candidate) | passed (13 s) |
+| release scan (built output) | passed (6 s) |
 
 ## Automated checks
 
-830 tests, 830 passed, 269 requirement IDs.
+831 tests, 831 passed, 269 requirement IDs.
 
 | ID | Rule | Test file | Result |
 | --- | --- | --- | --- |
@@ -1315,6 +1315,7 @@ Last run: 2026-10-27.
 | V12-108 | the board API (local D1) › weeks › only the server week ranks: an old or missing board_week is week_closed, and a known retry keeps its week and score after Monday | `worker/tests/board-d1.smoke.ts` | passed |
 | V12-108 | the weekly board on the end screen › a finished game goes on the board with no click: round ten asks the week, the end card shows its status (board-phone) | `tests/e2e/board.spec.ts` | passed |
 | V12-108 | the weekly board on the end screen › a Sunday 23:59 UTC finish whose POST failed is retried on Monday's load and refused as last week (board-phone) | `tests/e2e/board.spec.ts` | passed |
+| V12-108 | the weekly board on the end screen › in test mode, Jump to the end asks the server week first, so a dark board takes the test game as a smoke row (board-phone) | `tests/e2e/board.spec.ts` | passed |
 | V12-109 | generated board names › three append-only word lists give at least a million names with no suffix, each word a single plain word | `tests/unit/board-names.test.ts` | passed |
 | V12-109 | generated board names › no word and no run of adjacent words is on the public name list (data/name-list.json) | `tests/unit/board-names.test.ts` | passed |
 | V12-109 | generated board names › a device key always gives the same name, as these golden fixtures fix | `tests/unit/board-names.test.ts` | passed |
@@ -1474,6 +1475,7 @@ Last run: 2026-10-27.
 | W6 | the weekly board on the end screen › the start screen shows the last confirmed standing from the device with no request, and nothing without a receipt (board-phone) | `tests/e2e/board.spec.ts` | passed |
 | W6 | the weekly board on the end screen › the deploy build carries the board with the real public site key, never a test key, and allows Turnstile only from Cloudflare as this build does (board-phone) | `tests/e2e/board.spec.ts` | passed |
 | W6 | the weekly board on the end screen › the local end fixture finishes a test-assisted game under the public fixture key and runs the dark smoke path to not_best (board-phone) | `tests/e2e/board.spec.ts` | passed |
+| W6 | the weekly board on the end screen › in test mode, Jump to the end asks the server week first, so a dark board takes the test game as a smoke row (board-phone) | `tests/e2e/board.spec.ts` | passed |
 | W6 | the weekly board on the end screen › Share stays the first action after the score and the only filled primary; Play another 10 comes before the board card (board-phone-landscape) | `tests/e2e/board.spec.ts` | passed |
 | W6 | the weekly board on the end screen › Share stays the first action after the score and the only filled primary; Play another 10 comes before the board card (board-desktop) | `tests/e2e/board.spec.ts` | passed |
 | W6 | the weekly board on the end screen › Share stays the first action after the score and the only filled primary; Play another 10 comes before the board card (board-phone-small) | `tests/e2e/board.spec.ts` | passed |
@@ -1659,7 +1661,7 @@ These stay pending until their owner records a dated result.
 | H4 | A fresh clone reaches a local board submit in under 3 minutes (npm ci, npm ci --prefix worker, npm run dev:board, /?fixture=end-random) | agent | timed run from an empty directory; the card shows the not_best line (docs/ops.md#local-board-loop) | passed: 20 s on 2026-10-23 (clone, npm ci and npm ci --prefix worker with a warm npm cache 6 s, migrations, seed, Worker and Vite up 7 s, ?fixture=end-random to the not_best card in Chromium 7 s) |
 | A1 | Screen-reader pass: every step, the reveal and the end screen read in order | agent | VoiceOver on iOS Safari and macOS | pending |
 | DS1 | Real devices: an iPhone (Safari), an Android phone (Chrome) and one in-app browser play a full round | founder | play one round on each, report anything odd | pending |
-| G2 | Release scan of the public repository: no confidential term anywhere | agent | npm run release:check after the repository is public | pending |
+| G2 | Release scan of the public repository: no confidential term anywhere | agent | npm run release:check after the repository is public | passed: 0 hits on 2026-10-27 at 24c8fa3 (3 refs incl. 1 pull-request ref, 137 commits, 1137 files) |
 | PH7 | Smoke visits arrive as two visitors with every KPI event, and the KPI funnel converts | founder | docs/ops.md#smoke-test-before-launch | pending |
 | V9 | Launch posts lead with the journey ("made here, kept there") | founder | the post drafts | pending |
 | LIC1 | The founder decides whether the code gets a licence | founder | README "Licence" section reflects the decision | decided 2026-10-14: no licence for now (all rights reserved) |
