@@ -1607,6 +1607,7 @@ p {
 .score__result {
   grid-area: result;
   min-width: 0;
+
   /* the unwrapped line must not widen the content-sized points column,
      or fitOneLine measures a box as wide as its own text and never wraps */
   contain: inline-size;
