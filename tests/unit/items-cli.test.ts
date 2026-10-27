@@ -305,7 +305,7 @@ describe('[V1-12] promote and retire', () => {
     expect(out).toMatch(/items:swap -- 14/);
   });
 
-  it('promote --ids appends a batch only when the whole pool passes, and writes nothing otherwise', () => {
+  it('promote --ids appends a batch only when the whole pool passes, and writes nothing otherwise [V12-149]', () => {
     const before = readFileSync(join(root, 'data/items.json'), 'utf8');
     const src = join(root, 'src14.jpg');
     writeFileSync(src, readFileSync(join(root, 'images/05.jpg')));

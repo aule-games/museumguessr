@@ -1,6 +1,6 @@
 {
   "release": "v1.2",
-  "built_through_step": 3,
+  "built_through_step": 4,
   "steps": {
     "0": "specifications and verification foundation",
     "1": "hosting and security",
@@ -3331,7 +3331,12 @@
         "W7"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/content-release.test.ts",
+          "title": "every shipped object is human-made with complete evidence, and research stays in durable local folders [V12-140]"
+        }
+      ]
     },
     {
       "id": "V12-141",
@@ -3341,7 +3346,12 @@
         "W7"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/content-release.test.ts",
+          "title": "the guide keeps the 1955 artist cutoff on top of rights evidence, and no excluded later artist is in the pool [V12-141]"
+        }
+      ]
     },
     {
       "id": "V12-142",
@@ -3418,7 +3428,12 @@
         "E14"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/content-release.test.ts",
+          "title": "fame alone does not make an object easy: every difficulty-1 object has no record conflict and no contested claim [V12-145]"
+        }
+      ]
     },
     {
       "id": "V12-146",
@@ -3455,7 +3470,12 @@
         "W7"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/content-release.test.ts",
+          "title": "each batch has its own approval, and every approved record left the reserve for the pool, checked at the final pool size [V12-147]"
+        }
+      ]
     },
     {
       "id": "V12-148",
@@ -3466,7 +3486,12 @@
         "ENG20"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/content-release.test.ts",
+          "title": "one contentApproved predicate reads the approval record, and it passes for the shipped pool [V12-148]"
+        }
+      ]
     },
     {
       "id": "V12-149",
@@ -3476,7 +3501,12 @@
         "W7"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/items-cli.test.ts",
+          "title": "promote --ids appends a batch only when the whole pool passes, and writes nothing otherwise [V12-149]"
+        }
+      ]
     },
     {
       "id": "V12-150",
@@ -3530,7 +3560,12 @@
         "W8"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/content-release.test.ts",
+          "title": "every promoted record carries its audited photo licence, made place, date, journey and claim fields [V12-152]"
+        }
+      ]
     },
     {
       "id": "V12-153",
@@ -3540,7 +3575,12 @@
         "W7"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/content-release.test.ts",
+          "title": "no generated artwork: every image is a credited real photo with its source page and a free licence [V12-153]"
+        }
+      ]
     },
     {
       "id": "V12-154",
@@ -3550,7 +3590,12 @@
         "W7"
       ],
       "replaces": null,
-      "tests": []
+      "tests": [
+        {
+          "file": "tests/unit/content-release.test.ts",
+          "title": "the pool sits near seventy-five and still passes every evidence and diversity check [V12-154]"
+        }
+      ]
     },
     {
       "id": "V12-160",
